@@ -1,0 +1,67 @@
+﻿@model ResponseModel<LoyaltyPoint>
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Loyalty Point</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@if (Common.IsAdmin() && Model.IsCreate == true)
+					{
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LoyaltyPoint")');">
+							<i class="fas fa-plus"></i> &nbsp; Add new item
+						</button>
+					}
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gooters">
+			<section class="col-md-12">
+				<div class="card">
+					<div class="card-header divformSave_Display d-none" style="margin: 5px !important;">
+						<form id="formSave" action="@Url.Action("Save","LoyaltyPoint")" method="post">
+							<div class="row no-gutters" id="divformSave"></div>
+							<div class="clearfix"></div>
+							<hr />
+						</form>
+					</div>
+
+					<div class="card-body">
+						<div class="row no-gooters divformSave_Hide">
+							<div class="col-md-12 my-1">
+								<table class="table table-bordered table-striped table-hover w-100" id="dataTable_LoyaltyPoint"></table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script>
+
+	</script>
+}
+
+
