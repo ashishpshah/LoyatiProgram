@@ -1128,7 +1128,7 @@ function fnLoadCommonTable($selector) {
         $($selector).DataTable().destroy();
     }
 
-    $($selector).DataTable({
+    dataTable_CommonTable = $($selector).DataTable({
         paging: true,
         lengthChange: true,
         searching: true,
@@ -1243,7 +1243,7 @@ function fnLoadCommonTable_SrNo($selector) {
         $($selector).DataTable().destroy();
     }
 
-    $($selector).DataTable({
+    dataTable_CommonTable_SrNo = $($selector).DataTable({
         paging: true,
         lengthChange: true,
         searching: true,
@@ -1288,7 +1288,7 @@ function fnLoadCommonTable_Buttons($selector) {
     if (typeof $title == 'undefined' || $title == null || $title == '')
         $title = 'Data export';
 
-    $($selector).DataTable({
+    dataTable_CommonTable_Buttons = $($selector).DataTable({
         paging: true,
         lengthChange: true,
         searching: true,

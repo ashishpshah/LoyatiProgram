@@ -1,22 +1,18 @@
 ﻿using Seed_Admin.Controllers;
 using Seed_Admin.Infra;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Seed_Admin.Areas.Admin.Controllers
 {
 
-	public class LoyaltyPointController : BaseController<ResponseModel>
+	public class LoyaltyPointController : BaseController<ResponseModel<LoyaltyPointViewModel>>
 	{
 		public LoyaltyPointController(IRepositoryWrapper repository) : base(repository) { }
 
 		// GET: Admin/LoyaltyPoint
 		public ActionResult Index()
 		{
-			var list = new List<LoyaltyPointsQrcode>();
-
-			if (Common.IsAdmin())
-				list = _context.Using<LoyaltyPointsQrcode>().GetAll().Distinct().ToList();
-
 			return View(CommonViewModel);
 		}
 
@@ -24,20 +20,82 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		[HttpGet]
 		public IActionResult GetData(int start = 0, int length = 10, string? sortColumn = "", string? sortColumnDir = "asc", string? searchValue = "")
 		{
+			var result = new PagedResult();
+
 			try
 			{
-				var data = _context.Using<LoyaltyPointsQrcode>().Get(start, length, sortColumn, sortColumnDir, searchValue);
+				var listQrcode = _context.Using<LoyaltyPointsQrcode>().GetAll();
 
-				CommonViewModel.IsSuccess = true;
-				CommonViewModel.StatusCode = ResponseStatusCode.Success;
-				CommonViewModel.Data = data;
+				var loyaltyDict = _context.Using<LoyaltyPoint>().GetAll().ToDictionary(x => x.QrcodeId);
+
+				var userIds = loyaltyDict.Select(x => x.Value.UserId).Distinct().ToList();
+				var userDict = _context.Using<User>().GetByCondition(x => userIds.Contains(x.Id)).ToDictionary(x => x.Id);
+
+				var list = listQrcode.Select(x =>
+				{
+					loyaltyDict.TryGetValue(x.Id, out var lp);
+					userDict.TryGetValue(lp?.UserId ?? 0, out var user);
+
+					return new LoyaltyPointViewModel
+					{
+						QrCodeId = x.Id,
+						QrCode = x.Qrcode,
+						IsClaimed = x.IsScanned,
+
+						UserId = lp?.UserId ?? 0,
+						ClaimedBy = user?.PersonName ?? "",
+						Points = lp?.Points ?? 0,
+						ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
+						GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
+						ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+						GenerateDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+					};
+				}).ToList();
+
+				var recordsTotal = list.Count();
+				IEnumerable<LoyaltyPointViewModel> query = list;
+
+				// Filter (Search)
+				if (!string.IsNullOrWhiteSpace(searchValue))
+				{
+					query = query.Where(x =>
+						(x.QrCode?.Contains(searchValue, StringComparison.OrdinalIgnoreCase) ?? false) ||
+						(x.ClaimedBy?.Contains(searchValue, StringComparison.OrdinalIgnoreCase) ?? false) ||
+						x.Points.ToString().Contains(searchValue) ||
+						x.ClaimedDate_Text.Contains(searchValue) ||
+						x.GenerateDate_Text.Contains(searchValue)
+					);
+				}
+
+				// Sort
+				query = sortColumn?.ToLower() switch
+				{
+					"qrcode" => sortColumnDir == "asc" ? query.OrderBy(x => x.QrCode) : query.OrderByDescending(x => x.QrCode),
+					"points" => sortColumnDir == "asc" ? query.OrderBy(x => x.Points) : query.OrderByDescending(x => x.Points),
+					"generatedate_text" => sortColumnDir == "asc" ? query.OrderBy(x => x.GenerateDate_Ticks) : query.OrderByDescending(x => x.GenerateDate_Ticks),
+					"isclaimed_text" => sortColumnDir == "asc" ? query.OrderBy(x => x.IsClaimed) : query.OrderByDescending(x => x.IsClaimed),
+					"claimedby" => sortColumnDir == "asc" ? query.OrderBy(x => x.ClaimedBy) : query.OrderByDescending(x => x.ClaimedBy),
+					"claimeddate_text" => sortColumnDir == "asc" ? query.OrderBy(x => x.ClaimedDate_Ticks) : query.OrderByDescending(x => x.ClaimedDate_Ticks),
+					_ => query.OrderByDescending(x => x.GenerateDate_Ticks)
+				};
+
+				// Pagination
+				var pagedData = query.Skip(start).Take(length).ToList();
+
+				result = new PagedResult
+				{
+					StartIndex = start,
+					Length = length,
+					RecordsFiltered = pagedData.Count,
+					RecordsTotal = recordsTotal,
+					Data = pagedData
+				};
 			}
-			catch (Exception ex)
-			{
-				CommonViewModel.IsSuccess = false;
-				CommonViewModel.StatusCode = ResponseStatusCode.Error;
-				CommonViewModel.Message = ResponseStatusMessage.Error;
-			}
+			catch (Exception ex) { }
+
+			CommonViewModel.IsSuccess = true;
+			CommonViewModel.StatusCode = ResponseStatusCode.Success;
+			CommonViewModel.Data = result;
 
 			return Ok(CommonViewModel);
 		}

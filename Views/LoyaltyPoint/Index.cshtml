@@ -1,6 +1,4 @@
-﻿@model ResponseModel<LoyaltyPoint>
-
-@{
+﻿@{
 	ViewBag.Title = "Index";
 	Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -58,9 +56,60 @@
 </section>
 
 @section Scripts {
-	<script>
+
+	<script type="text/javascript">
+
+	var dataTableMain = null;
+
+	$(document).ready(function () {
+		setTimeout(function () {
+			fnLoadTableData();
+		}, 1000);
+	});
+
+	function fnLoadTableData() {
+		if ($.fn.DataTable.isDataTable('#dataTable_VendorPO')) {
+			$('#dataTable_VendorPO').DataTable().destroy();
+		}
+
+		dataTableMain = $("#dataTable_VendorPO").DataTable({
+				"destroy": true,
+				"pageLength": 50,
+				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], 
+				"sAjaxSource": "@Url.Action("GetData", "LoyaltyPoint")",
+				"bServerSide": true,
+				"bProcessing": true,
+				"bSearchable": true,
+				"order": [[1, 'desc']],
+				"language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+				"fnServerParams": function (aoData) {
+					//aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
+				},
+				"columns": [
+					{ "title": "#", "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+					{ "title": "QR Code", "data": "qrCode", "autoWidth": true, "searchable": true },
+					{ "title": "Points", "data": "points", "autoWidth": true, "searchable": true },
+					{ "title": "Generate Date", "data": "generateDate_Text", "autoWidth": true, "searchable": true },
+					{ "title": "Is Claimed ?", "data": "isClaimed_Text", "autoWidth": true, "searchable": true },
+					{ "title": "Claimed By", "data": "claimedBy", "autoWidth": true, "searchable": true },
+					{ "title": "Claimed Date", "data": "claimedDate_Text", "autoWidth": true, "searchable": true },
+					{
+						"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+						"render": function (data, type, row, meta) {
+							return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" onclick="fnLoadParialView(\'divformSave\', \'@Url.Action("Partial_AddEditForm", "LoyaltyPoint")?Id=' + data.id + '\')"><span class="nme"><i class="far fa-edit"></i></span></a>' +
+								//'<a class="btn btn-danger btn-sm btn-flat ml-2" href="javascript:void(0);" onclick="divShow(\'/DeleteConfirmed?Id=' + data.id + '\');"><span class="nme"><i class="far fa-trash-alt"></i></span></a>' +
+								'</div>';
+						}
+					}
+				],
+				"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+					var index = iDisplayIndexFull + 1;
+					$("td:first", nRow).html(index);
+					return nRow;
+				}
+			});
+
+	}
 
 	</script>
 }
-
-

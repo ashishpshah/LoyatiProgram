@@ -153,7 +153,7 @@
 							</a>
 						</li>
 
-						@if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.ParentMenuId > 0).GroupBy(x => new { x.ParentMenuId, x.Id }).Select(x => x.Key).Count() > 1)
+						@if (listMenu != null && listMenu.Count() > 0 && listMenu.GroupBy(x => new { x.ParentMenuId, x.Id }).Select(x => x.Key).Count() > 1)
 						{
 							//if (listMenu.Where(x => x.ParentMenuId > 0).GroupBy(x => x.ParentMenuId).Select(x => x.Key).Count() == 1)
 							//listMenu.RemoveAll(x => x.Id == listMenu.Where(x => x.ParentMenuId > 0).GroupBy(x => x.ParentMenuId).Select(x => x.Key).FirstOrDefault());

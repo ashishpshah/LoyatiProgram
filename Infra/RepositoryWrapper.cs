@@ -30,19 +30,19 @@ namespace Seed_Admin
 
 		public PagedResult Get(int start = 0, int length = 10, string? sortColumn = "", string? sortColumnDir = "asc", string? searchValue = "")
 		{
-			var users = context.Set<T>().AsNoTracking().AsQueryable();
+			var list = context.Set<T>().AsNoTracking().AsQueryable();
 
-			var recordsTotal = users.Count();
+			var recordsTotal = list.Count();
 
 			if (!string.IsNullOrEmpty(searchValue))
-				users = users.SearchAnyProperty(searchValue);
+				list = list.SearchAnyProperty(searchValue);
 
 			if (!string.IsNullOrEmpty(sortColumn) && !string.IsNullOrEmpty(sortColumnDir))
-				users = sortColumnDir.ToLower() == "asc"
-					? users.OrderByDynamic(sortColumn)
-					: users.OrderByDynamic(sortColumn, true);
+				list = sortColumnDir.ToLower() == "asc"
+					? list.OrderByDynamic(sortColumn)
+					: list.OrderByDynamic(sortColumn, true);
 
-			var pagedData = users.Skip(start).Take(length).ToList<T>();
+			var pagedData = list.Skip(start).Take(length).ToList<T>();
 
 			return new PagedResult
 			{

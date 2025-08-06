@@ -7,15 +7,15 @@ using System.Text;
 
 namespace Seed_Admin.Infra
 {
-    public partial class DataContext : DbContext
+	public partial class DataContext : DbContext
 	{
 		public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
-        public virtual DbSet<LoyaltyPoint> LoyaltyPoints { get; set; }
+		public virtual DbSet<LoyaltyPoint> LoyaltyPoints { get; set; }
 
-        public virtual DbSet<LoyaltyPointsQrcode> LoyaltyPointsQrcodes { get; set; }
+		public virtual DbSet<LoyaltyPointsQrcode> LoyaltyPointsQrcodes { get; set; }
 
-        public virtual DbSet<Menu> Menus { get; set; }
+		public virtual DbSet<Menu> Menus { get; set; }
 		public virtual DbSet<Role> Roles { get; set; }
 		public virtual DbSet<User> Users { get; set; }
 		public virtual DbSet<UserMenuAccess> UserMenuAccesses { get; set; }
@@ -28,22 +28,22 @@ namespace Seed_Admin.Infra
 
 			modelBuilder.HasDefaultSchema("padhyaso_seed");
 
-            modelBuilder.Entity<LoyaltyPoint>(entity =>
-            {
-                entity.ToTable("LoyaltyPoints", "dbo");
+			modelBuilder.Entity<LoyaltyPoint>(entity =>
+			{
+				entity.ToTable("LoyaltyPoints", "dbo");
 
-                entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
-                entity.Property(e => e.QrcodeId).HasColumnName("QRCodeId");
-            });
+				entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
+				entity.Property(e => e.QrcodeId).HasColumnName("QRCodeId");
+			});
 
-            modelBuilder.Entity<LoyaltyPointsQrcode>(entity =>
-            {
-                entity.ToTable("LoyaltyPoints_QRCode", "dbo");
+			modelBuilder.Entity<LoyaltyPointsQrcode>(entity =>
+			{
+				entity.ToTable("LoyaltyPoints_QRCode", "dbo");
 
-                entity.Property(e => e.Qrcode).HasColumnName("QRCode");
-            });
+				entity.Property(e => e.Qrcode).HasColumnName("QRCode");
+			});
 
-            modelBuilder.Entity<User>(entity =>
+			modelBuilder.Entity<User>(entity =>
 			{
 				entity.HasKey(e => e.Id).HasName("PK_Users_1");
 

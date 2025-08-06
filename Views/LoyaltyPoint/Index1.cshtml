@@ -1,0 +1,128 @@
+﻿@model ResponseModel<LoyaltyPoint>
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Loyalty Point</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@if (Common.IsAdmin() && Model.IsCreate == true)
+					{
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LoyaltyPoint")');">
+							<i class="fas fa-plus"></i> &nbsp; Add new item
+						</button>
+					}
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gooters">
+			<section class="col-md-12">
+				<div class="card">
+					<div class="card-header divformSave_Display d-none" style="margin: 5px !important;">
+						<form id="formSave" action="@Url.Action("Save","LoyaltyPoint")" method="post">
+							<div class="row no-gutters" id="divformSave"></div>
+							<div class="clearfix"></div>
+							<hr />
+						</form>
+					</div>
+
+					<div class="card-body">
+						<div class="row no-gooters divformSave_Hide">
+							<div class="col-md-12 my-1">
+								<table class="table table-bordered table-striped table-hover w-100" id="dataTable_LoyaltyPoint"></table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+
+@section Scripts {
+
+	<script type="text/javascript">
+
+		  let dataTableMain = {};
+
+		  $(function () { fnLoadTableData(); });
+
+			  function fnLoadTableData() {
+		  if ($.fn.DataTable.isDataTable('#dataTable_LoyaltyPoint')) {
+			  $('#dataTable_LoyaltyPoint').DataTable().destroy();
+		  }
+
+		dataTableMain = $("#dataTable_LoyaltyPoint").DataTable({
+		  "destroy": true,
+		"pageLength": 50,
+		  "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+		  "bServerSide": true,
+		"bServerSide": true,
+		   "bProcessing": true,
+		  "bSearchable": true,
+		   "scrollX": true,
+		  "order": [[0, 'asc']],
+		   "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+			  "fnServerParams": function (aoData) {
+			   aoData.push({ "name": "RequestNo", "value": "" + $('#RequestNo').val() });
+				  aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
+			  aoData.push({ "name": "VendorCode", "value": "" + $('#VendorCode').val() });
+			   aoData.push({ "name": "ProductId", "value": "" + $('#SKU option:selected').val() });
+			aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+			  aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+			aoData.push({ "name": "Type", "value": "SEARCH" });
+		},
+		  "columns": [
+			{ "title": "No.", "data": "srNo", "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+			  { "title": "Request No.", "data": "requestNo", "autoWidth": true, "searchable": true },
+			{ "title": "Request Date", "data": "requestDate_Text", "autoWidth": true, "searchable": true },
+			{ "title": "Vendor Code", "data": "vendorCode", "autoWidth": true, "searchable": true },
+			  { "title": "Vendor", "data": "vendorName", "autoWidth": true, "searchable": true },
+			{ "title": "Vendor Site", "data": "vendorSiteName", "autoWidth": true, "searchable": true },
+			{ "title": "SKU Description ", "data": "skuDesc", "autoWidth": true, "searchable": true },
+			{ "title": "Total Quantity ", "data": "totalQty", "autoWidth": true, "searchable": true },
+			{ "title": "Required Quantity", "data": "requestQty", "autoWidth": true, "searchable": true },
+			{ "title": "Remaining Quantity", "data": "remainQty", "autoWidth": true, "searchable": true },
+			{ "title": "Email Send", "data": "fileEmailSend", "autoWidth": true, "searchable": true },
+			{ "title": "Status", "data": "requestStatus", "autoWidth": true, "searchable": true },
+			  {
+				"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+				"render": function (data, type, row, meta) {
+					return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" onclick="fnShow_Modal(\'@Url.Action("Partial_AddEditForm", "QRCode", new { area = "Admin" })?Id=' + data.id + '\', \'View QR Code Requests\', false, \'html\', false)"><span><i class="far fa-edit"></i></span></a></div>';
+				  }
+			 }
+		  ],
+		  });
+
+		  }
+
+		  function fnSubmitForm_Success(response, $id) {
+
+			  ShowLoader(false);
+
+			  if (typeof $id != 'undefined' && $id != null && $id.length > 0 && $id == 'AJAX') {
+				  fnShow_Modal('@Url.Action("Partial_AddEditForm", "QRCode", new { area = "Admin" })?Id=' + response.data1, 'View QR Code Requests', false, 'html', false);
+			  }
+		  }
+	</script>
+}
+
