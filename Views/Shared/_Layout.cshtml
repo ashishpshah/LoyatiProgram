@@ -84,6 +84,11 @@
 				text-align: left !important;
 			}
 		}
+
+		table th, table td {
+			align-content: center !important;
+		}
+
 	</style>
 
 	<link rel="stylesheet" href="~/Seed_Admin.styles.css" asp-append-version="true" />
@@ -163,55 +168,55 @@
 								{
 									if (listMenu.Any(x => x.ParentMenuId == menu.Key.Id))
 									{
-										<li class="nav-item" style="padding-top:5px !important">
-											<a href="#" class="nav-link">
-												<i class="nav-icon fas fa-tachometer-alt"></i>
-												<p>
+														<li class="nav-item" style="padding-top:5px !important">
+															<a href="#" class="nav-link">
+																<i class="nav-icon fas fa-tachometer-alt"></i>
+																<p>
 													@menu.Key.MenuName
-													<i class="right fas fa-angle-left"></i>
-												</p>
-											</a>
-											<ul class="nav nav-treeview">
+																	<i class="right fas fa-angle-left"></i>
+																</p>
+															</a>
+															<ul class="nav nav-treeview">
 												@foreach (var menuChild in listMenu.Where(x => x.ParentMenuId == menu.Key.Id).OrderBy(x => x.DisplayOrder))
 												{
-													<li class="nav-item ml-3">
+																		<li class="nav-item ml-3">
 														@if (string.IsNullOrEmpty(menuChild.Url))
 														{
-															<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.MenuName" class="nav-link">
-																<i class="nav-icon fas fa-th"></i>
-																<p>@menuChild.MenuName</p>
-															</a>
+																					<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.MenuName" class="nav-link">
+																						<i class="nav-icon fas fa-th"></i>
+																						<p>@menuChild.MenuName</p>
+																					</a>
 														}
 														else
 														{
-															<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.MenuName" class="nav-link">
-																<i class="nav-icon fas fa-th"></i>
-																<p>@menuChild.MenuName</p>
-															</a>
+																					<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.MenuName" class="nav-link">
+																						<i class="nav-icon fas fa-th"></i>
+																						<p>@menuChild.MenuName</p>
+																					</a>
 														}
-													</li>
+																		</li>
 												}
-											</ul>
-										</li>
+															</ul>
+														</li>
 									}
 									else
 									{
-										<li class="nav-item">
+														<li class="nav-item">
 											@if (string.IsNullOrEmpty(menu.Key.Url))
 											{
-												<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
-													<i class="nav-icon fas fa-th"></i>
-													<p> @menu.Key.MenuName </p>
-												</a>
+																	<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
+																		<i class="nav-icon fas fa-th"></i>
+																		<p> @menu.Key.MenuName </p>
+																	</a>
 											}
 											else
 											{
-												<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
-													<i class="nav-icon fas fa-th"></i>
-													<p>@menu.Key.MenuName</p>
-												</a>
+																	<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
+																		<i class="nav-icon fas fa-th"></i>
+																		<p>@menu.Key.MenuName</p>
+																	</a>
 											}
-										</li>
+														</li>
 										// <li class="nav-item">
 										//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
 										//         <i class="nav-icon fas fa-th"></i>
@@ -224,22 +229,22 @@
 							{
 								foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.MenuName, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
 								{
-									<li class="nav-item">
+												<li class="nav-item">
 										@if (string.IsNullOrEmpty(menu.Key.Url))
 										{
-											<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
-												<i class="nav-icon fas fa-th"></i>
-												<p> @menu.Key.MenuName </p>
-											</a>
+															<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
+																<i class="nav-icon fas fa-th"></i>
+																<p> @menu.Key.MenuName </p>
+															</a>
 										}
 										else
 										{
-											<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
-												<i class="nav-icon fas fa-th"></i>
-												<p>@menu.Key.MenuName</p>
-											</a>
+															<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
+																<i class="nav-icon fas fa-th"></i>
+																<p>@menu.Key.MenuName</p>
+															</a>
 										}
-									</li>
+												</li>
 								}
 							}
 						}

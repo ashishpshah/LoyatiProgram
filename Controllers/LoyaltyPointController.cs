@@ -2,6 +2,7 @@
 using Seed_Admin.Infra;
 using Microsoft.AspNetCore.Mvc;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Newtonsoft.Json.Linq;
 
 namespace Seed_Admin.Areas.Admin.Controllers
 {
@@ -18,7 +19,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
 
 		[HttpGet]
-		public IActionResult GetData(int start = 0, int length = 10, string? sortColumn = "", string? sortColumnDir = "asc", string? searchValue = "")
+		public IActionResult GetData(JqueryDatatableParam param)
 		{
 			var result = new PagedResult();
 
@@ -39,12 +40,13 @@ namespace Seed_Admin.Areas.Admin.Controllers
 					return new LoyaltyPointViewModel
 					{
 						QrCodeId = x.Id,
+						QrCode_Base64 = x.QRCode_Base64,
 						QrCode = x.Qrcode,
+						Points = x.Points,
 						IsClaimed = x.IsScanned,
 
 						UserId = lp?.UserId ?? 0,
 						ClaimedBy = user?.PersonName ?? "",
-						Points = lp?.Points ?? 0,
 						ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
 						GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
 						ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
@@ -56,261 +58,144 @@ namespace Seed_Admin.Areas.Admin.Controllers
 				IEnumerable<LoyaltyPointViewModel> query = list;
 
 				// Filter (Search)
-				if (!string.IsNullOrWhiteSpace(searchValue))
+				if (!string.IsNullOrWhiteSpace(param.sSearch))
 				{
 					query = query.Where(x =>
-						(x.QrCode?.Contains(searchValue, StringComparison.OrdinalIgnoreCase) ?? false) ||
-						(x.ClaimedBy?.Contains(searchValue, StringComparison.OrdinalIgnoreCase) ?? false) ||
-						x.Points.ToString().Contains(searchValue) ||
-						x.ClaimedDate_Text.Contains(searchValue) ||
-						x.GenerateDate_Text.Contains(searchValue)
+						(x.QrCode?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
+						(x.ClaimedBy?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
+						x.Points.ToString().Contains(param.sSearch) ||
+						x.ClaimedDate_Text.Contains(param.sSearch) ||
+						x.GenerateDate_Text.Contains(param.sSearch)
 					);
 				}
 
 				// Sort
+				string sortColumn = HttpContext.Request.Query.ContainsKey("iSortCol_0") && HttpContext.Request.Query.ContainsKey($"mDataProp_{HttpContext.Request.Query["iSortCol_0"]}") ? Convert.ToString(HttpContext.Request.Query[$"mDataProp_{HttpContext.Request.Query["iSortCol_0"]}"]) : "";
+
 				query = sortColumn?.ToLower() switch
 				{
-					"qrcode" => sortColumnDir == "asc" ? query.OrderBy(x => x.QrCode) : query.OrderByDescending(x => x.QrCode),
-					"points" => sortColumnDir == "asc" ? query.OrderBy(x => x.Points) : query.OrderByDescending(x => x.Points),
-					"generatedate_text" => sortColumnDir == "asc" ? query.OrderBy(x => x.GenerateDate_Ticks) : query.OrderByDescending(x => x.GenerateDate_Ticks),
-					"isclaimed_text" => sortColumnDir == "asc" ? query.OrderBy(x => x.IsClaimed) : query.OrderByDescending(x => x.IsClaimed),
-					"claimedby" => sortColumnDir == "asc" ? query.OrderBy(x => x.ClaimedBy) : query.OrderByDescending(x => x.ClaimedBy),
-					"claimeddate_text" => sortColumnDir == "asc" ? query.OrderBy(x => x.ClaimedDate_Ticks) : query.OrderByDescending(x => x.ClaimedDate_Ticks),
+					"qrcode" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.QrCode) : query.OrderByDescending(x => x.QrCode),
+					"points" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.Points) : query.OrderByDescending(x => x.Points),
+					"generatedate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.GenerateDate_Ticks) : query.OrderByDescending(x => x.GenerateDate_Ticks),
+					"isclaimed_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.IsClaimed) : query.OrderByDescending(x => x.IsClaimed),
+					"claimedby" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.ClaimedBy) : query.OrderByDescending(x => x.ClaimedBy),
+					"claimeddate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.ClaimedDate_Ticks) : query.OrderByDescending(x => x.ClaimedDate_Ticks),
 					_ => query.OrderByDescending(x => x.GenerateDate_Ticks)
 				};
 
 				// Pagination
-				var pagedData = query.Skip(start).Take(length).ToList();
+				var pagedData = param.iDisplayLength > -1 ? query.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToList() : query.ToList();
 
-				result = new PagedResult
-				{
-					StartIndex = start,
-					Length = length,
-					RecordsFiltered = pagedData.Count,
-					RecordsTotal = recordsTotal,
-					Data = pagedData
-				};
+				return Json(new { param.sEcho, iTotalRecords = pagedData.Count(), iTotalDisplayRecords = recordsTotal, aaData = pagedData }, new System.Text.Json.JsonSerializerOptions());
 			}
 			catch (Exception ex) { }
 
-			CommonViewModel.IsSuccess = true;
-			CommonViewModel.StatusCode = ResponseStatusCode.Success;
-			CommonViewModel.Data = result;
-
-			return Ok(CommonViewModel);
+			return Json(new { param.sEcho, iTotalRecords = 0, iTotalDisplayRecords = 0, aaData = new JArray() }, new System.Text.Json.JsonSerializerOptions());
 		}
 
 
-		////[CustomAuthorizeAttribute(AccessType_Enum.Read)]
-		//public ActionResult Partial_AddEditForm(long Id = 0)
-		//{
-		//	CommonViewModel.Obj = new LoyaltyPoint();
+		//[CustomAuthorizeAttribute(AccessType_Enum.Read)]
+		public ActionResult Partial_AddEditForm(int NoOfRows = 1, int minValue = 10, int maxValue = 35)
+		{
+			List<(string QRCode, string QRCode_Base64, int Point)> list = new List<(string QRCode, string QRCode_Base64, int Point)>();
 
-		//	if (Common.IsAdmin() && Id > 1)
-		//		CommonViewModel.Obj = _context.Using<LoyaltyPoint>().GetByCondition(x => x.Id == Id).FirstOrDefault();
+			long tick = DateTime.UtcNow.Ticks;
 
-		//	var listMenu = _context.Using<Menu>().GetAll().ToList();
+			for (int i = 1; i <= NoOfRows; i++)
+			{
+				string qrText = $"{tick}-{i}";
+				string base64Image = Common.GenerateQrAsBase64(qrText);
 
-		//	foreach (var item in listMenu.Where(x => x.ParentId > 0).ToList())
-		//		item.ParentMenuName = listMenu.Where(x => x.Id == item.ParentId).Select(x => x.Name).FirstOrDefault();
+				list.Add((qrText, base64Image, new Random().Next(minValue, maxValue)));
 
-		//	CommonViewModel.SelectListItems = new List<SelectListItem_Custom>();
+			}
 
-		//	//var list = _context.Using<LoyaltyPointMenuAccess>().GetByCondition(x => x.LoyaltyPointId == CommonViewModel.Obj.Id).ToList();
+			CommonViewModel.Data = list;
 
-		//	//if (list != null && list.Count() > 0)
-		//	//{
-		//	//	string[] selected = (from x in list
-		//	//						 join y in listMenu on x.MenuId equals y.Id
-		//	//						 where !y.Name.ToLower().Contains("menu") && !y.Name.ToLower().Contains("menu")
-		//	//						 select Convert.ToString(x.MenuId + "_" + y.ParentId)).ToArray();
+			return PartialView("_Partial_AddEditForm", CommonViewModel);
+		}
 
-		//	//	if (selected != null && selected.Length > 0)
-		//	//		CommonViewModel.Obj.CreatedDate_Text = string.Join(",", selected) + ",";
-		//	//}
+		[HttpPost]
+		//[CustomAuthorizeAttribute(AccessType_Enum.Write)]
+		public ActionResult Save(List<LoyaltyPointsQrcode> listQrcode)
+		{
+			try
+			{
+				if (listQrcode != null)
+				{
+					#region Validation
 
-		//	if (CommonViewModel.SelectListItems == null) CommonViewModel.SelectListItems = new List<SelectListItem_Custom>();
+					if (!Common.IsAdmin())
+					{
+						CommonViewModel.IsSuccess = false;
+						CommonViewModel.StatusCode = ResponseStatusCode.Error;
+						CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
 
-		//	return PartialView("_Partial_AddEditForm", CommonViewModel);
-		//}
+						return Json(CommonViewModel);
+					}
 
-		//[HttpPost]
-		////[CustomAuthorizeAttribute(AccessType_Enum.Write)]
-		//public ActionResult Save(LoyaltyPoint viewModel)
-		//{
-		//	try
-		//	{
-		//		viewModel = viewModel != null && !Common.IsSuperAdmin() && viewModel.Id == Common.LoggedUser_LoyaltyPointId() ? null : viewModel;
+					if (listQrcode.Count() <= 0)
+					{
+						CommonViewModel.IsSuccess = false;
+						CommonViewModel.StatusCode = ResponseStatusCode.Error;
+						CommonViewModel.Message = "Please enter data of QR Code.";
 
-		//		if (viewModel != null)
-		//		{
-		//			#region Validation
+						return Json(CommonViewModel);
+					}
 
-		//			if (!Common.IsAdmin())
-		//			{
-		//				CommonViewModel.IsSuccess = false;
-		//				CommonViewModel.StatusCode = ResponseStatusCode.Error;
-		//				CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
+					var normalizedQrStrings = listQrcode.Select(z => z.Qrcode.ToLower().Replace(" ", "")).ToList();
 
-		//				return Json(CommonViewModel);
-		//			}
+					var existingNormalizedQrs = _context.Using<LoyaltyPointsQrcode>().GetByCondition(q => normalizedQrStrings.Contains(q.Qrcode)).Select(x => x.Qrcode.ToLower().Replace(" ", "")).ToList();
 
-		//			if (string.IsNullOrEmpty(viewModel.Name))
-		//			{
-		//				CommonViewModel.IsSuccess = false;
-		//				CommonViewModel.StatusCode = ResponseStatusCode.Error;
-		//				CommonViewModel.Message = "Please enter LoyaltyPoint name.";
+					if (existingNormalizedQrs != null && existingNormalizedQrs.Count() > 0)
+					{
+						CommonViewModel.IsSuccess = false;
+						CommonViewModel.StatusCode = ResponseStatusCode.Error;
+						CommonViewModel.Message = "QR Code " + string.Join(", ", existingNormalizedQrs.ToArray()) + " already exist. Please try another QR Code.";
 
-		//				return Json(CommonViewModel);
-		//			}
+						return Json(CommonViewModel);
+					}
 
-		//			if (_context.Using<LoyaltyPoint>().Any(x => x.Name.ToLower().Replace(" ", "") == viewModel.Name.ToLower().Replace(" ", "") && x.Id != viewModel.Id) || viewModel.Id == 1)
-		//			{
-		//				CommonViewModel.IsSuccess = false;
-		//				CommonViewModel.StatusCode = ResponseStatusCode.Error;
-		//				CommonViewModel.Message = "LoyaltyPoint already exist. Please try another LoyaltyPoint.";
+					#endregion
 
-		//				return Json(CommonViewModel);
-		//			}
+					#region Database-Transaction
 
-		//			#endregion
+					using (var transaction = _context.BeginTransaction())
+					{
+						try
+						{
+							foreach (var item in listQrcode)
+							{
+								item.QRCode_Base64 = Common.GenerateQrAsBase64(item.Qrcode);
 
-		//			#region Database-Transaction
+								var _viewModel = _context.Using<LoyaltyPointsQrcode>().Add(item);
+								item.Id = _viewModel.Id;
+							}
 
-		//			using (var transaction = _context.BeginTransaction())
-		//			{
-		//				try
-		//				{
-		//					LoyaltyPoint obj = _context.Using<LoyaltyPoint>().GetByCondition(x => x.Id > 1 && x.Id == viewModel.Id).FirstOrDefault();
+							CommonViewModel.IsConfirm = true;
+							CommonViewModel.IsSuccess = true;
+							CommonViewModel.StatusCode = ResponseStatusCode.Success;
+							CommonViewModel.Message = ResponseStatusMessage.Success;
+							CommonViewModel.RedirectURL = Url.Action("Index", "LoyaltyPoint");
 
-		//					if (viewModel != null && !(viewModel.DisplayOrder > 0))
-		//						viewModel.DisplayOrder = (_context.Using<LoyaltyPoint>().GetAll().ToList().Max(x => x.DisplayOrder) ?? 0) + 1;
+							transaction.Commit();
 
-		//					if (Common.IsAdmin() && obj != null)
-		//					{
-		//						obj.Name = viewModel.Name;
-		//						obj.DisplayOrder = viewModel.DisplayOrder;
-		//						obj.IsAdmin = Common.IsSuperAdmin() ? viewModel.IsAdmin : false;
-		//						obj.IsActive = viewModel.IsActive;
+							return Json(CommonViewModel);
+						}
+						catch (Exception ex) { transaction.Rollback(); }
+					}
 
-		//						_context.Using<LoyaltyPoint>().Update(obj);
-		//						//_context.Entry(obj).State = EntityState.Modified;
-		//						//_context.SaveChanges();
-		//					}
-		//					else if (Common.IsAdmin())
-		//					{
-		//						viewModel.IsAdmin = Common.IsSuperAdmin() ? viewModel.IsAdmin : false;
+					#endregion
+				}
+			}
+			catch (Exception ex) { }
 
-		//						var _viewModel = _context.Using<LoyaltyPoint>().Add(viewModel);
-		//						viewModel.Id = _viewModel.Id;
-		//						//_context.SaveChanges();
-		//						//_context.Entry(viewModel).Reload();
-		//					}
+			CommonViewModel.Message = ResponseStatusMessage.Error;
+			CommonViewModel.IsSuccess = false;
+			CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
-		//					try
-		//					{
-		//						var listLoyaltyPointMenuAccesses = _context.Using<LoyaltyPointMenuAccess>().GetByCondition(x => x.LoyaltyPointId == viewModel.Id).ToList();
-
-		//						if (listLoyaltyPointMenuAccesses != null && listLoyaltyPointMenuAccesses.Count() > 0)
-		//						{
-		//							foreach (var access in listLoyaltyPointMenuAccesses)
-		//							{
-		//								_context.Using<LoyaltyPointMenuAccess>().Delete(access);
-		//								//_context.Entry(access).State = EntityState.Deleted;
-		//								//_context.SaveChanges();
-		//							}
-		//						}
-
-		//						if (!string.IsNullOrEmpty(viewModel.CreatedDate_Text))
-		//						{
-		//							var listMenu = _context.Using<Menu>().GetAll().ToList();
-
-		//							List<(long MenuId, long ParentMenuId)> menuPairs = viewModel.CreatedDate_Text.Split(',').Select(pair => pair.Split('_'))
-		//											.Select(parts => (MenuId: long.Parse(parts[0]), ParentMenuId: long.Parse(parts[1]))).ToList();
-
-		//							// Get all unique IDs from MenuId and ParentMenuId
-		//							var allMenuIds = menuPairs.SelectMany(p => new[] { p.MenuId, p.ParentMenuId }).Distinct().ToList();
-
-		//							// Now get actual Menu objects by matching IDs
-		//							var selectedMenus = listMenu.Where(x => x.IsActive == true && allMenuIds.Contains(x.Id)).ToList();
-
-		//							//var list = viewModel.CreatedDate_Text.Split(',');
-
-		//							//foreach (var item in list.Where(x => !string.IsNullOrEmpty(x)))
-		//							foreach (var menu in selectedMenus)
-		//							{
-		//								try
-		//								{
-		//									var LoyaltyPointMenuAccess = new LoyaltyPointMenuAccess()
-		//									{
-		//										//MenuId = Convert.ToInt64(item.Split('_')[0]),
-		//										MenuId = menu.Id,
-		//										LoyaltyPointId = viewModel.Id,
-		//										IsCreate = true,
-		//										IsUpdate = true,
-		//										IsRead = true,
-		//										IsDelete = true,
-		//										IsActive = true,
-		//										IsDeleted = false,
-		//										IsSetDefault = true
-		//									};
-
-		//									_context.Using<LoyaltyPointMenuAccess>().Add(LoyaltyPointMenuAccess);
-		//									//_context.SaveChanges();
-		//								}
-		//								catch (Exception ex) { continue; }
-		//							}
-
-
-		//							try
-		//							{
-		//								var listUserMenuAccesses = _context.Using<UserMenuAccess>().GetByCondition(x => x.LoyaltyPointId == viewModel.Id).ToList();
-
-		//								foreach (var access in listUserMenuAccesses) _context.Using<UserMenuAccess>().Delete(access);
-		//								//_context.Entry(access).State = EntityState.Deleted;
-		//								//_context.SaveChanges();
-
-		//								foreach (var menu in selectedMenus.OrderBy(x => x.Id).ToList())
-		//								{
-		//									var listLoyaltyPointUserAccess = (from x in _context.Using<UserLoyaltyPointMapping>().GetAll().ToList()
-		//															  where x.LoyaltyPointId == viewModel.Id && x.UserId > 0 && x.IsActive == true && x.IsDeleted == false
-		//															  select new UserMenuAccess() { UserId = x.UserId, LoyaltyPointId = viewModel.Id, MenuId = menu.Id, IsCreate = true, IsUpdate = true, IsRead = true, IsDelete = true, CreatedBy = 1 }).ToList();
-
-		//									foreach (var item_ in listLoyaltyPointUserAccess) _context.Using<UserMenuAccess>().Add(item_);
-		//									//_context.SaveChanges();
-		//								}
-		//							}
-		//							catch (Exception ex) { }
-
-		//						}
-
-		//					}
-		//					catch (Exception ex) { }
-
-		//					CommonViewModel.IsConfirm = true;
-		//					CommonViewModel.IsSuccess = true;
-		//					CommonViewModel.StatusCode = ResponseStatusCode.Success;
-		//					CommonViewModel.Message = ResponseStatusMessage.Success;
-		//					CommonViewModel.RedirectURL = Url.Action("Index", "LoyaltyPoint");
-
-		//					transaction.Commit();
-
-		//					return Json(CommonViewModel);
-		//				}
-		//				catch (Exception ex) { transaction.Rollback(); }
-		//			}
-
-		//			#endregion
-		//		}
-		//	}
-		//	catch (Exception ex) { }
-
-		//	CommonViewModel.Message = ResponseStatusMessage.Error;
-		//	CommonViewModel.IsSuccess = false;
-		//	CommonViewModel.StatusCode = ResponseStatusCode.Error;
-
-		//	return Json(CommonViewModel);
-		//}
+			return Json(CommonViewModel);
+		}
 
 		[HttpPost]
 		//[CustomAuthorizeAttribute(AccessType_Enum.Delete)]

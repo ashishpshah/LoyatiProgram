@@ -27,29 +27,6 @@ namespace Seed_Admin.Controllers
 			return View(CommonViewModel);
 		}
 
-
-		[HttpGet]
-		public IActionResult Get(int start = 0, int length = 10, string? sortColumn = "", string? sortColumnDir = "asc", string? searchValue = "")
-		{
-			try
-			{
-				var data = _context.Using<User>().Get(start, length, sortColumn, sortColumnDir, searchValue);
-
-				CommonViewModel.IsSuccess = true;
-				CommonViewModel.StatusCode = ResponseStatusCode.Success;
-				CommonViewModel.Data = data;
-			}
-			catch (Exception ex)
-			{
-				CommonViewModel.IsSuccess = false;
-				CommonViewModel.StatusCode = ResponseStatusCode.Error;
-				CommonViewModel.Message = ResponseStatusMessage.Error;
-			}
-
-			return Ok(CommonViewModel);
-		}
-
-
 		public ActionResult Partial_AddEditForm(long Id = 0)
 		{
 			CommonViewModel.Obj = new User();

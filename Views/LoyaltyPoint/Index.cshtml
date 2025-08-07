@@ -3,7 +3,6 @@
 	Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-
 <div class="content-header">
 	<div class="container-fluid">
 		<div class="row mb-2">
@@ -14,7 +13,7 @@
 				<div class="float-sm-right">
 					@if (Common.IsAdmin() && Model.IsCreate == true)
 					{
-						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LoyaltyPoint")');">
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView_Custom();">
 							<i class="fas fa-plus"></i> &nbsp; Add new item
 						</button>
 					}
@@ -34,7 +33,7 @@
 				<div class="card">
 					<div class="card-header divformSave_Display d-none" style="margin: 5px !important;">
 						<form id="formSave" action="@Url.Action("Save","LoyaltyPoint")" method="post">
-							<div class="row no-gutters" id="divformSave"></div>
+							<div class="row no-gutters" id="divformSave"> </div>
 							<div class="clearfix"></div>
 							<hr />
 						</form>
@@ -59,23 +58,74 @@
 
 	<script type="text/javascript">
 
-	var dataTableMain = null;
+		var dataTableMain = null;
 
-	$(document).ready(function () {
-		setTimeout(function () {
-			fnLoadTableData();
-		}, 1000);
-	});
+		const inputValue = 1;
+		const inputStep = 1;
 
-	function fnLoadTableData() {
-		if ($.fn.DataTable.isDataTable('#dataTable_VendorPO')) {
-			$('#dataTable_VendorPO').DataTable().destroy();
+		$(document).ready(function () {
+			setTimeout(function () {
+				fnLoadTableData();
+			}, 1000);
+		});
+
+		function fnLoadParialView_Custom() {
+			Swal.fire({
+				title: 'How many QR Code do you want to Generate ?',
+				//html: `<input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">`,
+				html: `
+																					<div class="mb-3">
+																					  <label>Enter Quantity</label>
+																					  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
+																					  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
+																					</div>
+
+																					<div class="mt-4">
+																					  <label>Select Min-Max Points</label>
+																					  <div id="bootstrap-range-slider" style="margin: 30px 10px;"></div>
+																					  <div class="d-flex justify-content-center mt-2">
+																						<input type="number" id="minValue" class="form-control mr-2 text-center" style="width: 100px;" value="10" max="100" />
+																										<input type="number" id="maxValue" class="form-control ml-2 text-center" style="width: 100px;" value="35" max="100" />
+																					  </div>
+																					</div>
+																				  `,
+				// input: 'range',
+				// inputValue,
+				// inputAttributes: { min: '1', max: '25', step: inputStep.toString(), },
+				didOpen: () => {
+					const $popup = $(Swal.getPopup());
+					const $inputNumber = $popup.find('#range-value');
+					const $inputRange = $popup.find('#range-slider');
+					$inputRange.on('input', function () { $inputNumber.val($(this).val()); });
+					$inputNumber.on('change', function () { $inputRange.val($(this).val()); });
+
+				},
+				showCancelButton: true,
+				confirmButtonText: 'Generate'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					debugger;
+
+					const minInput = $($(Swal.getPopup())).find('#minValue');
+					const maxInput = $($(Swal.getPopup())).find('#maxValue');
+
+					fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPoint")?NoOfRows=' + $($(Swal.getPopup())).find('#range-value').val() + '&minValue=' + minInput + '&maxValue=' + maxInput);
+				}
+				else dataTableMain.ajax.reload();
+
+			})
+
 		}
 
-		dataTableMain = $("#dataTable_VendorPO").DataTable({
+		function fnLoadTableData() {
+			if ($.fn.DataTable.isDataTable('#dataTable_LoyaltyPoint')) {
+				$('#dataTable_LoyaltyPoint').DataTable().destroy();
+			}
+
+			dataTableMain = $("#dataTable_LoyaltyPoint").DataTable({
 				"destroy": true,
 				"pageLength": 50,
-				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], 
+				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
 				"sAjaxSource": "@Url.Action("GetData", "LoyaltyPoint")",
 				"bServerSide": true,
 				"bProcessing": true,
@@ -86,19 +136,22 @@
 					//aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
 				},
 				"columns": [
-					{ "title": "#", "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
-					{ "title": "QR Code", "data": "qrCode", "autoWidth": true, "searchable": true },
-					{ "title": "Points", "data": "points", "autoWidth": true, "searchable": true },
-					{ "title": "Generate Date", "data": "generateDate_Text", "autoWidth": true, "searchable": true },
-					{ "title": "Is Claimed ?", "data": "isClaimed_Text", "autoWidth": true, "searchable": true },
-					{ "title": "Claimed By", "data": "claimedBy", "autoWidth": true, "searchable": true },
-					{ "title": "Claimed Date", "data": "claimedDate_Text", "autoWidth": true, "searchable": true },
+					{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+					{
+						"title": "QR Code", "data": null, "autoWidth": false, "searchable": false,
+						"render": function (data, type, row, meta) {
+							return '<img src="data:image/png;base64,' + data.QrCode_Base64 + '" class="img-fluid" width="100" alt="QR Code">';
+						}
+					},
+					{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },
+					{ "title": "Generate Date", "data": "GenerateDate_Text", "autoWidth": true, "searchable": true },
+					{ "title": "Is Claimed ?", "data": "IsClaimed_Text", "autoWidth": true, "searchable": true },
+					{ "title": "Claimed By", "data": "ClaimedBy", "autoWidth": true, "searchable": true },
+					{ "title": "Claimed Date", "data": "ClaimedDate_Text", "autoWidth": true, "searchable": true },
 					{
 						"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
 						"render": function (data, type, row, meta) {
-							return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" onclick="fnLoadParialView(\'divformSave\', \'@Url.Action("Partial_AddEditForm", "LoyaltyPoint")?Id=' + data.id + '\')"><span class="nme"><i class="far fa-edit"></i></span></a>' +
-								//'<a class="btn btn-danger btn-sm btn-flat ml-2" href="javascript:void(0);" onclick="divShow(\'/DeleteConfirmed?Id=' + data.id + '\');"><span class="nme"><i class="far fa-trash-alt"></i></span></a>' +
-								'</div>';
+							return '<div class="btn-group"><a class="btn btn-danger btn-sm btn-flat ml-2" href="javascript:void(0);" onclick="divShow(\'/DeleteConfirmed?Id=' + data.id + '\');"><span class="nme"><i class="far fa-trash-alt"></i></span></a></div>';
 						}
 					}
 				],
@@ -109,7 +162,18 @@
 				}
 			});
 
-	}
+		}
 
+		function fnParialView_Loaded_Success($id, $isAlert) {
+			debugger;
+
+			$('html, body').scrollTop($('#' + $id).offset().top);
+
+		}
+
+		// function fnParialView_Close_Success($id) {
+		// 	debugger;
+		// 	dataTableMain.ajax.reload();
+		// }
 	</script>
 }

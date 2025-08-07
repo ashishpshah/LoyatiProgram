@@ -23,6 +23,7 @@ public partial class LoyaltyPointViewModel
 	public string ClaimedBy { get; set; }
 
 	public long QrCodeId { get; set; }
+	public string QrCode_Base64 { get; set; }
 	public string QrCode { get; set; }
 
 	public decimal Points { get; set; }

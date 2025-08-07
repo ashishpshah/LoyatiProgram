@@ -1,103 +1,82 @@
-﻿@model ResponseModel<Role>
+﻿@model ResponseModel<LoyaltyPointViewModel>
 
-@{ Layout = null; }
+@{
+	Layout = null;
+}
 
 <div class="col-md-12">
-    <div class="card card-info">
+	<div class="card">
 
-        <div class="card-header">
-            <h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit": "Create") Role</h3>
-            <input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
-        </div>
+		<div class="card-header border-transparent">
+			<h3 class="card-title">Generate QR Code for Loyalty Point</h3>
+			<div class="card-tools">
+				@* <button type="button" class="btn btn-sm btn-info float-right">
+				<i class="fas fa-plus"></i> Add New Record(s)
+				</button> *@
 
-        <div class="card-body">
-            <div class="row no-gutters">
-                <div class="col-12">
-                    <div class="form-group row">
-                        <label for="Name" class="col-sm-2 col-form-label text-right">Name</label>
-                        <div class="col-sm-6">
-                            <input type="text" class="form-control form-control-sm" id="Name" name="Name" value="@Model.Obj.Name"
-                                   data-required data-msg="The Role Name field is required." placeholder="Role" autocomplete="off">
-                        </div>
-                    </div>
+				<button type="submit" class="btn btn-success btnSubmit">Save</button>
+			</div>
+		</div>
 
-                    @if (Common.IsSuperAdmin())
-                    {
-                        <div class="form-group row">
-                            <label for="IsAdmin" class="col-sm-2 col-form-label text-right">Admin</label>
-                            <div class="col-sm-4">
-                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0">
-                                    <input type="checkbox" class="custom-control-input"
-                                           id="switch_Admin" name="IsAdmin" @(Model.Obj == null || Model.Obj.IsAdmin == true ? "checked" : "")
-                                           onchange="fnChange_Switch(this, 'label_Switch_Admin')">
-                                    <label class="custom-control-label" for="switch_Admin" id="label_Switch_Admin" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.IsAdmin == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active":"Inactive")</label>
-                                </div>
-                            </div>
-                        </div>
-                    }
+		<div class="card-body p-0">
+			<div class="table-responsive">
+				<table class="table table-bordered table-striped m-0">
+					<thead>
+						<tr>
+							<th width="5%" class="text-center">#</th>
+							<th width="10%" class="text-center">QR Code</th>
+							<th class="text-center">QR Code Text</th>
+							<th width="5%" class="text-center">Points</th>
+							<th class="text-center">Generate Date</th>
+							<th width="5%" class="text-center">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model.Data != null)
+						{
+							List<(string QRCode, string QRCode_Base64, int Point)> list = Model.Data as List<(string QRCode, string QRCode_Base64, int Point)>;
 
-                    <div class="form-group row">
-                        <label for="IsActive" class="col-sm-2 col-form-label text-right">Status</label>
-                        <div class="col-sm-4">
-                            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0">
-                                <input type="checkbox" class="custom-control-input"
-                                       id="switch_Status" name="IsActive" @(Model.Obj == null || Model.Obj.IsActive == true || Model.Obj.Id == 0 ? "checked" : "")
-                                       onchange="fnChange_Switch(this, 'label_Switch_Status')">
-                                <label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active":"Inactive")</label>
-                            </div>
-                        </div>
-                    </div>
+							for (int i = 0; i < list.Count(); i++)
+							{
+								<tr>
+									<td width="5%" class="text-center">@(i + 1)</td>
+									<td width="10%" class="text-center">
+										<img src="data:image/png;base64,@list[i].QRCode_Base64" class="img-fluid" width="100" alt="QR Code">
+									</td>
+									<td class="text-center">@list[i].QRCode</td>
+									<td width="5%" class="text-center">
+										<input type="text" class="form-control form-control-sm m-0 d-none" name="listQrcode[@i].Qrcode" value="@list[i].QRCode" autocomplete="off">
+										<input type="text" class="form-control form-control-sm m-0 text-center" name="listQrcode[@i].Points" value="@list[i].Point" autocomplete="off">
+									</td>
+									<td class="text-center">@DateTime.Now.Date.ToString(Common.DateTimeFormat_ddMMyyyy).Replace("-", "/")</td>
+									<td width="5%" class="text-center">
+										<button class="btn btn-danger btn-sm btn-flat" onclick="javascript:function (){ debugger;}"><span class="nme"><i class="far fa-trash-alt"></i></span></button>
+									</td>
+								</tr>
+							}
+						}
 
-                    @if (Common.IsAdmin())
-                    {
-                        var selectedValue = Model.Obj.CreatedDate_Text.Split(',').ToList();
+					</tbody>
+				</table>
+			</div>
+		</div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-2 col-form-label text-right">Select Menu</label>
-                            <div class="col-sm-8 d-flex flex-wrap">
-                                <select multiple id="selectMenu" class="form-control form-control-sm select2 w-100" onchange="fnChange_Select('Menu')">
-                                    <option value="">-- Select --</option>
-                                    @if (Model.SelectListItems != null)
-                                    {
-                                        foreach (var item in Model.SelectListItems.Where(x => x.Group == "M"))
-                                        {
-                                            if (selectedValue != null && selectedValue.Any(x => x == item.Value))
-                                            {
-                                                <option value="@item.Value" selected>@item.Text</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@item.Value">@item.Text</option>
-                                            }
-                                        }
-                                    }
-                                </select>
-
-                                <input type="text" id="inputMenu" name="CreatedDate_Text" value="@Model.Obj.CreatedDate_Text" class="d-none" />
-                            </div>
-                        </div>
-                    }
-
-                </div>
-            </div>
-        </div>
-
-        <div class="card-footer">
-            <div class="row no-gutters">
-                <div class="col-sm-1">&nbsp;</div>
-                <div class="col-sm-6 text-left">
-                    <button type="submit" class="btn btn-success btnSubmit">Save</button>
-                    <button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common');">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
+		<div class="card-footer">
+			<div class="row no-gutters">
+				<div class="col-sm-1">&nbsp;</div>
+				<div class="col-sm-6 text-left">
+					<button type="submit" class="btn btn-success btnSubmit">Save</button>
+					<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#dataTable_LoyaltyPoint');">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 @section Scripts {
-    <script type="text/javascript">
-        $(document).ready(function () {
+	<script type="text/javascript">
+		$(document).ready(function () {
 
-        });
-    </script>
+		});
+	</script>
 }

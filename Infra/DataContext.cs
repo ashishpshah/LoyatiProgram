@@ -40,6 +40,7 @@ namespace Seed_Admin.Infra
 			{
 				entity.ToTable("LoyaltyPoints_QRCode", "dbo");
 
+				entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
 				entity.Property(e => e.Qrcode).HasColumnName("QRCode");
 			});
 

@@ -66,7 +66,7 @@ namespace Seed_Admin
 		public bool IsSuccess { get; set; }
 		public bool IsConfirm { get; set; }
 
-		public PagedResult? Data { get; set; }
+		public dynamic Data { get; set; }
 		public dynamic Data1 { get; set; }
 		public dynamic Data2 { get; set; }
 		public dynamic Data3 { get; set; }

@@ -36,18 +36,18 @@
                     {
                         var i = 0;
                         <tbody>
-                            @foreach (var menu in Model.ObjList.Where(x => x.ParentMenuId == 0).OrderBy(x => x.DisplayOrder).ToList())
+                            @foreach (var menu in Model.ObjList.OrderBy(x => x.DisplayOrder).ToList())
                             {
                                 if (Model.ObjList.Any(x => x.ParentMenuId == menu.MenuId))
                                 {
                                     foreach (var childMenu in Model.ObjList.Where(x => x.ParentMenuId == menu.MenuId).OrderBy(x => x.DisplayOrder).ToList())
                                     {
                                         <tr id="tr_@i">
-                                            <td>@menu.MenuName</td>
+                                            <td>@childMenu.ParentMenuName</td>
                                             <td>
                                                 @childMenu.MenuName
                                                 <input type="text" class="d-none" name="ObjList[@i].MenuId" value="@childMenu.MenuId" />
-                                                <input type="text" class="d-none" name="ObjList[@i].ParentMenuId" value="@menu.MenuId" />
+                                                <input type="text" class="d-none" name="ObjList[@i].ParentMenuId" value="@childMenu.ParentMenuId" />
                                             </td>
                                             <td>
                                                 <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0 bg-transparent">
@@ -105,7 +105,7 @@
                                 else
                                 {
                                     <tr id="tr_@i">
-                                        <td>&nbsp;</td>
+                                        <td>@menu.ParentMenuName</td>
                                         <td>
                                             @menu.MenuName
                                             <input type="text" class="d-none" name="ObjList[@i].MenuId" value="@menu.MenuId" />
