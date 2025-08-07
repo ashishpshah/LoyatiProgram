@@ -22,14 +22,16 @@ namespace Seed_Admin.Controllers
 			return View(CommonViewModel);
 		}
 
-		public IActionResult Login()
+		public IActionResult Login(string returnUrl = null)
 		{
+			ViewData["ReturnUrl"] = returnUrl;
+
 			return View();
 		}
 
 		[HttpPost]
 		//[ValidateAntiForgeryToken]
-		public JsonResult Login(LoginViewModel viewModel)
+		public JsonResult Login(LoginViewModel viewModel, string returnUrl = null)
 		{
 			try
 			{
@@ -98,7 +100,8 @@ namespace Seed_Admin.Controllers
 						CommonViewModel.StatusCode = ResponseStatusCode.Success;
 						CommonViewModel.Message = ResponseStatusMessage.Success;
 
-						CommonViewModel.RedirectURL = Url.Content("~/") /*+ "Admin/"*/ + this.ControllerContext.RouteData.Values["Controller"].ToString() + "/Index";
+
+						CommonViewModel.RedirectURL = (string.IsNullOrEmpty(returnUrl)) ? Url.Content("~/") /*+ "Admin/"*/ + this.ControllerContext.RouteData.Values["Controller"].ToString() + "/Index" : returnUrl;
 
 						return Json(CommonViewModel);
 					}
@@ -140,6 +143,12 @@ namespace Seed_Admin.Controllers
 
 		public IActionResult Get_QR_Code_Details(string qr_code = null)
 		{
+			if (!Common.IsUserLogged())
+			{
+				var returnUrl = Url.Content("~/") + qr_code;
+				return RedirectToAction("Login", "Home", new { returnUrl });
+			}
+
 			// Validate: alphanumeric and at least 11 characters
 			if (string.IsNullOrWhiteSpace(qr_code) || qr_code.Length < 11)
 			{
@@ -160,7 +169,7 @@ namespace Seed_Admin.Controllers
 						// Optionally log or track usage
 
 						// Pass the data to the view
-						ViewBag.Message = "QR Code is found.";
+						ViewBag.Message = $"QR Code is found. You earned {obj.Points} Points.";
 						return View("Error");
 					}
 					else
