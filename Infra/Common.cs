@@ -5,6 +5,8 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net;
+using System.Buffers.Text;
 
 namespace Seed_Admin
 {
@@ -88,7 +90,7 @@ namespace Seed_Admin
 					CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(byKey, IV), CryptoStreamMode.Write);
 					cs.Write(inputByteArray, 0, inputByteArray.Length);
 					cs.FlushFinalBlock();
-					return Convert.ToBase64String(ms.ToArray());
+					return WebUtility.UrlEncode(Convert.ToBase64String(ms.ToArray()));
 
 				}
 			}
@@ -99,6 +101,9 @@ namespace Seed_Admin
 
 		public static string Decrypt(string strText)
 		{
+			if (string.IsNullOrEmpty(strText)) return string.Empty;
+			strText = WebUtility.UrlDecode(strText);
+
 			byte[] byKey = { };
 			byte[] IV = {
 							0x12,

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.EntityFrameworkCore;
 using Seed_Admin.Infra;
 using System.Globalization;
@@ -16,6 +17,7 @@ namespace Seed_Admin
 			{
 				options.JsonSerializerOptions.PropertyNamingPolicy = null;
 			});
+
 			builder.Services.AddHttpClient();
 
 			builder.Services.AddHttpContextAccessor();
@@ -73,13 +75,9 @@ namespace Seed_Admin
 
 			AppHttpContextAccessor.Configure(((IApplicationBuilder)app).ApplicationServices.GetRequiredService<IHttpContextAccessor>(), ((IApplicationBuilder)app).ApplicationServices.GetRequiredService<IHostEnvironment>(), environment, ((IApplicationBuilder)app).ApplicationServices.GetRequiredService<IDataProtectionProvider>(), ((IApplicationBuilder)app).ApplicationServices.GetRequiredService<IConfiguration>(), ((IApplicationBuilder)app).ApplicationServices.GetRequiredService<IHttpClientFactory>());
 
-			// Configure the HTTP request pipeline.
-			if (!app.Environment.IsDevelopment())
-			{
-				app.UseExceptionHandler("/Home/Error");
-				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-				app.UseHsts();
-			}
+			app.UseExceptionHandler("/Home/Error");
+			// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+			app.UseHsts();
 
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
@@ -91,6 +89,8 @@ namespace Seed_Admin
 			app.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 			app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+
+			app.MapControllerRoute(name: "qr", pattern: "{qr_code}", defaults: new { controller = "Home", action = "Get_QR_Code_Details" });
 
 			app.Run();
 		}

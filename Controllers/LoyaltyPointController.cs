@@ -3,6 +3,10 @@ using Seed_Admin.Infra;
 using Microsoft.AspNetCore.Mvc;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Newtonsoft.Json.Linq;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+using System.Web;
+using System.Buffers.Text;
+using System.Net;
 
 namespace Seed_Admin.Areas.Admin.Controllers
 {
@@ -97,17 +101,16 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		//[CustomAuthorizeAttribute(AccessType_Enum.Read)]
 		public ActionResult Partial_AddEditForm(int NoOfRows = 1, int minValue = 10, int maxValue = 35)
 		{
-			List<(string QRCode, string QRCode_Base64, int Point)> list = new List<(string QRCode, string QRCode_Base64, int Point)>();
+			var request = HttpContext.Request;
+			string domain = $"{request.Scheme}://{request.Host}/";
 
-			long tick = DateTime.UtcNow.Ticks;
+			List<(string QRCode, string QRCode_Base64, int Point)> list = new List<(string QRCode, string QRCode_Base64, int Point)>();
 
 			for (int i = 1; i <= NoOfRows; i++)
 			{
-				string qrText = $"{tick}-{i}";
-				string base64Image = Common.GenerateQrAsBase64(qrText);
-
+				string qrText = $"{new string(DateTime.UtcNow.Ticks.ToString().Reverse().ToArray()) + $"{i}" + Guid.NewGuid().ToString().Replace("-", "")}";
+				string base64Image = Common.GenerateQrAsBase64(domain + Common.Encrypt(qrText));
 				list.Add((qrText, base64Image, new Random().Next(minValue, maxValue)));
-
 			}
 
 			CommonViewModel.Data = list;
@@ -164,9 +167,12 @@ namespace Seed_Admin.Areas.Admin.Controllers
 					{
 						try
 						{
+							var request = HttpContext.Request;
+							string domain = $"{request.Scheme}://{request.Host}/";
+
 							foreach (var item in listQrcode)
 							{
-								item.QRCode_Base64 = Common.GenerateQrAsBase64(item.Qrcode);
+								item.QRCode_Base64 = Common.GenerateQrAsBase64(domain + Common.Encrypt(item.Qrcode));
 
 								var _viewModel = _context.Using<LoyaltyPointsQrcode>().Add(item);
 								item.Id = _viewModel.Id;

@@ -138,11 +138,12 @@
 				"columns": [
 					{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
 					{
-						"title": "QR Code", "data": null, "autoWidth": false, "searchable": false,
+						"title": "QR Code Image", "data": null, "autoWidth": false, "searchable": false,
 						"render": function (data, type, row, meta) {
 							return '<img src="data:image/png;base64,' + data.QrCode_Base64 + '" class="img-fluid" width="100" alt="QR Code">';
 						}
 					},
+					{ "title": "QR Code", "data": "QrCode", "autoWidth": true, "searchable": true },
 					{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },
 					{ "title": "Generate Date", "data": "GenerateDate_Text", "autoWidth": true, "searchable": true },
 					{ "title": "Is Claimed ?", "data": "IsClaimed_Text", "autoWidth": true, "searchable": true },

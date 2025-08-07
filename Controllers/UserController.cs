@@ -146,7 +146,7 @@ namespace Seed_Admin.Controllers
 							{
 								obj.UserName = viewModel.Obj.UserName;
 
-								if (viewModel.Obj.IsPassword_Reset == true) obj.Password = viewModel.Obj.Password;
+								if (viewModel.Obj.IsPassword_Reset == true) obj.Password = Common.Encrypt(viewModel.Obj.Password);
 
 								//obj.EmailId = viewModel.Obj.EmailId;
 								//obj.MobileNo = viewModel.Obj.MobileNo;

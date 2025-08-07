@@ -11,15 +11,14 @@ namespace Seed_Admin
 		private static IDataProtector _dataProtector;
 		private static IConfiguration _iConfig;
 		private static IHttpClientFactory _clientFactory;
-		private static string _authAPIUrl;
 
 		public static void Configure(IHttpContextAccessor httpContextAccessor, IHostEnvironment env_Host, IWebHostEnvironment env_Web, IDataProtectionProvider provider, IConfiguration iConfig, IHttpClientFactory clientFactory)
 		{
 			_httpContextAccessor = httpContextAccessor;
 			_contentRootPath = env_Host.ContentRootPath;
 			_webRootPath = env_Web.WebRootPath;
-			_dataProtector = provider.CreateProtector("20250409095731001");
 			_iConfig = iConfig;
+			_dataProtector = provider.CreateProtector(Convert.ToString(iConfig.GetSection("EncrKey")?.Value));
 			_clientFactory = clientFactory;
 
 			ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
