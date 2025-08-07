@@ -90,7 +90,7 @@ namespace Seed_Admin
 					CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(byKey, IV), CryptoStreamMode.Write);
 					cs.Write(inputByteArray, 0, inputByteArray.Length);
 					cs.FlushFinalBlock();
-					return WebUtility.UrlEncode(Convert.ToBase64String(ms.ToArray()));
+					return Convert.ToBase64String(ms.ToArray()).Replace("=", "-_").Replace('+', '-').Replace('/', '_');
 
 				}
 			}
@@ -102,7 +102,7 @@ namespace Seed_Admin
 		public static string Decrypt(string strText)
 		{
 			if (string.IsNullOrEmpty(strText)) return string.Empty;
-			strText = WebUtility.UrlDecode(strText);
+			strText = strText.Replace("-_", "=").Replace('-', '+').Replace('_', '/');
 
 			byte[] byKey = { };
 			byte[] IV = {
