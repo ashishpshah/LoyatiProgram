@@ -7,6 +7,7 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 using System.Web;
 using System.Buffers.Text;
 using System.Net;
+using System.Linq;
 
 namespace Seed_Admin.Areas.Admin.Controllers
 {
@@ -18,6 +19,35 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		// GET: Admin/LoyaltyPoint
 		public ActionResult Index()
 		{
+			if (!Common.IsAdmin() && !Common.IsSuperAdmin())
+			{
+				var dictLoyaltyPoint = _context.Using<LoyaltyPoint>().GetByCondition(x => x.UserId == Common.LoggedUser_Id()).ToList().ToDictionary(x => x.QrcodeId);
+
+				var listQRCode = _context.Using<LoyaltyPointsQrcode>().GetByCondition(x => dictLoyaltyPoint.Keys.Contains(x.Id)).ToList();
+
+				var list = listQRCode.Select(x =>
+				{
+					dictLoyaltyPoint.TryGetValue(x.Id, out var lp);
+
+					return new LoyaltyPointViewModel
+					{
+						QrCodeId = x.Id,
+						QrCode_Base64 = x.QRCode_Base64,
+						QrCode = x.Qrcode,
+						Points = lp?.Points ?? 0,
+						IsClaimed = x.IsScanned,
+
+						UserId = lp?.UserId ?? 0,
+						ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
+						GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
+						ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+						GenerateDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+					};
+				}).ToList();
+
+				CommonViewModel.ObjList = list.Distinct().ToList();
+			}
+
 			return View(CommonViewModel);
 		}
 
@@ -27,72 +57,73 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		{
 			var result = new PagedResult();
 
-			try
-			{
-				var listQrcode = _context.Using<LoyaltyPointsQrcode>().GetAll();
-
-				var loyaltyDict = _context.Using<LoyaltyPoint>().GetAll().ToDictionary(x => x.QrcodeId);
-
-				var userIds = loyaltyDict.Select(x => x.Value.UserId).Distinct().ToList();
-				var userDict = _context.Using<User>().GetByCondition(x => userIds.Contains(x.Id)).ToDictionary(x => x.Id);
-
-				var list = listQrcode.Select(x =>
+			if (Common.IsAdmin())
+				try
 				{
-					loyaltyDict.TryGetValue(x.Id, out var lp);
-					userDict.TryGetValue(lp?.UserId ?? 0, out var user);
+					var listQrcode = _context.Using<LoyaltyPointsQrcode>().GetAll();
 
-					return new LoyaltyPointViewModel
+					var loyaltyDict = _context.Using<LoyaltyPoint>().GetAll().ToDictionary(x => x.QrcodeId);
+
+					var userIds = loyaltyDict.Select(x => x.Value.UserId).Distinct().ToList();
+					var userDict = _context.Using<User>().GetByCondition(x => userIds.Contains(x.Id)).ToDictionary(x => x.Id);
+
+					var list = listQrcode.Select(x =>
 					{
-						QrCodeId = x.Id,
-						QrCode_Base64 = x.QRCode_Base64,
-						QrCode = x.Qrcode,
-						Points = x.Points,
-						IsClaimed = x.IsScanned,
+						loyaltyDict.TryGetValue(x.Id, out var lp);
+						userDict.TryGetValue(lp?.UserId ?? 0, out var user);
 
-						UserId = lp?.UserId ?? 0,
-						ClaimedBy = user?.PersonName ?? "",
-						ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
-						GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
-						ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
-						GenerateDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+						return new LoyaltyPointViewModel
+						{
+							QrCodeId = x.Id,
+							QrCode_Base64 = x.QRCode_Base64,
+							QrCode = x.Qrcode,
+							Points = x.Points,
+							IsClaimed = x.IsScanned,
+
+							UserId = lp?.UserId ?? 0,
+							ClaimedBy = user?.PersonName ?? "",
+							ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
+							GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
+							ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+							GenerateDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+						};
+					}).ToList();
+
+					var recordsTotal = list.Count();
+					IEnumerable<LoyaltyPointViewModel> query = list;
+
+					// Filter (Search)
+					if (!string.IsNullOrWhiteSpace(param.sSearch))
+					{
+						query = query.Where(x =>
+							(x.QrCode?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
+							(x.ClaimedBy?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
+							x.Points.ToString().Contains(param.sSearch) ||
+							x.ClaimedDate_Text.Contains(param.sSearch) ||
+							x.GenerateDate_Text.Contains(param.sSearch)
+						);
+					}
+
+					// Sort
+					string sortColumn = HttpContext.Request.Query.ContainsKey("iSortCol_0") && HttpContext.Request.Query.ContainsKey($"mDataProp_{HttpContext.Request.Query["iSortCol_0"]}") ? Convert.ToString(HttpContext.Request.Query[$"mDataProp_{HttpContext.Request.Query["iSortCol_0"]}"]) : "";
+
+					query = sortColumn?.ToLower() switch
+					{
+						"qrcode" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.QrCode) : query.OrderByDescending(x => x.QrCode),
+						"points" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.Points) : query.OrderByDescending(x => x.Points),
+						"generatedate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.GenerateDate_Ticks) : query.OrderByDescending(x => x.GenerateDate_Ticks),
+						"isclaimed_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.IsClaimed) : query.OrderByDescending(x => x.IsClaimed),
+						"claimedby" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.ClaimedBy) : query.OrderByDescending(x => x.ClaimedBy),
+						"claimeddate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.ClaimedDate_Ticks) : query.OrderByDescending(x => x.ClaimedDate_Ticks),
+						_ => query.OrderByDescending(x => x.GenerateDate_Ticks)
 					};
-				}).ToList();
 
-				var recordsTotal = list.Count();
-				IEnumerable<LoyaltyPointViewModel> query = list;
+					// Pagination
+					var pagedData = param.iDisplayLength > -1 ? query.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToList() : query.ToList();
 
-				// Filter (Search)
-				if (!string.IsNullOrWhiteSpace(param.sSearch))
-				{
-					query = query.Where(x =>
-						(x.QrCode?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
-						(x.ClaimedBy?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
-						x.Points.ToString().Contains(param.sSearch) ||
-						x.ClaimedDate_Text.Contains(param.sSearch) ||
-						x.GenerateDate_Text.Contains(param.sSearch)
-					);
+					return Json(new { param.sEcho, iTotalRecords = pagedData.Count(), iTotalDisplayRecords = recordsTotal, aaData = pagedData }, new System.Text.Json.JsonSerializerOptions());
 				}
-
-				// Sort
-				string sortColumn = HttpContext.Request.Query.ContainsKey("iSortCol_0") && HttpContext.Request.Query.ContainsKey($"mDataProp_{HttpContext.Request.Query["iSortCol_0"]}") ? Convert.ToString(HttpContext.Request.Query[$"mDataProp_{HttpContext.Request.Query["iSortCol_0"]}"]) : "";
-
-				query = sortColumn?.ToLower() switch
-				{
-					"qrcode" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.QrCode) : query.OrderByDescending(x => x.QrCode),
-					"points" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.Points) : query.OrderByDescending(x => x.Points),
-					"generatedate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.GenerateDate_Ticks) : query.OrderByDescending(x => x.GenerateDate_Ticks),
-					"isclaimed_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.IsClaimed) : query.OrderByDescending(x => x.IsClaimed),
-					"claimedby" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.ClaimedBy) : query.OrderByDescending(x => x.ClaimedBy),
-					"claimeddate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.ClaimedDate_Ticks) : query.OrderByDescending(x => x.ClaimedDate_Ticks),
-					_ => query.OrderByDescending(x => x.GenerateDate_Ticks)
-				};
-
-				// Pagination
-				var pagedData = param.iDisplayLength > -1 ? query.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToList() : query.ToList();
-
-				return Json(new { param.sEcho, iTotalRecords = pagedData.Count(), iTotalDisplayRecords = recordsTotal, aaData = pagedData }, new System.Text.Json.JsonSerializerOptions());
-			}
-			catch (Exception ex) { }
+				catch (Exception ex) { }
 
 			return Json(new { param.sEcho, iTotalRecords = 0, iTotalDisplayRecords = 0, aaData = new JArray() }, new System.Text.Json.JsonSerializerOptions());
 		}
@@ -101,6 +132,15 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		//[CustomAuthorizeAttribute(AccessType_Enum.Read)]
 		public ActionResult Partial_AddEditForm(int NoOfRows = 1, int minValue = 10, int maxValue = 35)
 		{
+			if (!Common.IsAdmin())
+			{
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
+
+				return Json(CommonViewModel);
+			}
+
 			var request = HttpContext.Request;
 			string domain = $"{request.Scheme}://{request.Host}/";
 

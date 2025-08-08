@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Seed_Admin.Areas.Admin.Controllers
 {
-	
+
 	public class RoleController : BaseController<ResponseModel<Role>>
 	{
 		public RoleController(IRepositoryWrapper repository) : base(repository) { }
@@ -169,8 +169,8 @@ namespace Seed_Admin.Areas.Admin.Controllers
 								{
 									var listMenu = _context.Using<Menu>().GetAll().ToList();
 
-									List<(long MenuId, long ParentMenuId)> menuPairs = viewModel.CreatedDate_Text.Split(',').Select(pair => pair.Split('_'))
-													.Select(parts => (MenuId: long.Parse(parts[0]), ParentMenuId: long.Parse(parts[1]))).ToList();
+									List<(long MenuId, long ParentMenuId)> menuPairs = viewModel.CreatedDate_Text.Split(',').Where(pair => !string.IsNullOrEmpty(pair))
+										.Select(pair => pair.Split('_')).Select(parts => (MenuId: long.Parse(parts[0]), ParentMenuId: long.Parse(parts[1]))).ToList();
 
 									// Get all unique IDs from MenuId and ParentMenuId
 									var allMenuIds = menuPairs.SelectMany(p => new[] { p.MenuId, p.ParentMenuId }).Distinct().ToList();
@@ -178,6 +178,12 @@ namespace Seed_Admin.Areas.Admin.Controllers
 									// Now get actual Menu objects by matching IDs
 									var selectedMenus = listMenu.Where(x => x.IsActive == true && allMenuIds.Contains(x.Id)).ToList();
 
+
+									var listParentMenuId = selectedMenus.Where(x => x.ParentId > 0).Select(x => x.ParentId).Distinct().ToList();
+
+									var _listMenuAccess = (from x in listMenu where x.Name != "Menu" && listParentMenuId.Contains(x.Id) select x).ToList();
+
+									if (_listMenuAccess != null && _listMenuAccess.Count() > 0) selectedMenus.AddRange(_listMenuAccess);
 									//var list = viewModel.CreatedDate_Text.Split(',');
 
 									//foreach (var item in list.Where(x => !string.IsNullOrEmpty(x)))
@@ -214,14 +220,13 @@ namespace Seed_Admin.Areas.Admin.Controllers
 										//_context.Entry(access).State = EntityState.Deleted;
 										//_context.SaveChanges();
 
-										foreach (var menu in selectedMenus.OrderBy(x => x.Id).ToList())
-										{
-											var listRoleUserAccess = (from x in _context.Using<UserRoleMapping>().GetAll().ToList()
-																	  where x.RoleId == viewModel.Id && x.UserId > 0 && x.IsActive == true && x.IsDeleted == false
-																	  select new UserMenuAccess() { UserId = x.UserId, RoleId = viewModel.Id, MenuId = menu.Id, IsCreate = true, IsUpdate = true, IsRead = true, IsDelete = true, CreatedBy = 1 }).ToList();
+										var listUserId = _context.Using<UserRoleMapping>().GetByCondition(x => x.RoleId == viewModel.Id).ToList().Select(x => x.UserId).Distinct().ToList();
 
-											foreach (var item_ in listRoleUserAccess) _context.Using<UserMenuAccess>().Add(item_);
-											//_context.SaveChanges();
+										foreach (var userId in listUserId)
+										{
+											var listRoleUserAccess = (from x in selectedMenus select new UserMenuAccess() { UserId = userId, RoleId = viewModel.Id, MenuId = x.Id, IsCreate = true, IsUpdate = true, IsRead = true, IsDelete = true, CreatedBy = Common.LoggedUser_Id() }).ToList();
+
+											if (listRoleUserAccess != null && listRoleUserAccess.Count() > 0) _context.Using<UserMenuAccess>().Add(listRoleUserAccess);
 										}
 									}
 									catch (Exception ex) { }
@@ -262,7 +267,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		{
 			try
 			{
-				if (!Common.IsSuperAdmin() || !Common.IsAdmin())
+				if (!(Common.IsSuperAdmin() || Common.IsAdmin()))
 				{
 					CommonViewModel.IsSuccess = false;
 					CommonViewModel.StatusCode = ResponseStatusCode.Error;
@@ -271,11 +276,12 @@ namespace Seed_Admin.Areas.Admin.Controllers
 					return Json(CommonViewModel);
 				}
 
-				if (Common.IsSuperAdmin() && Common.IsAdmin() && !_context.Using<UserRoleMapping>().Any(x => x.Id > 1 && x.RoleId == Id)
-					&& _context.Using<Role>().Any(x => x.Id > 1 && x.Id == Id))
+				if ((Common.IsSuperAdmin() || Common.IsAdmin()) && !_context.Using<UserRoleMapping>().Any(x => x.Id > 1 && x.RoleId == Id)
+					&& _context.Using<Role>().Any(x => x.Id > 1 && x.Id == Id && (!Common.IsSuperAdmin() ? x.CreatedBy == Common.LoggedUser_Id() : true)))
 				{
 					var obj = _context.Using<Role>().GetByCondition(x => x.Id == Id).FirstOrDefault();
-
+					obj.IsActive = false;
+					obj.IsDeleted = true;
 					_context.Using<Role>().Update(obj);
 					//_context.Entry(obj).State = EntityState.Deleted;
 					//_context.SaveChanges();

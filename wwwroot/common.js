@@ -503,7 +503,7 @@ function fnLoadParialView($id, url) {
 
             //window.scrollTo(0, 0);
 
-            fnCloseParialView($id);
+            try { if ($('#' + $id)[0].children.length > 0) fnCloseParialView($id); } catch { }
 
             $.ajax({
                 type: "GET",
@@ -512,10 +512,24 @@ function fnLoadParialView($id, url) {
                 contentType: "application/json; charset=utf-8",
                 dataType: "html",
                 success: function (response) {
+                    debugger;
+                    try {
+                        var json = JSON.parse(response);
+
+                        setTimeout(function () {
+                            ShowLoader(false);
+
+                            if (response.StatusCode !== 1) { CommonAlert_Error(json.Message, null); }
+
+                            return;
+                        }, 1000);
+
+                        return;
+                    } catch (e) { }
 
                     $('#' + $id).html('');
                     $('#' + $id).append(response);
-                    debugger;
+
                     setTimeout(function () {
 
                         $('#' + $id + ' .select2').select2();

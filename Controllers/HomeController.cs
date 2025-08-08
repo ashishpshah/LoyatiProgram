@@ -77,6 +77,18 @@ namespace Seed_Admin.Controllers
 											  select new UserMenuAccess() { Id = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, DisplayOrder = y.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
 						}
 
+						List<long> listParentMenuId = listMenuAccess.Select(x => x.ParentMenuId).Distinct().ToList();
+
+						var listRoleMenuId = _context.Using<RoleMenuAccess>().GetByCondition(x => x.RoleId == role.Id).ToList().Select(x => x.MenuId).Distinct().ToList();
+						if (listRoleMenuId != null && listRoleMenuId.Count() > 0) listParentMenuId.AddRange(listRoleMenuId);
+
+						var _listMenuAccess = (from x in _context.Using<Menu>().GetAll().ToList()
+											   where x.IsActive == true && x.IsDeleted == false && x.Name != "Menu" && listParentMenuId.Contains(x.Id) && !listMenuAccess.Any(z => z.Id == x.Id)
+											   select new UserMenuAccess() { Id = x.Id, ParentMenuId = x.ParentId, Area = x.Area, Controller = x.Controller, Url = x.Url, MenuName = x.Name, DisplayOrder = x.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
+
+						if (_listMenuAccess != null && _listMenuAccess.Count() > 0) listMenuAccess.AddRange(_listMenuAccess);
+						if (listMenuAccess != null && listMenuAccess.Count() > 0) listMenuAccess = listMenuAccess.Distinct().ToList();
+
 						if (role != null && role.Id == 1)
 							listMenuPermission = listMenuAccess;
 						else
@@ -84,7 +96,23 @@ namespace Seed_Admin.Controllers
 												  join y in _context.Using<Menu>().GetAll().ToList() on x.MenuId equals y.Id
 												  where x.UserId == obj.Id && y.IsActive == true && y.IsDeleted == false && x.IsActive == true && x.IsDeleted == false
 												  && listMenuAccess.Any(z => z.Id == y.Id)
-												  select new UserMenuAccess() { MenuId = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, IsCreate = x.IsCreate, IsUpdate = x.IsUpdate, IsRead = x.IsRead, IsDelete = x.IsDelete, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
+												  select new UserMenuAccess() { MenuId = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, IsCreate = x.IsCreate, IsUpdate = x.IsUpdate, IsRead = x.IsRead, IsDelete = x.IsDelete, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).Distinct().ToList();
+
+						if (listMenuPermission != null && listMenuPermission.Count() > 0 && !listMenuPermission.Any(x => listParentMenuId.Contains(x.MenuId)))
+						{
+							listMenuPermission.AddRange((from x in _context.Using<Menu>().GetAll().ToList()
+														 where x.IsActive == true && x.IsDeleted == false && x.Name != "Menu" && listParentMenuId.Contains(x.Id)
+														 select new UserMenuAccess() { Id = x.Id, ParentMenuId = x.ParentId, Area = x.Area, Controller = x.Controller, Url = x.Url, MenuName = x.Name, DisplayOrder = x.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).Distinct().ToList());
+
+						}
+
+						if (listMenuAccess != null && listMenuAccess.Count() > 0 && !listMenuAccess.Any(x => listParentMenuId.Contains(x.Id)))
+						{
+							listMenuAccess.AddRange((from x in _context.Using<Menu>().GetAll().ToList()
+													 where x.IsActive == true && x.IsDeleted == false && x.Name != "Menu" && listParentMenuId.Contains(x.Id)
+													 select new UserMenuAccess() { Id = x.Id, ParentMenuId = x.ParentId, Area = x.Area, Controller = x.Controller, Url = x.Url, MenuName = x.Name, DisplayOrder = x.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).Distinct().ToList());
+
+						}
 
 						Common.Configure_UserMenuAccess(listMenuAccess.Where(x => x.IsActive == true && x.IsDeleted == false).ToList(), listMenuPermission.Where(x => x.IsActive == true && x.IsDeleted == false).ToList());
 
@@ -143,19 +171,13 @@ namespace Seed_Admin.Controllers
 
 		public IActionResult Get_QR_Code_Details(string qr_code = null)
 		{
-			if (!Common.IsUserLogged())
+			if (!Common.IsUserLogged() || Common.IsAdmin() || Common.IsSuperAdmin())
 			{
 				var returnUrl = Url.Content("~/") + qr_code;
 				return RedirectToAction("Login", "Home", new { returnUrl });
 			}
 
-			// Validate: alphanumeric and at least 11 characters
-			if (string.IsNullOrWhiteSpace(qr_code) || qr_code.Length < 11)
-			{
-				return NotFound(); // Or redirect to Index
-			}
-
-			if (!string.IsNullOrEmpty(qr_code))
+			if (Common.IsUserLogged() && !string.IsNullOrEmpty(qr_code) && qr_code.Length > 20)
 			{
 				// Decrypt the incoming QR code
 				string decryptedCode = Common.Decrypt(qr_code);
@@ -166,11 +188,29 @@ namespace Seed_Admin.Controllers
 
 					if (obj != null)
 					{
-						// Optionally log or track usage
+						if (obj.IsScanned)
+						{
+							ViewBag.Message = "QR Code already scanned. Please try another.";
+							return View("Error");
+						}
 
-						// Pass the data to the view
-						ViewBag.Message = $"QR Code is found. You earned {obj.Points} Points.";
-						return View("Error");
+						var objLoyaltyPoint = new LoyaltyPoint()
+						{
+							QrcodeId = obj.Id,
+							UserId = Common.LoggedUser_Id(),
+							Points = obj.Points,
+							EarnedDateTime = DateTime.Now
+						};
+
+						var _viewModel = _context.Using<LoyaltyPoint>().Add(objLoyaltyPoint);
+						objLoyaltyPoint.Id = _viewModel.Id;
+
+						obj.IsScanned = true;
+						_context.Using<LoyaltyPointsQrcode>().Update(obj);
+
+						//ViewBag.Message = $"QR Code is found. You earned {obj.Points} Points.";
+						//return View("Error");
+						return RedirectToAction("Index", "LoyaltyPoint");
 					}
 					else
 					{
@@ -181,9 +221,7 @@ namespace Seed_Admin.Controllers
 				}
 			}
 
-			// QR code was missing or decryption failed
-			ViewBag.Message = "QR Code is invalid or missing.";
-			return View("Error");
+			return NotFound();
 		}
 
 	}

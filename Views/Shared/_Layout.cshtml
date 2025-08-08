@@ -34,23 +34,23 @@
 			background-color: #007D39 !important;
 		}
 		/*
-						[class*=sidebar-dark-] .sidebar a {
-							color: #007D39 !important;
-						}
+																		[class*=sidebar-dark-] .sidebar a {
+																			color: #007D39 !important;
+																		}
 
-						.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-							background-color: lightgray !important;
-						}
+																		.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+																			background-color: lightgray !important;
+																		}
 
-						.navbar-light .navbar-nav .nav-link {
-							color: #fff !important;
-						}
+																		.navbar-light .navbar-nav .nav-link {
+																			color: #fff !important;
+																		}
 
-						[class*=sidebar-dark] .brand-link {
-							border-bottom: 0 !important;
-							color: rgba(255,255,255,.8);
-						}
-				 */
+																		[class*=sidebar-dark] .brand-link {
+																			border-bottom: 0 !important;
+																			color: rgba(255,255,255,.8);
+																		}
+																 */
 		.elevation-4 {
 			box-shadow: none !important;
 		}
@@ -158,95 +158,96 @@
 							</a>
 						</li>
 
-						@if (listMenu != null && listMenu.Count() > 0 && listMenu.GroupBy(x => new { x.ParentMenuId, x.Id }).Select(x => x.Key).Count() > 1)
+						@if (listMenu != null && listMenu.Count() > 0 && listMenu.GroupBy(x => new { x.ParentMenuId, x.Id }).Select(x => x.Key).Count() > 0)
 						{
 							//if (listMenu.Where(x => x.ParentMenuId > 0).GroupBy(x => x.ParentMenuId).Select(x => x.Key).Count() == 1)
 							//listMenu.RemoveAll(x => x.Id == listMenu.Where(x => x.ParentMenuId > 0).GroupBy(x => x.ParentMenuId).Select(x => x.Key).FirstOrDefault());
 
-							if (listMenu.Any(x => x.ParentMenuId == 0))
-								foreach (var menu in listMenu.Where(x => x.ParentMenuId == 0).OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.MenuName, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
-								{
-									if (listMenu.Any(x => x.ParentMenuId == menu.Key.Id))
-									{
-														<li class="nav-item" style="padding-top:5px !important">
-															<a href="#" class="nav-link">
-																<i class="nav-icon fas fa-tachometer-alt"></i>
-																<p>
-													@menu.Key.MenuName
-																	<i class="right fas fa-angle-left"></i>
-																</p>
-															</a>
-															<ul class="nav nav-treeview">
-												@foreach (var menuChild in listMenu.Where(x => x.ParentMenuId == menu.Key.Id).OrderBy(x => x.DisplayOrder))
-												{
-																		<li class="nav-item ml-3">
-														@if (string.IsNullOrEmpty(menuChild.Url))
-														{
-																					<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.MenuName" class="nav-link">
-																						<i class="nav-icon fas fa-th"></i>
-																						<p>@menuChild.MenuName</p>
-																					</a>
-														}
-														else
-														{
-																					<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.MenuName" class="nav-link">
-																						<i class="nav-icon fas fa-th"></i>
-																						<p>@menuChild.MenuName</p>
-																					</a>
-														}
-																		</li>
-												}
-															</ul>
-														</li>
-									}
-									else
-									{
-														<li class="nav-item">
-											@if (string.IsNullOrEmpty(menu.Key.Url))
-											{
-																	<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
-																		<i class="nav-icon fas fa-th"></i>
-																		<p> @menu.Key.MenuName </p>
-																	</a>
-											}
-											else
-											{
-																	<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
-																		<i class="nav-icon fas fa-th"></i>
-																		<p>@menu.Key.MenuName</p>
-																	</a>
-											}
-														</li>
-										// <li class="nav-item">
-										//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
-										//         <i class="nav-icon fas fa-th"></i>
-										//         <p> MDA Batch No List </p>
-										//     </a>
-										// </li>
-									}
-								}
-							else
+							//if (listMenu.Any(x => x.ParentMenuId == 0))
+							foreach (var menu in listMenu.Where(x => x.ParentMenuId == 0).OrderBy(x => x.ParentMenuId).ThenBy(x => x.MenuId).ThenBy(x => x.DisplayOrder)
+							.GroupBy(x => new { x.Id, x.MenuName, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
 							{
-								foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.MenuName, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+								if (listMenu.Any(x => x.ParentMenuId == menu.Key.Id))
 								{
-												<li class="nav-item">
+									<li class="nav-item" style="padding-top:5px !important">
+										<a href="#" class="nav-link">
+											<i class="nav-icon fas fa-tachometer-alt"></i>
+											<p>
+												@menu.Key.MenuName
+												<i class="right fas fa-angle-left"></i>
+											</p>
+										</a>
+										<ul class="nav nav-treeview">
+											@foreach (var menuChild in listMenu.Where(x => x.ParentMenuId == menu.Key.Id).OrderBy(x => x.DisplayOrder))
+											{
+												<li class="nav-item ml-3">
+													@if (string.IsNullOrEmpty(menuChild.Url))
+													{
+														<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.MenuName" class="nav-link">
+															<i class="nav-icon fas fa-th"></i>
+															<p>@menuChild.MenuName</p>
+														</a>
+													}
+													else
+													{
+														<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.MenuName" class="nav-link">
+															<i class="nav-icon fas fa-th"></i>
+															<p>@menuChild.MenuName</p>
+														</a>
+													}
+												</li>
+											}
+										</ul>
+									</li>
+								}
+								else
+								{
+									<li class="nav-item">
 										@if (string.IsNullOrEmpty(menu.Key.Url))
 										{
-															<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
-																<i class="nav-icon fas fa-th"></i>
-																<p> @menu.Key.MenuName </p>
-															</a>
+											<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
+												<i class="nav-icon fas fa-th"></i>
+												<p> @menu.Key.MenuName </p>
+											</a>
 										}
 										else
 										{
-															<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
-																<i class="nav-icon fas fa-th"></i>
-																<p>@menu.Key.MenuName</p>
-															</a>
+											<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
+												<i class="nav-icon fas fa-th"></i>
+												<p>@menu.Key.MenuName</p>
+											</a>
 										}
-												</li>
+									</li>
+									// <li class="nav-item">
+									//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
+									//         <i class="nav-icon fas fa-th"></i>
+									//         <p> MDA Batch No List </p>
+									//     </a>
+									// </li>
 								}
 							}
+							@* else
+						{
+						foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.MenuName, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+						{
+						<li class="nav-item">
+						@if (string.IsNullOrEmpty(menu.Key.Url))
+						{
+						<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
+						<i class="nav-icon fas fa-th"></i>
+						<p> @menu.Key.MenuName </p>
+						</a>
+						}
+						else
+						{
+						<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
+						<i class="nav-icon fas fa-th"></i>
+						<p>@menu.Key.MenuName</p>
+						</a>
+						}
+						</li>
+						}
+						} *@
 						}
 					</ul>
 				</nav>
