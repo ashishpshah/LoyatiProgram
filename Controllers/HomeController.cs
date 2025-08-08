@@ -171,15 +171,14 @@ namespace Seed_Admin.Controllers
 
 		public IActionResult Get_QR_Code_Details(string qr_code = null)
 		{
-			if (!Common.IsUserLogged() || Common.IsAdmin() || Common.IsSuperAdmin())
+			if (!string.IsNullOrEmpty(qr_code) && qr_code.Length > 20)
 			{
-				var returnUrl = Url.Content("~/") + qr_code;
-				return RedirectToAction("Login", "Home", new { returnUrl });
-			}
+				if (!Common.IsUserLogged())
+				{
+					var returnUrl = Url.Content("~/") + qr_code;
+					return RedirectToAction("Login", "Home", new { returnUrl });
+				}
 
-			if (Common.IsUserLogged() && !string.IsNullOrEmpty(qr_code) && qr_code.Length > 20)
-			{
-				// Decrypt the incoming QR code
 				string decryptedCode = Common.Decrypt(qr_code);
 
 				if (!string.IsNullOrEmpty(decryptedCode))
@@ -188,6 +187,9 @@ namespace Seed_Admin.Controllers
 
 					if (obj != null)
 					{
+						if (Common.IsAdmin() || Common.IsSuperAdmin())
+							return RedirectToAction("Index", "LoyaltyPoint", new { qr_code = decryptedCode });
+
 						if (obj.IsScanned)
 						{
 							ViewBag.Message = "QR Code already scanned. Please try another.";

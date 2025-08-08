@@ -17,7 +17,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		public LoyaltyPointController(IRepositoryWrapper repository) : base(repository) { }
 
 		// GET: Admin/LoyaltyPoint
-		public ActionResult Index()
+		public ActionResult Index(string qr_code)
 		{
 			if (!Common.IsAdmin() && !Common.IsSuperAdmin())
 			{
@@ -47,6 +47,8 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
 				CommonViewModel.ObjList = list.Distinct().ToList();
 			}
+
+			CommonViewModel.Data5 = qr_code;
 
 			return View(CommonViewModel);
 		}
@@ -81,7 +83,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 							IsClaimed = x.IsScanned,
 
 							UserId = lp?.UserId ?? 0,
-							ClaimedBy = user?.PersonName ?? "",
+							ClaimedBy = user?.PersonName ?? (user?.CompanyName ?? ""),
 							ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
 							GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
 							ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
@@ -258,11 +260,11 @@ namespace Seed_Admin.Areas.Admin.Controllers
 					return Json(CommonViewModel);
 				}
 
-				if (Common.IsAdmin() && _context.Using<LoyaltyPoint>().Any(x => x.Id == Id))
+				if (Common.IsAdmin() && _context.Using<LoyaltyPointsQrcode>().Any(x => x.Id == Id && x.IsScanned == false))
 				{
-					var obj = _context.Using<LoyaltyPoint>().GetByCondition(x => x.Id == Id).FirstOrDefault();
+					var obj = _context.Using<LoyaltyPointsQrcode>().GetByCondition(x => x.Id == Id && x.IsScanned == false).FirstOrDefault();
 
-					_context.Using<LoyaltyPoint>().Update(obj);
+					_context.Using<LoyaltyPointsQrcode>().Update(obj);
 					//_context.Entry(obj).State = EntityState.Deleted;
 					//_context.SaveChanges();
 
