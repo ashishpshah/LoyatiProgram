@@ -75,7 +75,7 @@
 								<tbody>
 									@if (Model.ObjList != null)
 									{
-										foreach (var item in Model.ObjList)
+										foreach (var item in Model.ObjList.OrderByDescending(x => x.ClaimedDate_Ticks).ToList())
 										{
 											<tr>
 												<td> @item.ClaimedDate_Text </td>
@@ -143,20 +143,20 @@
 					title: 'How many QR Code do you want to Generate ?',
 					//html: `<input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">`,
 					html: `				<div class="mb-3">
-									  <label>Enter Quantity</label>
-									  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
-									  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
-									</div>
+												  <label>Enter Quantity</label>
+												  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
+												  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
+												</div>
 
-									<div class="mt-4">
-									  <label>Select Min-Max Points</label>
-									  <div id="bootstrap-range-slider" style="margin: 30px 10px;"></div>
-									  <div class="d-flex justify-content-center mt-2">
-										<input type="number" id="minValue" class="form-control mr-2 text-center" style="width: 100px;" value="10" max="100" />
-														<input type="number" id="maxValue" class="form-control ml-2 text-center" style="width: 100px;" value="35" max="100" />
-									  </div>
-									</div>
-								  `,
+												<div class="mt-4">
+												  <label>Select Min-Max Points</label>
+												  <div id="bootstrap-range-slider" style="margin: 30px 10px;"></div>
+												  <div class="d-flex justify-content-center mt-2">
+													<input type="number" id="minValue" class="form-control mr-2 text-center" style="width: 100px;" value="10" max="100" />
+																	<input type="number" id="maxValue" class="form-control ml-2 text-center" style="width: 100px;" value="35" max="100" />
+												  </div>
+												</div>
+											  `,
 					// input: 'range',
 					// inputValue,
 					// inputAttributes: { min: '1', max: '25', step: inputStep.toString(), },
@@ -198,7 +198,7 @@
 					"bServerSide": true,
 					"bProcessing": true,
 					"bSearchable": true,
-					"order": [[1, 'desc']],
+					"order": [[5, 'desc']],
 					"language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
 					"fnServerParams": function (aoData) {
 						//aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
@@ -221,7 +221,7 @@
 						{
 							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
 							"render": function (data, type, row, meta) {
-								if(data.IsClaimed == false)
+								if (data.IsClaimed == false)
 									return '<div class="btn-group"><a class="btn btn-danger btn-sm btn-flat ml-2" href="javascript:void(0);" onclick="divShow(\'/DeleteConfirmed?Id=' + data.Id + '\');"><span class="nme"><i class="far fa-trash-alt"></i></span></a></div>';
 								else return '';
 							}
@@ -232,7 +232,7 @@
 						$("td:first", nRow).html(index);
 						return nRow;
 					}
-					,initComplete: function (settings, json) {
+					, initComplete: function (settings, json) {
 						debugger;
 						$('#searchTerm').val('').trigger('change');
 					}
