@@ -201,7 +201,8 @@ namespace Seed_Admin.Controllers
 							QrcodeId = obj.Id,
 							UserId = Common.LoggedUser_Id(),
 							Points = obj.Points,
-							EarnedDateTime = DateTime.Now
+							EarnedDateTime = DateTime.Now,
+							ExpiryDateTime = obj.ExpireInDay > 0 ? DateTime.Now.Date.AddDays(obj.ExpireInDay) : nullDateTime
 						};
 
 						var _viewModel = _context.Using<LoyaltyPoint>().Add(objLoyaltyPoint);

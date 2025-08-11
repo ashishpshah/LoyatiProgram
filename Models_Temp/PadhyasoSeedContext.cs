@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+
+namespace Seed_Admin.Models_Temp;
+
+public partial class PadhyasoSeedContext : DbContext
+{
+    public PadhyasoSeedContext()
+    {
+    }
+
+    public PadhyasoSeedContext(DbContextOptions<PadhyasoSeedContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<LoyaltyPoint> LoyaltyPoints { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=103.120.179.247;Initial Catalog=padhyaso_seed;Persist Security Info=True;User ID=padhyaso_seed;Password=h2Ee8^z3mvxu9sUMg;Trust Server Certificate=True");
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("padhyaso_seed");
+
+        modelBuilder.Entity<LoyaltyPoint>(entity =>
+        {
+            entity.ToTable("LoyaltyPoints", "dbo");
+
+            entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.QrcodeId).HasColumnName("QRCodeId");
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}

@@ -39,8 +39,10 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
 						UserId = lp?.UserId ?? 0,
 						ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
+						ExpiryDate_Ticks = lp?.ExpiryDateTime?.Ticks ?? 0,
 						GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
 						ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+						ExpiryDate_Text = lp?.ExpiryDateTime?.ToString("dd/MM/yyyy").Replace("-", "/") ?? "",
 						GenerateDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
 					};
 				}).ToList();
@@ -85,8 +87,10 @@ namespace Seed_Admin.Areas.Admin.Controllers
 							UserId = lp?.UserId ?? 0,
 							ClaimedBy = user?.PersonName ?? (user?.CompanyName ?? ""),
 							ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
+							ExpiryDate_Ticks = lp?.ExpiryDateTime?.Ticks ?? 0,
 							GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
 							ClaimedDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+							ExpiryDate_Text = lp?.ExpiryDateTime?.ToString("dd/MM/yyyy").Replace("-", "/") ?? "",
 							GenerateDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
 						};
 					}).ToList();
@@ -132,7 +136,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
 
 		//[CustomAuthorizeAttribute(AccessType_Enum.Read)]
-		public ActionResult Partial_AddEditForm(int NoOfRows = 1, int minValue = 10, int maxValue = 35)
+		public ActionResult Partial_AddEditForm(int NoOfRows = 1, int ExpireInDay = 30, int minValue = 10, int maxValue = 35)
 		{
 			if (!Common.IsAdmin())
 			{
@@ -146,13 +150,13 @@ namespace Seed_Admin.Areas.Admin.Controllers
 			var request = HttpContext.Request;
 			string domain = $"{request.Scheme}://{request.Host}/";
 
-			List<(string QRCode, string QRCode_Base64, int Point)> list = new List<(string QRCode, string QRCode_Base64, int Point)>();
+			List<(string QRCode, string QRCode_Base64, int Point, int ExpireInDay)> list = new List<(string QRCode, string QRCode_Base64, int Point, int ExpireInDay)>();
 
 			for (int i = 1; i <= NoOfRows; i++)
 			{
 				string qrText = $"{new string(DateTime.UtcNow.Ticks.ToString().Reverse().ToArray()) + $"{i}" + Guid.NewGuid().ToString().Replace("-", "")}";
 				string base64Image = Common.GenerateQrAsBase64(domain + Common.Encrypt(qrText));
-				list.Add((qrText, base64Image, new Random().Next(minValue, maxValue)));
+				list.Add((qrText, base64Image, new Random().Next(minValue, maxValue), ExpireInDay));
 			}
 
 			CommonViewModel.Data = list;

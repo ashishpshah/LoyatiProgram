@@ -28,13 +28,14 @@
 							<th class="text-center">QR Code Text</th>
 							<th width="5%" class="text-center">Points</th>
 							<th class="text-center">Generate Date</th>
+							<th width="5%" class="text-center">Expire in Day(s)</th>
 							<th width="5%" class="text-center">Action</th>
 						</tr>
 					</thead>
 					<tbody>
 						@if (Model.Data != null)
 						{
-							List<(string QRCode, string QRCode_Base64, int Point)> list = Model.Data as List<(string QRCode, string QRCode_Base64, int Point)>;
+							List<(string QRCode, string QRCode_Base64, int Point, int ExpireInDay)> list = Model.Data as List<(string QRCode, string QRCode_Base64, int Point, int ExpireInDay)>;
 
 							for (int i = 0; i < list.Count(); i++)
 							{
@@ -46,9 +47,12 @@
 									<td class="text-center">@list[i].QRCode</td>
 									<td width="5%" class="text-center">
 										<input type="text" class="form-control form-control-sm m-0 d-none" name="listQrcode[@i].Qrcode" value="@list[i].QRCode" autocomplete="off">
-										<input type="text" class="form-control form-control-sm m-0 text-center" name="listQrcode[@i].Points" value="@list[i].Point" autocomplete="off">
+										<input type="text" class="form-control form-control-sm m-0 text-center isNumberKey" name="listQrcode[@i].Points" value="@list[i].Point" autocomplete="off">
 									</td>
 									<td class="text-center">@DateTime.Now.Date.ToString(Common.DateTimeFormat_ddMMyyyy).Replace("-", "/")</td>
+									<td width="5%" class="text-center">
+										<input type="text" class="form-control form-control-sm m-0 text-center isNumberKey" name="listQrcode[@i].ExpireInDay" value="@list[i].ExpireInDay" autocomplete="off" min="0" max="90">
+									</td>
 									<td width="5%" class="text-center">
 										<button class="btn btn-danger btn-sm btn-flat" onclick="javascript:function(){ debugger;}"><span class="nme"><i class="far fa-trash-alt"></i></span></button>
 									</td>

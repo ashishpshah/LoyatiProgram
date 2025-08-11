@@ -33,32 +33,111 @@
 		@if (!Common.IsAdmin())
 		{
 			<div class="row no-gooters">
-				<div class="col-md-3">
-					<!-- small box -->
-					<div class="small-box bg-info">
-						<div class="inner">
-							<h3>@Model.ObjList?.Sum(x => x.Points)</h3>
+				<section class="col-md-6 row no-gooters">
+					<div class="col-md-6">
+						<!-- small box -->
+						<div class="small-box bg-info">
+							<div class="inner">
+								<h3>@Model.ObjList?.Sum(x => x.Points)</h3>
 
-							<p>Total Earned</p>
-						</div>
-						<div class="icon">
-							<i class="ion ion-bag"></i>
+								<p>Total Earned</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-bag"></i>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="col-md-3">
-					<!-- small box -->
-					<div class="small-box bg-success">
-						<div class="inner">
-							<h3>@Model.ObjList?.Where(x => new DateTime(x.ClaimedDate_Ticks).ToString("yyyyMM") == DateTime.Now.ToString("yyyyMM"))?.Sum(x => x.Points)</h3>
+					@{
+						var now = DateTime.Now;
+						decimal alreadyExpiredPoints = 0;
+						decimal laterExpirePoints = 0;
+						decimal totalRemainingPoints = 0;
+						decimal thisMonthEarnedPoints = 0;
 
-							<p>This Month Earned</p>
-						</div>
-						<div class="icon">
-							<i class="ion ion-stats-bars"></i>
+						if (Model.ObjList != null)
+						{
+							foreach (var item in Model.ObjList)
+							{
+								var earned = new DateTime(item.ClaimedDate_Ticks);
+
+								var expiry = new DateTime(item.ExpiryDate_Ticks);
+
+								if (expiry.Date <= now.Date)
+								{
+									// Already expired (all time)
+									alreadyExpiredPoints += item.Points;
+								}
+								else
+								{
+									// Future expiry (total remain)
+									totalRemainingPoints += item.Points;
+
+									// Specifically expiring later in this month
+									if (expiry.Year == now.Year && expiry.Month == now.Month)
+									{
+										laterExpirePoints += item.Points;
+									}
+								}
+
+								// This month earned
+								if (earned.Year == now.Year && earned.Month == now.Month)
+								{
+									thisMonthEarnedPoints += item.Points;
+								}
+							}
+						}
+					}
+
+					<div class="col-md-6">
+						<!-- small box -->
+						<div class="small-box bg-success">
+							<div class="inner">
+								<h3>@totalRemainingPoints</h3>
+								<p>Total Remaining</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-stats-bars"></i>
+							</div>
 						</div>
 					</div>
-				</div>
+
+					<div class="col-md-6">
+						<!-- small box -->
+						<div class="small-box bg-teal">
+							<div class="inner">
+								<h3>@thisMonthEarnedPoints</h3>
+								<p>This Month Earned</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-stats-bars"></i>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-6">
+						<!-- small box -->
+						<div class="small-box bg-danger">
+							<div class="inner">
+								<h3>@alreadyExpiredPoints</h3>
+								<p>Already Expired Till Today</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-stats-bars"></i>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="small-box bg-warning">
+							<div class="inner">
+								<h3>@laterExpirePoints</h3>
+								<p>Expiring Later This Month</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-stats-bars"></i>
+							</div>
+						</div>
+					</div>
+				</section>
 				<section class="col-md-6">
 					<div class="card">
 						<div class="card-header border-0">
@@ -70,6 +149,7 @@
 									<tr>
 										<th>Date</th>
 										<th>Points</th>
+										<th>Expiry Date</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -80,6 +160,7 @@
 											<tr>
 												<td> @item.ClaimedDate_Text </td>
 												<td> @item.Points </td>
+												<td> @item.ExpiryDate_Text </td>
 											</tr>
 										}
 									}
@@ -143,20 +224,27 @@
 					title: 'How many QR Code do you want to Generate ?',
 					//html: `<input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">`,
 					html: `				<div class="mb-3">
-												  <label>Enter Quantity</label>
-												  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
-												  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
-												</div>
+																		  <label class="m-0">Enter Quantity</label>
+															  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input my-2" id="range-value">
+															  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
+													</div>
 
-												<div class="mt-4">
-												  <label>Select Min-Max Points</label>
-												  <div id="bootstrap-range-slider" style="margin: 30px 10px;"></div>
-												  <div class="d-flex justify-content-center mt-2">
-													<input type="number" id="minValue" class="form-control mr-2 text-center" style="width: 100px;" value="10" max="100" />
-																	<input type="number" id="maxValue" class="form-control ml-2 text-center" style="width: 100px;" value="35" max="100" />
-												  </div>
-												</div>
-											  `,
+																<div class="mt-3 mb-3">
+																		  <label class="m-0">Select Min-Max Points</label>
+															  <div id="bootstrap-range-slider"></div>
+															  <div class="d-flex justify-content-center mt-0">
+																			<input type="number" id="minValue" class="form-control mr-2 text-center my-2" style="width: 100px;" value="10" max="100" />
+																			<input type="number" id="maxValue" class="form-control ml-2 text-center my-2" style="width: 100px;" value="35" max="100" />
+															  </div>
+													</div>
+
+																<div class="mb-3">
+																					<label class="m-0">Expire In Day(s)</label>
+																					<input type="number" value="30" step="${inputStep}" class="swal2-input my-2" id="range-value-expire">
+																		<input type="range" value="30" min="0" max="90" step="${inputStep}" class="form-range w-100" id="range-slider-expire">
+																</div>
+
+																																									  `,
 					// input: 'range',
 					// inputValue,
 					// inputAttributes: { min: '1', max: '25', step: inputStep.toString(), },
@@ -166,6 +254,11 @@
 						const $inputRange = $popup.find('#range-slider');
 						$inputRange.on('input', function () { $inputNumber.val($(this).val()); });
 						$inputNumber.on('change', function () { $inputRange.val($(this).val()); });
+
+						const $inputNumber_expire = $popup.find('#range-value-expire');
+						const $inputRange_expire = $popup.find('#range-slider-expire');
+						$inputRange_expire.on('input', function () { $inputNumber_expire.val($(this).val()); });
+						$inputNumber_expire.on('change', function () { $inputRange_expire.val($(this).val()); });
 
 					},
 					showCancelButton: true,
@@ -177,7 +270,7 @@
 						const minInput = $($(Swal.getPopup())).find('#minValue');
 						const maxInput = $($(Swal.getPopup())).find('#maxValue');
 
-						fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPoint")?NoOfRows=' + $($(Swal.getPopup())).find('#range-value').val() + '&minValue=' + minInput + '&maxValue=' + maxInput);
+						fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPoint")?NoOfRows=' + $($(Swal.getPopup())).find('#range-value').val() + '&ExpireInDay=' + $($(Swal.getPopup())).find('#range-value-expire').val() + '&minValue=' + minInput + '&maxValue=' + maxInput);
 					}
 					else dataTableMain.ajax.reload();
 

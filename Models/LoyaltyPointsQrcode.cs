@@ -13,4 +13,5 @@ public partial class LoyaltyPointsQrcode : EntitiesBase
 	public decimal Points { get; set; }
 
 	public bool IsScanned { get; set; }
+	public int ExpireInDay { get; set; }
 }

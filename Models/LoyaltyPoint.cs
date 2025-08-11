@@ -15,6 +15,7 @@ public partial class LoyaltyPoint : EntitiesBase
 	public decimal Points { get; set; }
 
 	public DateTime EarnedDateTime { get; set; }
+	public DateTime? ExpiryDateTime { get; set; }
 }
 
 public partial class LoyaltyPointViewModel
@@ -31,7 +32,9 @@ public partial class LoyaltyPointViewModel
 	public string IsClaimed_Text { get { return (IsClaimed ? "Yes" : "No"); } }
 
 	public long ClaimedDate_Ticks { get; set; }
+	public long ExpiryDate_Ticks { get; set; }
 	public long GenerateDate_Ticks { get; set; }
 	public string ClaimedDate_Text { get; set; }
+	public string ExpiryDate_Text { get; set; }
 	public string GenerateDate_Text { get; set; }
 }
