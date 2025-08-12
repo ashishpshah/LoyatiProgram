@@ -15,7 +15,15 @@ public partial class PadhyasoSeedContext : DbContext
     {
     }
 
-    public virtual DbSet<LoyaltyPoint> LoyaltyPoints { get; set; }
+    public virtual DbSet<Question> Questions { get; set; }
+
+    public virtual DbSet<QuestionOption> QuestionOptions { get; set; }
+
+    public virtual DbSet<Response> Responses { get; set; }
+
+    public virtual DbSet<SurveyResponse> SurveyResponses { get; set; }
+
+    public virtual DbSet<SurveysMaster> SurveysMasters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -25,12 +33,31 @@ public partial class PadhyasoSeedContext : DbContext
     {
         modelBuilder.HasDefaultSchema("padhyaso_seed");
 
-        modelBuilder.Entity<LoyaltyPoint>(entity =>
+        modelBuilder.Entity<Question>(entity =>
         {
-            entity.ToTable("LoyaltyPoints", "dbo");
+            entity.ToTable("Questions", "dbo");
+        });
 
-            entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
-            entity.Property(e => e.QrcodeId).HasColumnName("QRCodeId");
+        modelBuilder.Entity<QuestionOption>(entity =>
+        {
+            entity.ToTable("Question_Options", "dbo");
+        });
+
+        modelBuilder.Entity<Response>(entity =>
+        {
+            entity.ToTable("Responses", "dbo");
+
+            entity.Property(e => e.NumericAnswer).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<SurveyResponse>(entity =>
+        {
+            entity.ToTable("SurveyResponses", "dbo");
+        });
+
+        modelBuilder.Entity<SurveysMaster>(entity =>
+        {
+            entity.ToTable("Surveys_Master", "dbo");
         });
 
         OnModelCreatingPartial(modelBuilder);

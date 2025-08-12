@@ -72,7 +72,6 @@ $(document).ready(function () {
                 locale: { cancelLabel: 'Clear', format: locale_date_format/*, format: 'DD/MM/YYYY hh:mm A'*/ }
             }, function (start, end, label) { try { fnChangeDatePicker(this, start, end, label); } catch { } });
 
-
             var defaultDate = '';
             var minDate = '';
             var maxDate = '';
@@ -512,7 +511,7 @@ function fnLoadParialView($id, url) {
                 contentType: "application/json; charset=utf-8",
                 dataType: "html",
                 success: function (response) {
-                    debugger;
+                    
                     try {
                         var json = JSON.parse(response);
 
@@ -605,7 +604,7 @@ function fnLoadParialView($id, url) {
                         try { fnLoadCommonTable_Buttons('#table_Common_buttons'); } catch { }
                         try { fnLoadCommonTable_Buttons('.table_Common_buttons'); } catch { }
 
-                        try { fnParialView_Loaded_Success($id, (response.IndexOf("Alert") > -1)); } catch { }
+                        try { fnParialView_Loaded_Success($id, (response.indexOf("Alert") > -1)); } catch { debugger; }
 
 
                         $('html, body').scrollTop($('#' + $id).offset().top);
@@ -1138,6 +1137,8 @@ function fnChange_Switch($this, $labelId) {
 
 function fnLoadCommonTable($selector) {
 
+    if ($($selector) == 'undefined' || $($selector).length <= 0) return;
+
     if ($.fn.DataTable.isDataTable($selector)) {
         $($selector).DataTable().destroy();
     }
@@ -1171,6 +1172,8 @@ function fnLoadCommonTable($selector) {
 }
 
 function fnLoadCommonTable_ScrollX($selector) {
+
+    if ($($selector) == 'undefined' || $($selector).length <= 0) return;
 
     if ($.fn.DataTable.isDataTable($selector)) {
         $($selector).DataTable().destroy();
@@ -1206,6 +1209,8 @@ function fnLoadCommonTable_ScrollX($selector) {
 }
 
 function fnLoadCommonTable_Checkboxes($selector) {
+
+    if ($($selector) == 'undefined' || $($selector).length <= 0) return;
 
     if ($.fn.DataTable.isDataTable($selector)) {
         $($selector).DataTable().destroy();
@@ -1253,6 +1258,12 @@ function fnLoadCommonTable_Checkboxes($selector) {
 
 function fnLoadCommonTable_SrNo($selector) {
 
+    if ($($selector) == 'undefined' || $($selector).length <= 0) return;
+
+    // Get attributes from table element
+    var orderCol = parseInt($($selector).parent().attr('data-col'), 10) || 0; // default 0 if not found
+    var orderDir = $($selector).parent().attr('data-order') || 'asc'; // default asc if not found
+
     if ($.fn.DataTable.isDataTable($selector)) {
         $($selector).DataTable().destroy();
     }
@@ -1265,6 +1276,7 @@ function fnLoadCommonTable_SrNo($selector) {
         info: true,
         autoWidth: true,
         responsive: true,
+        //order: [[orderCol, orderDir]],
         pageLength: 25,
         lengthMenu: [
             [10, 25, 50, -1],
@@ -1291,6 +1303,8 @@ function fnLoadCommonTable_SrNo($selector) {
 }
 
 function fnLoadCommonTable_Buttons($selector) {
+
+    if ($($selector) == 'undefined' || $($selector).length <= 0) return;
 
     if ($.fn.DataTable.isDataTable($selector)) {
         $($selector).DataTable().destroy();

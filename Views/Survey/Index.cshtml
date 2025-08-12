@@ -1,0 +1,214 @@
+﻿@model ResponseModel<Survey>
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Survey</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsCreate == true)
+					{
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Survey")');">
+							<i class="fas fa-plus"></i> &nbsp; Add new item
+						</button>
+					}
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gooters">
+			<section class="col-md-12">
+				<div class="card">
+					<div class="card-header divformSave_Display d-none" style="margin: 5px !important;">
+						<form id="formSave" action="@Url.Action("Save","Survey")" method="post">
+							<div class="row no-gutters" id="divformSave"></div>
+							<div class="clearfix"></div>
+							<hr />
+						</form>
+					</div>
+
+					<div class="card-body">
+						<div class="row no-gooters divformSave_Hide">
+							<div class="col-md-12 my-1 table-responsive" data-col="3" data-order="desc">
+								<table class="table table-bordered table-striped table_Common_SrNo">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th hidden>Ticks</th>
+											<th>Survey Title</th>
+											<th>Description</th>
+											<th width="10%">Start Date & Time</th>
+											<th width="10%">End Date & Time</th>
+											<th width="10%">Created Date & Time</th>
+											<th width="5%">Status</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model.ObjList != null)
+										{
+											foreach (var item in Model.ObjList.OrderBy(x => x.Id))
+											{
+												<tr>
+													<td></td>
+													<td hidden>@item.CreatedDate?.Ticks</td>
+													<td>@item.Title</td>
+													<td>@item.Description</td>
+													<td>@item.StartDate_Text</td>
+													<td>@item.EndDate_Text</td>
+													<td>@item.CreatedDate_Text</td>
+													<td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
+													<td>
+														<div class="btn-group">
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+															{
+																<a class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Option(s)"
+																   href="fnLoadParialView('divformSave', '@Url.Action("Index","SurveyQuestion")?Id=@item.Id');">
+																	Question(s)
+																</a>
+															}
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+															{
+																<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Survey")?Id=@item.Id');">
+																	<i class="far fa-edit"></i>
+																</button>
+															}
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsDelete == true && item.IsDeleted == false)
+															{
+																<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																		onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","Survey")?Id=@item.Id');">
+																	<i class="far fa-trash-alt"></i>
+																</button>
+															}
+														</div>
+													</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+
+		var start = moment().startOf('day');
+		var end = moment().add(7, 'days').endOf('day');
+
+		$(document).ready(function () {
+
+		});
+
+		function updateRangeDisplay(start, end) {
+			if (start.isSame(end, 'minute')) {
+				$('#rangeDateTime span').html(start.format('DD/MM/YYYY hh:mm A'));
+			} else {
+				$('#rangeDateTime span').html(start.format('DD/MM/YYYY hh:mm A') + ' - ' + end.format('DD/MM/YYYY hh:mm A'));
+			}
+			$('#StartDate_Text').val(start.format('YYYY-MM-DD HH:mm:ss')).trigger('change');
+			$('#EndDate_Text').val(end.format('YYYY-MM-DD HH:mm:ss')).trigger('change');
+		}
+
+		function fnParialView_Loaded_Success($id, $IsAlert) {
+
+			$('#rangeDateTime').daterangepicker({
+				showDropdowns: true,
+				minYear: 1901,
+				maxYear: parseInt(moment().format('YYYY'), 10),
+				startDate: moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss').isValid()
+					? moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss')
+					: moment().startOf('day'),
+				endDate: moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss').isValid()
+					? moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss')
+					: moment().add(6, 'days').endOf('day'),
+				timePicker: true,
+				ranges: {
+					'Today': [moment().startOf('day'), moment().endOf('day')],
+					'Tomorrow': [moment().add(1, 'days').startOf('day'), moment().add(1, 'days').endOf('day')],
+					'Next 7 Days': [moment().startOf('day'), moment().add(6, 'days').endOf('day')],
+					'Next 30 Days': [moment().startOf('day'), moment().add(29, 'days')],
+					'This Month': [moment().startOf('month').startOf('day'), moment().endOf('month').endOf('day')],
+					'Next Month': [moment().add(1, 'month').startOf('month').startOf('day'), moment().add(1, 'month').endOf('month').endOf('day')]
+				},
+				locale: { cancelLabel: 'Clear', format: 'DD/MM/YYYY hh:mm A' }
+			}, updateRangeDisplay);
+			// function (start, end, label) {
+			// 	debugger;
+			// 	if (start.isSame(end, 'minute')) {
+			// 		$('#rangeDateTime span').html(start.format('DD/MM/YYYY hh:mm A'));
+			// 	} else {
+			// 		$('#rangeDateTime span').html(
+			// 			start.format('DD/MM/YYYY hh:mm A') + ' - ' + end.format('DD/MM/YYYY hh:mm A')
+			// 		);
+			// 	}
+			// 	$('#StartDate_Text').val(start.format('YYYY-MM-DD HH:mm:ss'));
+			// 	$('#EndDate_Text').val(end.format('YYYY-MM-DD HH:mm:ss'));
+			// });
+
+			// Trigger initial apply so display is set without user interaction
+			let drp = $('#rangeDateTime').data('daterangepicker');
+			updateRangeDisplay(drp.startDate, drp.endDate);
+		}
+
+		function fnChange_Select($id) {
+
+			var selectedValue = $('#select' + $id).val();
+
+			if (typeof selectedValue != 'undefined' && selectedValue != null && selectedValue != '' && selectedValue.length > 0)
+				$('#input' + $id).val(selectedValue.join(','));
+			else
+				$('#input' + $id).val('');
+
+			$('#input' + $id).trigger('change');
+		}
+
+		//function fnChange_Checkbox($this) {
+		//    debugger;
+
+		//    var selectedValue = $('#selectedMenu').val();
+
+		//    if (selectedValue == 'undefined' || selectedValue == null)
+		//        selectedValue = "";
+
+		//    if ($this.checked && selectedValue.indexOf($this.value) == -1) {
+		//        selectedValue = selectedValue + $this.value + ",";
+		//    }
+		//    else if (!$this.checked && selectedValue.indexOf($this.value) > -1) {
+		//        selectedValue = selectedValue.replace($this.value + ",", "");
+		//        selectedValue = selectedValue.replace($this.value, "");
+		//    }
+
+		//    $('#selectedMenu').val(selectedValue);
+		//    $('#selectedMenu').trigger('change');
+		//}
+
+	</script>
+}
+
+

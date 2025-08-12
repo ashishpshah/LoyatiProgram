@@ -1,4 +1,5 @@
 ﻿
+using Azure;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -22,11 +23,48 @@ namespace Seed_Admin.Infra
 		public virtual DbSet<UserRoleMapping> UserRoleMappings { get; set; }
 		public virtual DbSet<RoleMenuAccess> RoleMenuAccesses { get; set; }
 
+		public virtual DbSet<Question> Questions { get; set; }
+
+		public virtual DbSet<QuestionOption> QuestionOptions { get; set; }
+
+		public virtual DbSet<Response> Responses { get; set; }
+
+		public virtual DbSet<SurveyResponse> SurveyResponses { get; set; }
+
+		public virtual DbSet<Survey> Surveys { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			//modelBuilder.HasDefaultSchema("padhyaso_Leoz");
 
 			modelBuilder.HasDefaultSchema("padhyaso_seed");
+
+			modelBuilder.Entity<Question>(entity =>
+			{
+				entity.ToTable("Questions", "dbo");
+			});
+
+			modelBuilder.Entity<QuestionOption>(entity =>
+			{
+				entity.ToTable("Question_Options", "dbo");
+			});
+
+			modelBuilder.Entity<Response>(entity =>
+			{
+				entity.ToTable("Responses", "dbo");
+
+				entity.Property(e => e.NumericAnswer).HasColumnType("decimal(18, 2)");
+			});
+
+			modelBuilder.Entity<SurveyResponse>(entity =>
+			{
+				entity.ToTable("SurveyResponses", "dbo");
+			});
+
+			modelBuilder.Entity<Survey>(entity =>
+			{
+				entity.ToTable("Surveys_Master", "dbo");
+			});
 
 			modelBuilder.Entity<LoyaltyPoint>(entity =>
 			{
