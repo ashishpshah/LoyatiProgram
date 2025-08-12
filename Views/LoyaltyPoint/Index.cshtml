@@ -34,6 +34,123 @@
 
 		@if (!Common.IsAdmin())
 		{
+			var now = DateTime.Now;
+			decimal alreadyExpiredPoints = 0;
+			decimal laterExpirePoints = 0;
+			decimal totalRemainingPoints = 0;
+			decimal thisMonthEarnedPoints = 0;
+
+			if (Model.ObjList != null)
+			{
+				foreach (var item in Model.ObjList)
+				{
+					var earned = new DateTime(item.ClaimedDate_Ticks);
+
+					var expiry = new DateTime(item.ExpiryDate_Ticks);
+
+					if (expiry.Date <= now.Date)
+					{
+						// Already expired (all time)
+						alreadyExpiredPoints += item.Points;
+					}
+					else
+					{
+						// Future expiry (total remain)
+						totalRemainingPoints += item.Points;
+
+						// Specifically expiring later in this month
+						if (expiry.Year == now.Year && expiry.Month == now.Month)
+						{
+							laterExpirePoints += item.Points;
+						}
+					}
+
+					// This month earned
+					if (earned.Year == now.Year && earned.Month == now.Month)
+					{
+						thisMonthEarnedPoints += item.Points;
+					}
+				}
+			}
+
+			@* <div class="row no-gooters">
+				<section class="col-md-12">
+					<div class="card collapsed-card">
+						<div class="card-header border-0">
+							<div class="row col-md-12">
+								<!-- small box -->
+								<div class="small-box bg-info w-100 text-center">
+									<div class="inner">
+										<h3>@Model.ObjList?.Sum(x => x.Points)</h3>
+										<p>Total Earned</p>
+									</div>
+									<div class="icon"> <i class="ion ion-bag"></i> </div>
+
+									<a href="#" class="small-box-footer" data-card-widget="collapse"
+									   data-toggle="tooltip"
+									   title="Collapse">More info <i class="fas fa-arrow-circle-right"></i></a>
+
+								</div>
+							</div>
+							<div class="row col-md-12">
+								<!-- small box -->
+								<div class="small-box bg-info w-100 text-center">
+									<p class="small-box-footer m-0">@RupeePerPoint ₹ / point</p>
+								</div>
+							</div>
+						</div>
+						<!-- /.card-body-->
+						<div class="card-footer bg-transparent">
+							<div class="row">
+								<div class="col-3 text-center">
+									<div class="small-box bg-success">
+										<div class="inner">
+											<h3>@totalRemainingPoints</h3>
+											<p>Total Remaining</p>
+										</div>
+										<div class="icon"> <i class="ion ion-stats-bars"></i> </div>
+										<p class="small-box-footer">@(RupeePerPoint * totalRemainingPoints) ₹</p>
+									</div>
+								</div>
+								<!-- ./col -->
+								<div class="col-3 text-center">
+									<div class="small-box bg-teal">
+										<div class="inner">
+											<h3>@thisMonthEarnedPoints</h3>
+											<p>This Month Earned</p>
+										</div>
+										<div class="icon"> <i class="ion ion-stats-bars"></i> </div>
+										<p class="small-box-footer">@(RupeePerPoint * thisMonthEarnedPoints) ₹</p>
+									</div>
+								</div>
+								<!-- ./col -->
+								<div class="col-3 text-center">
+									<div class="small-box bg-warning">
+										<div class="inner">
+											<h3>@laterExpirePoints</h3>
+											<p>Expiring Later This Month</p>
+										</div>
+										<div class="icon"> <i class="ion ion-stats-bars"></i> </div>
+										<p class="small-box-footer">@(RupeePerPoint * laterExpirePoints) ₹</p>
+									</div>
+								</div>
+								<!-- ./col -->
+								<div class="col-3 text-center">
+									<div class="small-box bg-danger">
+										<div class="inner">
+											<h3>@alreadyExpiredPoints</h3>
+											<p>Already Expired Till Today</p>
+										</div>
+										<div class="icon"> <i class="ion ion-stats-bars"></i> </div>
+										<p class="small-box-footer">@(RupeePerPoint * alreadyExpiredPoints) ₹</p>
+									</div>
+								</div>
+							</div>
+							<!-- /.row -->
+						</div>
+					</div>
+				</section>
+			</div> *@
 			<div class="row no-gooters">
 				<section class="col-md-6 row no-gooters">
 					<div class="col-md-6">
@@ -47,47 +164,6 @@
 							<p class="small-box-footer">@(RupeePerPoint * Model.ObjList?.Sum(x => x.Points)) ₹</p>
 						</div>
 					</div>
-					@{
-						var now = DateTime.Now;
-						decimal alreadyExpiredPoints = 0;
-						decimal laterExpirePoints = 0;
-						decimal totalRemainingPoints = 0;
-						decimal thisMonthEarnedPoints = 0;
-
-						if (Model.ObjList != null)
-						{
-							foreach (var item in Model.ObjList)
-							{
-								var earned = new DateTime(item.ClaimedDate_Ticks);
-
-								var expiry = new DateTime(item.ExpiryDate_Ticks);
-
-								if (expiry.Date <= now.Date)
-								{
-									// Already expired (all time)
-									alreadyExpiredPoints += item.Points;
-								}
-								else
-								{
-									// Future expiry (total remain)
-									totalRemainingPoints += item.Points;
-
-									// Specifically expiring later in this month
-									if (expiry.Year == now.Year && expiry.Month == now.Month)
-									{
-										laterExpirePoints += item.Points;
-									}
-								}
-
-								// This month earned
-								if (earned.Year == now.Year && earned.Month == now.Month)
-								{
-									thisMonthEarnedPoints += item.Points;
-								}
-							}
-						}
-					}
-
 					<div class="col-md-6">
 						<!-- small box -->
 						<div class="small-box bg-success">
@@ -227,27 +303,27 @@
 					title: 'How many QR Code do you want to Generate ?',
 					//html: `<input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">`,
 					html: `				<div class="mb-3">
-																											  <label class="m-0">Enter Quantity</label>
-																								  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input my-2" id="range-value">
-																								  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
-																						</div>
+																																																																		  <label class="m-0">Enter Quantity</label>
+																																																															  <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input my-2" id="range-value">
+																																																															  <input type="range" value="${inputValue}" min="1" max="25" step="${inputStep}" class="form-range w-100" id="range-slider">
+																																																													</div>
 
-																									<div class="mt-3 mb-3">
-																											  <label class="m-0">Select Min-Max Points</label>
-																								  <div id="bootstrap-range-slider"></div>
-																								  <div class="d-flex justify-content-center mt-0">
-																												<input type="number" id="minValue" class="form-control mr-2 text-center my-2" style="width: 100px;" value="10" max="100" />
-																												<input type="number" id="maxValue" class="form-control ml-2 text-center my-2" style="width: 100px;" value="35" max="100" />
-																								  </div>
-																						</div>
+																																																																<div class="mt-3 mb-3">
+																																																																		  <label class="m-0">Select Min-Max Points</label>
+																																																															  <div id="bootstrap-range-slider"></div>
+																																																															  <div class="d-flex justify-content-center mt-0">
+																																																																			<input type="number" id="minValue" class="form-control mr-2 text-center my-2" style="width: 100px;" value="10" max="100" />
+																																																																			<input type="number" id="maxValue" class="form-control ml-2 text-center my-2" style="width: 100px;" value="35" max="100" />
+																																																															  </div>
+																																																													</div>
 
-																									<div class="mb-3">
-																														<label class="m-0">Expire In Day(s)</label>
-																														<input type="number" value="30" step="${inputStep}" class="swal2-input my-2" id="range-value-expire">
-																											<input type="range" value="30" min="0" max="90" step="${inputStep}" class="form-range w-100" id="range-slider-expire">
-																									</div>
+																																																																<div class="mb-3">
+																																																																					<label class="m-0">Expire In Day(s)</label>
+																																																																					<input type="number" value="30" step="${inputStep}" class="swal2-input my-2" id="range-value-expire">
+																																																																		<input type="range" value="30" min="0" max="90" step="${inputStep}" class="form-range w-100" id="range-slider-expire">
+																																																																</div>
 
-																																																		  `,
+																																																																																									  `,
 					// input: 'range',
 					// inputValue,
 					// inputAttributes: { min: '1', max: '25', step: inputStep.toString(), },
