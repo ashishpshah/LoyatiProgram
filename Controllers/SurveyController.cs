@@ -48,6 +48,66 @@ namespace Seed_Admin.Areas.Admin.Controllers
 			return PartialView("_Partial_AddEditForm", CommonViewModel);
 		}
 
+		//[CustomAuthorizeAttribute(AccessType_Enum.Read)]
+		public ActionResult Partial_AddEditForm_Question(long SurveyId = 0, long Id = 0)
+		{
+			if (!(Common.IsSuperAdmin() || Common.IsAdmin()))
+			{
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
+
+				return Json(CommonViewModel);
+			}
+
+			if (SurveyId <= 0 || !_context.Using<Survey>().Any(x => x.Id == SurveyId))
+			{
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.NotFound;
+
+				return Json(CommonViewModel);
+			}
+
+			CommonViewModel.Obj = _context.Using<Survey>().GetByCondition(x => x.Id == SurveyId).FirstOrDefault();
+
+			CommonViewModel.Obj.StartDate_Text = CommonViewModel.Obj.StartDate.ToString(Common.DateTimeFormat_ddMMyyyy_HHmm);
+			CommonViewModel.Obj.EndDate_Text = CommonViewModel.Obj.EndDate.ToString(Common.DateTimeFormat_ddMMyyyy_HHmm);
+
+			CommonViewModel.SelectListItems = _context.Using<LovMaster>().GetByCondition(x => x.LovColumn.ToLower() == "question_type")
+				.Select(x => new SelectListItem_Custom(x.LovCode, x.LovDesc, (x.DisplayOrder ?? 0), x.LovColumn.ToUpper())).ToList();
+
+			CommonViewModel.Obj.Questions = _context.Using<Question>().GetByCondition(x => x.SurveyId == SurveyId).ToList();
+
+			for (int i = 0; i < CommonViewModel.Obj.Questions.Count(); i++)
+			{
+				CommonViewModel.Obj.Questions[i].QuestionType_Text = CommonViewModel.SelectListItems.Where(x => x.Value == CommonViewModel.Obj.Questions[i].QuestionType).Select(x => x.Text).FirstOrDefault();
+			}
+
+			if (Id > 0)
+			{
+				int index = CommonViewModel.Obj.Questions.FindIndex(q => q.Id == Id);
+				if (index != -1)
+				{
+					CommonViewModel.Obj.Question = CommonViewModel.Obj.Questions[index];
+
+					if (CommonViewModel.Obj.Question.QuestionType == "MCQ")
+						CommonViewModel.Obj.Question.Options = _context.Using<QuestionOption>().GetByCondition(x => x.QuestionId == Id).Select(x => new OptionDto() { Text = x.OptionText, Value = x.OptionValue }).ToList();
+					else if (CommonViewModel.Obj.Question.QuestionType == "RAT")
+					{
+						var ratOptions = _context.Using<QuestionOption>().GetByCondition(x => x.QuestionId == Id).Select(x => (x.OptionText, x.OptionValue)).ToList();
+
+						CommonViewModel.Obj.Question.Rating = new OptionDto() { Text = ratOptions.Where(x => x.OptionText == "MIN").Select(x => x.OptionText).FirstOrDefault(), Value = ratOptions.Where(x => x.OptionText == "MAX").Select(x => x.OptionValue).FirstOrDefault() };
+					}
+
+				}
+
+				return Json(CommonViewModel.Obj.Question);
+			}
+
+			return PartialView("_Partial_AddEditForm_Question", CommonViewModel);
+		}
+
 		[HttpPost]
 		//[CustomAuthorizeAttribute(AccessType_Enum.Write)]
 		public ActionResult Save(Survey viewModel)
@@ -141,6 +201,54 @@ namespace Seed_Admin.Areas.Admin.Controllers
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
 			return Json(CommonViewModel);
+		}
+
+		[HttpPost]
+		public JsonResult SaveQuestion([FromBody] Question model)
+		{
+			if (string.IsNullOrWhiteSpace(model.QuestionText))
+			{
+				return Json(new { success = false, message = "Question Text is required." });
+			}
+
+			try
+			{
+				//if (model.Id > 0)
+				//{
+				//	// Update existing question
+				//	var existing = _context.Questions.FirstOrDefault(q => q.Id == model.Id);
+				//	if (existing == null)
+				//	{
+				//		return Json(new { success = false, message = "Question not found." });
+				//	}
+
+				//	existing.QuestionText = model.QuestionText;
+				//	existing.QuestionType = model.QuestionType;
+				//	// If MCQ, you might save options to another table here
+				//	// If Rating, save min/max to another table or columns
+
+				//	_context.SaveChanges();
+				//}
+				//else
+				//{
+				//	// Create new question
+				//	var newQuestion = new Question
+				//	{
+				//		SurveyId = model.SurveyId,
+				//		QuestionText = model.QuestionText,
+				//		QuestionType = model.QuestionType
+				//	};
+
+				//	_context.Questions.Add(newQuestion);
+				//	_context.SaveChanges();
+				//}
+
+				return Json(new { success = true });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { success = false, message = ex.Message });
+			}
 		}
 
 		[HttpPost]

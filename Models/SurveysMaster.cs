@@ -18,4 +18,7 @@ public partial class Survey : EntitiesBase
 
 	[NotMapped] public string StartDate_Text { get; set; }
 	[NotMapped] public string EndDate_Text { get; set; }
+
+	[NotMapped] public List<Question> Questions { get; set; }
+	[NotMapped] public Question Question { get; set; }
 }

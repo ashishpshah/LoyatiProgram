@@ -33,11 +33,22 @@ namespace Seed_Admin.Infra
 
 		public virtual DbSet<Survey> Surveys { get; set; }
 
+		public virtual DbSet<LovMaster> LovMasters { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			//modelBuilder.HasDefaultSchema("padhyaso_Leoz");
 
 			modelBuilder.HasDefaultSchema("padhyaso_seed");
+
+			modelBuilder.Entity<LovMaster>(entity =>
+			{
+				entity.HasNoKey().ToTable("Lov_Master", "dbo");
+
+				entity.Property(e => e.LovCode).HasColumnName("Lov_Code");
+				entity.Property(e => e.LovColumn).HasColumnName("Lov_Column");
+				entity.Property(e => e.LovDesc).HasColumnName("Lov_Desc");
+			});
 
 			modelBuilder.Entity<Question>(entity =>
 			{

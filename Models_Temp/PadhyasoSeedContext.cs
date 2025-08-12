@@ -15,15 +15,7 @@ public partial class PadhyasoSeedContext : DbContext
     {
     }
 
-    public virtual DbSet<Question> Questions { get; set; }
-
-    public virtual DbSet<QuestionOption> QuestionOptions { get; set; }
-
-    public virtual DbSet<Response> Responses { get; set; }
-
-    public virtual DbSet<SurveyResponse> SurveyResponses { get; set; }
-
-    public virtual DbSet<SurveysMaster> SurveysMasters { get; set; }
+    public virtual DbSet<LovMaster> LovMasters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -33,31 +25,15 @@ public partial class PadhyasoSeedContext : DbContext
     {
         modelBuilder.HasDefaultSchema("padhyaso_seed");
 
-        modelBuilder.Entity<Question>(entity =>
+        modelBuilder.Entity<LovMaster>(entity =>
         {
-            entity.ToTable("Questions", "dbo");
-        });
+            entity
+                .HasNoKey()
+                .ToTable("Lov_Master", "dbo");
 
-        modelBuilder.Entity<QuestionOption>(entity =>
-        {
-            entity.ToTable("Question_Options", "dbo");
-        });
-
-        modelBuilder.Entity<Response>(entity =>
-        {
-            entity.ToTable("Responses", "dbo");
-
-            entity.Property(e => e.NumericAnswer).HasColumnType("decimal(18, 2)");
-        });
-
-        modelBuilder.Entity<SurveyResponse>(entity =>
-        {
-            entity.ToTable("SurveyResponses", "dbo");
-        });
-
-        modelBuilder.Entity<SurveysMaster>(entity =>
-        {
-            entity.ToTable("Surveys_Master", "dbo");
+            entity.Property(e => e.LovCode).HasColumnName("Lov_Code");
+            entity.Property(e => e.LovColumn).HasColumnName("Lov_Column");
+            entity.Property(e => e.LovDesc).HasColumnName("Lov_Desc");
         });
 
         OnModelCreatingPartial(modelBuilder);
