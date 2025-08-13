@@ -46,7 +46,7 @@ namespace Seed_Admin.Controllers
 
 			CommonViewModel.SelectListItems = new List<SelectListItem_Custom>();
 
-			var listRole = _context.Using<Role>().GetByCondition(x => x.Id > 1 && x.IsAdmin == false).Select(x => new SelectListItem_Custom(x.Id.ToString(), x.Name, "R")).Distinct().ToList();
+			var listRole = _context.Using<Role>().GetByCondition(x => x.Id > 1 && (x.IsAdmin == false || x.Id == CommonViewModel.Obj.User_Role_Id)).Select(x => new SelectListItem_Custom(x.Id.ToString(), x.Name, "R")).Distinct().ToList();
 
 			if (listRole != null && listRole.Count() > 0) CommonViewModel.SelectListItems.AddRange(listRole);
 

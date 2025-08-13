@@ -115,7 +115,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 			if (RoleId == 1 && listRole.Any(y => y.IsAdmin == true))
 				listMenu = _context.Using<Menu>().GetAll().ToList();
 			else if (RoleId != 1 && listRole.Any(y => y.IsAdmin == true))
-				listMenu = _context.Using<Menu>().GetByCondition(x => x.IsAdmin == true).ToList();
+				listMenu = _context.Using<Menu>().GetByCondition(x => x.IsSuperAdmin == false || x.IsAdmin == true).ToList();
 			else
 				listMenu = _context.Using<Menu>().GetByCondition(x => x.IsSuperAdmin == false && x.IsAdmin == false).ToList();
 

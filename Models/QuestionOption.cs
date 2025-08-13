@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Seed_Admin.Models_Temp;
+namespace Seed_Admin;
 
-public partial class LoyaltyPoint
+public partial class QuestionOption
 {
     public long Id { get; set; }
 
-    public long UserId { get; set; }
+    public long QuestionId { get; set; }
 
-    public long QrcodeId { get; set; }
+    public string OptionText { get; set; } = null!;
 
-    public decimal Points { get; set; }
+    public string OptionValue { get; set; } = null!;
 
-    public DateTime EarnedDateTime { get; set; }
-
-    public DateTime? ExpiryDateTime { get; set; }
+    public int? DisplayOrder { get; set; }
 
     public bool IsActive { get; set; }
 

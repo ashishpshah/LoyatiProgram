@@ -15,7 +15,7 @@ public partial class PadhyasoSeedContext : DbContext
     {
     }
 
-    public virtual DbSet<LoyaltyPoint> LoyaltyPoints { get; set; }
+    public virtual DbSet<LovMaster> LovMasters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -25,12 +25,15 @@ public partial class PadhyasoSeedContext : DbContext
     {
         modelBuilder.HasDefaultSchema("padhyaso_seed");
 
-        modelBuilder.Entity<LoyaltyPoint>(entity =>
+        modelBuilder.Entity<LovMaster>(entity =>
         {
-            entity.ToTable("LoyaltyPoints", "dbo");
+            entity
+                .HasNoKey()
+                .ToTable("Lov_Master", "dbo");
 
-            entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
-            entity.Property(e => e.QrcodeId).HasColumnName("QRCodeId");
+            entity.Property(e => e.LovCode).HasColumnName("Lov_Code");
+            entity.Property(e => e.LovColumn).HasColumnName("Lov_Column");
+            entity.Property(e => e.LovDesc).HasColumnName("Lov_Desc");
         });
 
         OnModelCreatingPartial(modelBuilder);

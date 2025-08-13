@@ -1,0 +1,92 @@
+﻿@model ResponseModel<Survey>
+
+@{
+	Layout = null;
+}
+
+<form id="formSave" action="@Url.Action("SaveQuestion","Survey")" method="post" class="w-100">
+	<div class="card">
+
+		<div class="card-header">
+			<div class="card-title">
+				<div class="description-block text-left">
+					<h3 class="description-header">Survey : @Model.Obj.Title</h3>
+					<span class="description-text">@Model.Obj.StartDate_Text to @Model.Obj.EndDate_Text</span>
+				</div>
+			</div>
+			@* <input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")"> *@
+
+			<div class="card-tools">
+			</div>
+		</div>
+
+		<div class="card-body">
+			<div class="row no-gooters">
+				<div class="col-md-8">
+					<h4 class="text-left">
+						<strong>Question List</strong>
+					</h4>
+				</div>
+				<div class="col-md-4">
+					<div class="text-right">
+						<button type="button" class="btn btn-primary btn-sm" onclick="fnAddEditQuestion(@Model.Obj.Id, 0)">
+							<i class="fas fa-plus"></i> Add New Question
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="row no-gooters">
+				<div class="col-md-12 my-1 table-responsive">
+					<table class="table table-bordered table-striped table_Common_SrNo" id="table_Question">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Question</th>
+								<th width="10%">Type</th>
+								<th width="10%">Display Order</th>
+								<th width="5%">Status</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model.ObjList != null)
+							{
+								foreach (var item in Model.Obj.Questions.OrderBy(x => x.DisplayOrder))
+								{
+									<tr>
+										<td></td>
+										<td>@item.QuestionText</td>
+										<td>@item.QuestionType_Text</td>
+										<td>@item.DisplayOrder</td>
+										<td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
+										<td>
+											<div class="btn-group">
+												@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+												{
+													<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
+															onclick="fnAddEditQuestion(@item.SurveyId, @item.Id);">
+														<i class="far fa-edit"></i>
+													</button>
+												}
+												@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsDelete == true && item.IsDeleted == false)
+												{
+													<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+															onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed_Question","Survey")?Id=@item.Id&SurveyId=@item.SurveyId');">
+														<i class="far fa-trash-alt"></i>
+													</button>
+												}
+											</div>
+										</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+
+</form>

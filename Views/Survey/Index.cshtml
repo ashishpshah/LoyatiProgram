@@ -1,0 +1,347 @@
+﻿@model ResponseModel<Survey>
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0" data-original="Survey">Survey</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsCreate == true)
+					{
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Survey")');">
+							<i class="fas fa-plus"></i> &nbsp; Add new item
+						</button>
+					}
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+
+		<div class="row no-gooters divformSave_Display d-none">
+			@* <form id="formSave" action="@Url.Action("Save","Survey")" method="post" class="w-100"> *@
+			<div class="col-md-12" id="divformSave"></div>
+			<div class="clearfix"></div>
+			@* <hr />
+			</form> *@
+		</div>
+
+		<div class="row no-gooters divformSave_Hide">
+			<section class="col-md-12">
+				<div class="card">
+					@* <div class="card-header divformSave_Display d-none" style="margin: 5px !important;">
+					<form id="formSave" action="@Url.Action("Save","Survey")" method="post">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+					</form>
+					</div> *@
+
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1 table-responsive" data-col="3" data-order="desc">
+								<table class="table table-bordered table-striped table_Common_SrNo">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th hidden>Ticks</th>
+											<th>Survey Title</th>
+											<th>Description</th>
+											<th width="10%">Start Date & Time</th>
+											<th width="10%">End Date & Time</th>
+											<th width="10%">Created Date & Time</th>
+											<th width="5%">Status</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model.ObjList != null)
+										{
+											foreach (var item in Model.ObjList.OrderByDescending(x => x.CreatedDate?.Ticks))
+											{
+												<tr>
+													<td></td>
+													<td hidden>@item.CreatedDate?.Ticks</td>
+													<td>@item.Title</td>
+													<td>@item.Description</td>
+													<td>@item.StartDate_Text</td>
+													<td>@item.EndDate_Text</td>
+													<td>@item.CreatedDate_Text</td>
+													<td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
+													<td>
+														<div class="btn-group">
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+															{
+																<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Option(s)"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm_Question","Survey")?SurveyId=@item.Id');">
+																	Question(s)
+																</button>
+															}
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+															{
+																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Survey")?Id=@item.Id');">
+																	<i class="far fa-edit"></i>
+																</button>
+															}
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsDelete == true && item.IsDeleted == false)
+															{
+																<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																		onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","Survey")?Id=@item.Id');">
+																	<i class="far fa-trash-alt"></i>
+																</button>
+															}
+														</div>
+													</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+
+		var start = moment().startOf('day');
+		var end = moment().add(7, 'days').endOf('day');
+
+		$(document).ready(function () {
+
+		});
+
+		function updateRangeDisplay(start, end) {
+			if (start.isSame(end, 'minute')) {
+				$('#rangeDateTime span').html(start.format('DD/MM/YYYY hh:mm A'));
+			} else {
+				$('#rangeDateTime span').html(start.format('DD/MM/YYYY hh:mm A') + ' - ' + end.format('DD/MM/YYYY hh:mm A'));
+			}
+			$('#StartDate_Text').val(start.format('YYYY-MM-DD HH:mm:ss')).trigger('change');
+			$('#EndDate_Text').val(end.format('YYYY-MM-DD HH:mm:ss')).trigger('change');
+		}
+
+		function fnParialView_Loaded_Success($id, $IsAlert) {
+
+			$('#rangeDateTime').daterangepicker({
+				showDropdowns: true,
+				minYear: 1901,
+				maxYear: parseInt(moment().format('YYYY'), 10),
+				startDate: moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss').isValid()
+					? moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss')
+					: moment().startOf('day'),
+				endDate: moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss').isValid()
+					? moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss')
+					: moment().add(6, 'days').endOf('day'),
+				timePicker: true,
+				ranges: {
+					'Today': [moment().startOf('day'), moment().endOf('day')],
+					'Tomorrow': [moment().add(1, 'days').startOf('day'), moment().add(1, 'days').endOf('day')],
+					'Next 7 Days': [moment().startOf('day'), moment().add(6, 'days').endOf('day')],
+					'Next 30 Days': [moment().startOf('day'), moment().add(29, 'days')],
+					'This Month': [moment().startOf('month').startOf('day'), moment().endOf('month').endOf('day')],
+					'Next Month': [moment().add(1, 'month').startOf('month').startOf('day'), moment().add(1, 'month').endOf('month').endOf('day')]
+				},
+				locale: { cancelLabel: 'Clear', format: 'DD/MM/YYYY hh:mm A' }
+			}, updateRangeDisplay);
+
+			let drp = $('#rangeDateTime').data('daterangepicker');
+			updateRangeDisplay(drp.startDate, drp.endDate);
+		}
+
+		function fnAddEditQuestion(surveyId, id) {
+			debugger;
+			if (id > 0) {
+				// Fetch existing data first, then open Swal
+				$.ajax({
+					url: '@Url.Action("Partial_AddEditForm_Question", "Survey")?Id=' + id + '&SurveyId=' + surveyId, // Change to your endpoint
+					type: 'GET',
+					data: {},
+					success: function (data) {
+						debugger;
+						openQuestionModal(surveyId, id, data);
+					},
+					error: function () {
+						Swal.fire('Error', 'Could not load question details.', 'error');
+					}
+				});
+			} else {
+				openQuestionModal(surveyId, id, null);
+			}
+		}
+
+		function openQuestionModal(surveyId, id, data) {
+			debugger;
+			Swal.fire({
+				title: (id == 0 ? 'Add' : 'Edit') + ' Question',
+				html: '<input type="hidden" id="questionId" value="' + id + '">' +
+					'<input type="hidden" id="surveyId" value="' + surveyId + '">' +
+					'<div class="mb-3">' +
+					'<label class="m-0">Question Text</label>' +
+					'<input type="text" class="swal2-input my-2" id="questionText" value="' + (data ? data.QuestionText : '') + '">' +
+					'</div>' +
+
+					'<div class="mb-3">' +
+					'<label class="m-0">Question Type</label>' +
+					'<select class="swal2-input my-2" id="questionType">' +
+					'<option value="MCQ">MCQ</option>' +
+					'<option value="Rating">Rating</option>' +
+					'<option value="Text">Text</option>' +
+					'<option value="Yes/No">Yes/No</option>' +
+					'</select>' +
+					'</div>' +
+
+					'<div id="questionOptions" class="mb-3" style="display:none;">' +
+					'<label class="m-0">Options</label>' +
+					'<div id="mcqOptions"></div>' +
+					'<button type="button" class="btn btn-sm btn-primary" id="addOptionBtn">Add Option</button>' +
+					'</div>' +
+
+					'<div id="ratingRange" class="mb-3" style="display:none;">' +
+					'<label class="m-0">Min</label>' +
+					'<input type="number" class="swal2-input my-2" id="ratingMin" value="' + (data && data.Min ? data.Min : 1) + '">' +
+					'<label class="m-0">Max</label>' +
+					'<input type="number" class="swal2-input my-2" id="ratingMax" value="' + (data && data.Max ? data.Max : 5) + '">' +
+					'</div>',
+				didOpen: function () {
+					var $popup = $(Swal.getPopup());
+					var $questionType = $popup.find('#questionType');
+
+					// Preselect question type if editing
+					if (data && data.QuestionType) {
+						$questionType.val(data.QuestionType);
+					}
+
+					// Handle QuestionType change
+					$questionType.on('change', function () {
+						var type = $(this).val();
+						$popup.find('#questionOptions').toggle(type === 'MCQ');
+						$popup.find('#ratingRange').toggle(type === 'Rating');
+					}).trigger('change'); // Trigger once to show relevant section
+
+					// Add MCQ Option button
+					$popup.find('#addOptionBtn').on('click', function () {
+						addMcqOption('');
+					});
+
+					// Function to add MCQ option with delete button
+					function addMcqOption(value) {
+						var $optionRow = $('<div class="d-flex align-items-center my-1"></div>');
+						var $input = $('<input type="text" class="form-control mcq-option" placeholder="Option">').val(value);
+						var $deleteBtn = $('<button type="button" class="btn btn-sm btn-danger ml-2">&times;</button>');
+
+						$deleteBtn.on('click', function () {
+							$optionRow.remove();
+						});
+
+						$optionRow.append($input).append($deleteBtn);
+						$popup.find('#mcqOptions').append($optionRow);
+					}
+
+					// Add existing MCQ options if editing
+					if (data && data.QuestionType === 'MCQ' && data.Options) {
+						data.Options.forEach(function (opt) {
+							addMcqOption(opt);
+						});
+					}
+
+				},
+				showCancelButton: true,
+				confirmButtonText: 'Save'
+			}).then(function (result) {
+				debugger;
+				if (result.isConfirmed) {
+					var popup = $(Swal.getPopup());
+
+					var questionId = popup.find('#questionId').val();
+					var surveyId = popup.find('#surveyId').val();
+					var questionText = popup.find('#questionText').val();
+					var questionType = popup.find('#questionType').val();
+					var options = [];
+
+					if (questionType === 'MCQ') {
+						popup.find('.mcq-option').each(function () {
+							var val = $(this).val();
+							if (val) options.push(val);
+						});
+					}
+
+					var minVal = questionType === 'Rating' ? popup.find('#ratingMin').val() : null;
+					var maxVal = questionType === 'Rating' ? popup.find('#ratingMax').val() : null;
+
+					debugger;
+					// AJAX Save
+					$.ajax({
+						url: '@Url.Action("SaveQuestion", "Survey")', // <-- your backend endpoint
+						method: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify({
+							Id: questionId,
+							SurveyId: surveyId, // <-- make sure you have this value from somewhere
+							QuestionText: questionText,
+							QuestionType: questionType,
+							Options: questionType === 'MCQ' ? options.map(function (opt) { return { Text: opt, Value: opt }; }) : [],
+							Rating: questionType === 'Rating' ? { Text: parseInt(minVal), Value: parseInt(maxVal) } : { Text: 0, Value: 0 },
+							IsYesNo: (questionType === 'Yes/No')
+						}),
+						success: function (response) {
+							debugger;
+							if (response.success) {
+								Swal.fire({
+									icon: 'success',
+									title: 'Saved!',
+									text: 'Your question has been saved successfully.',
+									timer: 1500,
+									showConfirmButton: false
+								}).then(function () {
+									debugger;
+									// reload your table or page here
+									fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm_Question", "Survey")?SurveyId=' + surveyId)
+								});
+							} else {
+								debugger;
+								// Server returned error (e.g. validation failed)
+								popup.find('#questionText')
+									.addClass('swal2-inputerror')
+									.after('<div class="swal2-validation-message" style="display:block;">' + response.message + '</div>');
+							}
+						},
+						error: function () {
+							Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: 'Something went wrong while saving.'
+							});
+						}
+					});
+				}
+			});
+		}
+
+	</script>
+}
+
+
