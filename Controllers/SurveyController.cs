@@ -178,7 +178,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 						CommonViewModel.IsSuccess = true;
 						CommonViewModel.StatusCode = ResponseStatusCode.Success;
 						CommonViewModel.Message = ResponseStatusMessage.Success;
-						CommonViewModel.RedirectURL = Url.Action("Index", "SurveyQuestion", new { id = viewModel.Id });
+						CommonViewModel.RedirectURL = Url.Action("Index", "Survey");
 
 						transaction.Commit();
 
