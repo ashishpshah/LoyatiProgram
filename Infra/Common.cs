@@ -101,10 +101,15 @@ namespace Seed_Admin
 
 		public static string Decrypt(string strText)
 		{
-			if (string.IsNullOrEmpty(strText)) return string.Empty;
-			strText = strText.Replace("-_", "=").Replace('-', '+').Replace('_', '/');
-
-			byte[] byKey = { };
+            if (string.IsNullOrEmpty(strText) ||
+       strText.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) ||
+       strText.EndsWith(".css", StringComparison.OrdinalIgnoreCase) ||
+       strText.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
+            strText = strText.Replace("-_", "=").Replace('-', '+').Replace('_', '/');
+            byte[] byKey = { };
 			byte[] IV = {
 							0x12,
 							0x34,
