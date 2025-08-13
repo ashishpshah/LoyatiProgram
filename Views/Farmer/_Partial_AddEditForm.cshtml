@@ -1,0 +1,216 @@
+﻿@model ResponseModel<Farmer>
+
+@{
+	Layout = null;
+}
+
+<div class="col-md-12">
+	<div class="card card-primary card-outline">
+
+		<div class="card-header">
+			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") Farmer</h3>
+			<input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
+			
+		</div>
+
+		<div class="card-body">
+			<div class="row no-gutters">
+				<div class="col-12">
+					<div class="form-group row">
+						<label for="Obj.FarmerName" class="col-sm-2 col-form-label text-right">User ID<span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" id="User_ID" name="User_ID" value="@Model.Obj.User_ID" placeholder="User ID" autocomplete="off">
+						</div>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Password</label>
+						<div class="col-sm-4">
+							<div class="input-group mb-3">
+								<input type="password" data-altType="text" class="form-control form-control-sm" id="Password" name="Password" placeholder="********" autocomplete="off" value="@Model.Obj.Password">
+								<div class="input-group-append">
+									<div class="input-group-text">
+										<i class="fa fa-eye-slash" data-defaultClass="fa-eye-slash" data-altClass="fa-eye" onclick="fnShow_Password('Password', this)" style="cursor: pointer;"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="form-group row">						
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Aadhar No</label>
+						<div class="col-sm-4">
+							
+								<input type="text" class="form-control form-control-sm" id="AadharNumber" name="AadharNumber" value="@Model.Obj.AadharNumber" placeholder="Aadhar No" autocomplete="off">
+							
+						</div>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Land Size</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" id="Land_Size" name="Land_Size" value="@Model.Obj.Land_Size" placeholder="Land Size" autocomplete="off">
+						</div>
+					</div>					
+					<div class="form-group row">						
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Country</label>
+						<div class="col-sm-4">
+
+							<select class="form-control show-tick select2" id="Country_Id" name="Country_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'STATE', '#State_Id')">
+									<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Country"))
+										{
+											if (item.Value.ToUpper() == Model.Obj.Country_Id.ToString())
+											{
+												<option value="@item.Value" selected>@item.Text</option>
+											}
+											else
+											{
+												<option value="@item.Value">@item.Text</option>
+											}
+									}
+								}
+							</select>		
+
+						</div>
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">State</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="State_Id" name="State_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'DISTRICT', '#District_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "State"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.State_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">District</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="District_Id" name="District_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'TALUKA', '#Taluka_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "District"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.District_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Taluka</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="Taluka_Id" name="Taluka_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'VILLAGE', '#Village_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Taluka"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.Taluka_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>						
+					</div>
+					<div class="form-group row">
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Village</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="Village_Id" name="Village_Id">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Village"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.Village_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">PinCode</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm isNumberKey" id="PinCode" name="PinCode" value="@Model.Obj.PinCode" placeholder="PinCode" autocomplete="off" maxlength="6">
+						</div>
+					</div>
+
+
+					<div class="form-group row">
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Preferred Language</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="Preferred_Language" name="Preferred_Language">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "PREFERRED_LANGUAGE"))
+									{
+										if (item.Value.ToString() == Model.Obj.Preferred_Language.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>
+					
+					</div>
+
+				</div>
+				
+			</div>
+			
+		</div>
+
+		<div class="card-footer">
+			<div class="row no-gutters">
+				<div class="col-sm-1">&nbsp;</div>
+				<div class="col-sm-12 text-center">
+					<button type="submit" class="btn btn-primary btnSubmit">Save</button>
+					<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave','#table_Common_SrNo')">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script type="text/javascript">
+		$(document).ready(function () {
+
+		});
+	</script>
+}
+

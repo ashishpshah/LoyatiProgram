@@ -466,15 +466,15 @@ function GetMonthName(monthNumber) {
     return months[monthNumber - 1];
 }
 
-function fnShow_Password($id, $id_toggle) {
-
-    const togglePassword = document.querySelector('#' + $id_toggle);
-    const password = document.querySelector('#' + $id);
+function fnShow_Password(passwordId, toggleIconElement) {
+    const password = document.getElementById(passwordId);
     const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
     password.setAttribute('type', type);
-    togglePassword.classList.toggle('fa-eye-slash');
-}
 
+    // Toggle the icon class
+    toggleIconElement.classList.toggle('fa-eye-slash');
+    toggleIconElement.classList.toggle('fa-eye');
+}
 function ShowLoader(isShow) {
 
     if (isShow == true) {
@@ -626,30 +626,21 @@ function fnLoadParialView($id, url) {
 
 }
 
-function fnCloseParialView($id) {
-
+function fnCloseParialView($id, $reload_Id) {
     $('#' + $id).html('');
     $('.' + $id + '_Hide').removeClass('d-none');
     $('.' + $id + '_Display').addClass('d-none');
 
-    //try { fnLoadCommonTable('#table_Common'); } catch { }
-    //try { fnLoadCommonTable('.table_Common'); } catch { }
+    if (typeof $reload_Id != 'undefined' && $reload_Id != null && $reload_Id.length != 0) {
 
-    //try { fnLoadCommonTable_SrNo('#table_Common_SrNo'); } catch { }
-    //try { fnLoadCommonTable_SrNo('.table_Common_SrNo'); } catch { }
+        if ($reload_Id.indexOf('SrNo') > -1)
+            try { location.reload(); fnLoadCommonTable_SrNo('#table_Common_SrNo'); } catch { }
+        else if ($reload_Id.indexOf('buttons') > -1)
+            try { fnLoadCommonTable_Buttons('#table_Common_buttons'); } catch { }
+        else
+            try { fnLoadCommonTable('#table_Common'); } catch { }
 
-    //try { fnLoadCommonTable_Buttons('#table_Common_buttons'); } catch { }
-    //try { fnLoadCommonTable_Buttons('.table_Common_buttons'); } catch { }
-
-
-    try { dataTable_CommonTable.ajax.reload(); } catch { }
-    try { dataTable_CommonTable_SrNo.ajax.reload(); } catch { }
-    try { dataTable_CommonTable_Buttons.ajax.reload(); } catch { }
-
-
-    try { fnParialView_Close_Success($id); } catch { }
-
-    //window.location.reload();
+    }
 }
 
 function fnClearFormData($selector) {
@@ -944,7 +935,7 @@ function fnDelete_Confirm(url, msg = null) {
                     data: null,
                     success: function (response) {
                         ShowLoader(false);
-
+                        debugger;
                         try {
                             if (response.StatusCode === 1) {
                                 if (typeof response.IsConfirm != 'undefined' && response.IsConfirm != null && response.IsConfirm != '' && response.IsConfirm == true)
@@ -1263,7 +1254,7 @@ function fnLoadCommonTable_SrNo($selector) {
         searching: true,
         ordering: true,
         info: true,
-        autoWidth: true,
+        autoWidth: false,
         responsive: true,
         pageLength: 25,
         lengthMenu: [

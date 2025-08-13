@@ -1,0 +1,172 @@
+﻿@model ResponseModel<Product>
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+@section Styles {
+	<style>
+		.eye-pass {
+			position: absolute;
+			margin-top: 15px;
+			top: -4px;
+			right: 0;
+			margin-right: 35px;
+			cursor: pointer;
+		}
+
+		input[type=password]::-ms-reveal,
+		input[type=password]::-ms-clear {
+			display: none;
+		}
+	</style>
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Product</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@*@if (Model.IsCreate == true)
+					{*@
+					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Product")');">
+						<i class="fas fa-plus"></i> &nbsp; Add Product
+					</button>
+					@*}*@
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+			<div class="col-12">
+				<form id="formSave" asp-controller="Product" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+		<div class="row clearfix pt-2">
+			<div class="col-12">
+				<div class="card card-primary card-outline">
+
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1">
+								<table class="table table-bordered table-striped table_Common_SrNo">
+									<thead>
+										<tr>
+											<th>#</th>
+											@* <th>User ID</th> *@
+											<th>Product ID</th>											
+											<th>Product Name</th>	
+											<th>Unit Measurement</th>											
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.ObjList)
+										{
+											<tr>
+												<td></td>
+												@* <td>@item.User_ID</td> *@
+												<td>@item.Product_ID</td>
+												<td>@item.Name</td>
+												<td>@item.UOM_TEXT</td>																								
+												<td>
+													<div class="btn-group">
+														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Product")?Id=@item.Id');">
+															<i class="far fa-edit"></i>
+														</button>
+
+														<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed", "Product")?Id=@item.Id');">
+															<i class="far fa-trash-alt"></i>
+														</button>
+
+													</div>
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+		$(document).ready(function () {
+			//$('[data-toggle="tooltip"]').tooltip();
+			$('[data-toggle="tooltip"]').tooltip();
+
+			$('.btn').on('click', function () {
+				$(this).tooltip('hide'); // Hide the tooltip
+			});
+		});
+
+		function fnChange_CountryStateCityDistrictVillageTaluka($this, $type, $selector) {
+
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				ShowLoader(true);
+
+				 if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'STATE') {
+					$('#District_Id').empty().append('<option value="0">-- Select --</option>');
+					$('#Village_Id').empty().append('<option value="0">-- Select --</option>');
+					$('#Taluka_Id').empty().append('<option value="0">-- Select --</option>');
+				 }
+				 else if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'DISTRICT') {
+					$('#Village_Id').empty().append('<option value="0">-- Select --</option>');
+					$('#Taluka_Id').empty().append('<option value="0">-- Select --</option>');
+				 }
+				 else if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'VILLAGE') {
+					$('#Taluka_Id').empty().append('<option value="0">-- Select --</option>');
+				 }
+
+				
+
+
+				var stateDropdown = $($selector);
+				stateDropdown.empty();
+				stateDropdown.append('<option value="0">-- Select --</option>');
+
+				var $url = '@Url.Action("GetCountryStateDistrictVillageTaluka", "Product")?Type=' + $type + '&ParentId=' + $($this).val();
+
+				$.ajax({
+					url: $url,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						debugger;
+						ShowLoader(false);
+						$.each(response, function (index, state) {
+							stateDropdown.append('<option value="' + state.Value + '">' + state.Text + '</option>');
+						});
+
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+
+		}
+		
+
+	</script>
+}
