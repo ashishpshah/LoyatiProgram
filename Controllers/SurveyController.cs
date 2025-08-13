@@ -91,14 +91,8 @@ namespace Seed_Admin.Areas.Admin.Controllers
 				{
 					CommonViewModel.Obj.Question = CommonViewModel.Obj.Questions[index];
 
-					if (CommonViewModel.Obj.Question.QuestionType == "MCQ")
-						CommonViewModel.Obj.Question.Options = _context.Using<QuestionOption>().GetByCondition(x => x.QuestionId == Id).Select(x => new OptionDto() { Text = x.OptionText, Value = x.OptionValue }).ToList();
-					else if (CommonViewModel.Obj.Question.QuestionType == "RAT")
-					{
-						var ratOptions = _context.Using<QuestionOption>().GetByCondition(x => x.QuestionId == Id).Select(x => (x.OptionText, x.OptionValue)).ToList();
-
-						CommonViewModel.Obj.Question.Rating = new OptionDto() { Text = ratOptions.Where(x => x.OptionText == "MIN").Select(x => x.OptionText).FirstOrDefault(), Value = ratOptions.Where(x => x.OptionText == "MAX").Select(x => x.OptionValue).FirstOrDefault() };
-					}
+					if (CommonViewModel.Obj.Question.QuestionType == "MCQ" || CommonViewModel.Obj.Question.QuestionType == "RAT")
+						CommonViewModel.Obj.Question.Options = _context.Using<QuestionOption>().GetByCondition(x => x.QuestionId == Id && x.IsDeleted == false).Select(x => new OptionDto() { Id = x.Id, Text = x.OptionText, Value = x.OptionValue }).ToList();
 
 				}
 
@@ -204,51 +198,103 @@ namespace Seed_Admin.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult SaveQuestion([FromBody] Question model)
+		public ActionResult SaveQuestion(Question viewModel)
 		{
-			if (string.IsNullOrWhiteSpace(model.QuestionText))
+			if (viewModel == null || string.IsNullOrWhiteSpace(viewModel.QuestionText))
 			{
 				return Json(new { success = false, message = "Question Text is required." });
 			}
-
-			try
+			else if (viewModel != null && !string.IsNullOrWhiteSpace(viewModel.QuestionText) && string.IsNullOrWhiteSpace(viewModel.QuestionType))
 			{
-				//if (model.Id > 0)
-				//{
-				//	// Update existing question
-				//	var existing = _context.Questions.FirstOrDefault(q => q.Id == model.Id);
-				//	if (existing == null)
-				//	{
-				//		return Json(new { success = false, message = "Question not found." });
-				//	}
-
-				//	existing.QuestionText = model.QuestionText;
-				//	existing.QuestionType = model.QuestionType;
-				//	// If MCQ, you might save options to another table here
-				//	// If Rating, save min/max to another table or columns
-
-				//	_context.SaveChanges();
-				//}
-				//else
-				//{
-				//	// Create new question
-				//	var newQuestion = new Question
-				//	{
-				//		SurveyId = model.SurveyId,
-				//		QuestionText = model.QuestionText,
-				//		QuestionType = model.QuestionType
-				//	};
-
-				//	_context.Questions.Add(newQuestion);
-				//	_context.SaveChanges();
-				//}
-
-				return Json(new { success = true });
+				return Json(new { success = false, message = "Question Type is required." });
 			}
-			catch (Exception ex)
+			else if (viewModel != null && !string.IsNullOrWhiteSpace(viewModel.QuestionText) && !string.IsNullOrWhiteSpace(viewModel.QuestionType) && viewModel.QuestionType.ToUpper() == "MCQ" && (viewModel.Options == null || viewModel.Options.Where(x => x.Text.ToUpper() != "MIN" && x.Text.ToUpper() != "MAX").Count() <= 0))
 			{
-				return Json(new { success = false, message = ex.Message });
+				return Json(new { success = false, message = "Option(s) is required." });
 			}
+			else if (viewModel != null && !string.IsNullOrWhiteSpace(viewModel.QuestionText) && !string.IsNullOrWhiteSpace(viewModel.QuestionType) && viewModel.QuestionType.ToUpper() == "RAT" && (viewModel.Options == null || viewModel.Options.Where(x => x.Text.ToUpper() == "MIN" || x.Text.ToUpper() == "MAX").Count() <= 0))
+			{
+				return Json(new { success = false, message = "Min and Max Rating is required." });
+			}
+			else if (_context.Using<Question>().Any(x => x.QuestionText.ToLower().Replace(" ", "") == viewModel.QuestionText.ToLower().Replace(" ", "") && x.Id != viewModel.Id && x.SurveyId == viewModel.SurveyId))
+			{
+				return Json(new { success = false, message = "Question already exist. Please try another Question." });
+			}
+
+			using (var transaction = _context.BeginTransaction())
+			{
+				try
+				{
+					Question obj = _context.Using<Question>().GetByCondition(x => x.Id == viewModel.Id && x.SurveyId == viewModel.SurveyId).FirstOrDefault();
+
+					if (obj != null)
+					{
+						obj.QuestionText = viewModel.QuestionText;
+						obj.QuestionType = viewModel.QuestionType;
+
+						obj.IsActive = true;
+						obj.IsDeleted = obj.IsActive ? false : obj.IsDeleted;
+
+						_context.Using<Question>().Update(obj);
+					}
+					else
+					{
+						viewModel.DisplayOrder = (_context.Using<Question>().GetByCondition(x => x.SurveyId == viewModel.SurveyId).OrderByDescending(x => x.DisplayOrder).Select(x => x.DisplayOrder).FirstOrDefault() ?? 0) + 1;
+						viewModel.IsActive = true;
+						viewModel.IsDeleted = viewModel.IsActive ? false : viewModel.IsDeleted;
+
+						var _viewModel = _context.Using<Question>().Add(viewModel);
+						viewModel.Id = _viewModel.Id;
+					}
+
+					if (viewModel.QuestionType.ToUpper() == "MCQ" || viewModel.QuestionType.ToUpper() == "RAT")
+					{
+						if (viewModel.Options != null && viewModel.Options.Count() > 0)
+						{
+							for (int i = 0; i < viewModel.Options.Count(); i++)
+							{
+								if (!string.IsNullOrWhiteSpace(viewModel.Options[i].Text))
+								{
+									var existingOption = _context.Using<QuestionOption>().GetByCondition(x => x.Id == viewModel.Options[i].Id && x.QuestionId == viewModel.Id).FirstOrDefault();
+
+									if (existingOption != null)
+									{
+										existingOption.OptionText = viewModel.Options[i].Text;
+										existingOption.OptionValue = viewModel.Options[i].Value ?? "";
+
+										_context.Using<QuestionOption>().Update(existingOption);
+									}
+									else
+									{
+										var questionOption = new QuestionOption
+										{
+											QuestionId = viewModel.Id,
+											OptionText = viewModel.Options[i].Text,
+											OptionValue = viewModel.Options[i].Value ?? ""
+										};
+
+										var _viewModel = _context.Using<QuestionOption>().Add(questionOption);
+										viewModel.Options[i].Id = _viewModel.Id;
+									}
+								}
+							}
+
+							var existingOptions = _context.Using<QuestionOption>().GetByCondition(x => x.QuestionId == viewModel.Id).ToList();
+
+							foreach (var option in existingOptions)
+								if (viewModel.Options != null && !viewModel.Options.Any(x => x.Id == option.Id))
+									_context.Using<QuestionOption>().Delete(option);
+						}
+					}
+
+					transaction.Commit();
+
+					return Json(new { success = true });
+				}
+				catch (Exception ex) { transaction.Rollback(); }
+			}
+
+			return Json(new { success = false, message = ResponseStatusMessage.Error });
 		}
 
 		[HttpPost]

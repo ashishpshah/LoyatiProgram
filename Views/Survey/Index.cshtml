@@ -146,47 +146,44 @@
 
 		function fnParialView_Loaded_Success($id, $IsAlert) {
 
-			$('#rangeDateTime').daterangepicker({
-				showDropdowns: true,
-				minYear: 1901,
-				maxYear: parseInt(moment().format('YYYY'), 10),
-				startDate: moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss').isValid()
-					? moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss')
-					: moment().startOf('day'),
-				endDate: moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss').isValid()
-					? moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss')
-					: moment().add(6, 'days').endOf('day'),
-				timePicker: true,
-				ranges: {
-					'Today': [moment().startOf('day'), moment().endOf('day')],
-					'Tomorrow': [moment().add(1, 'days').startOf('day'), moment().add(1, 'days').endOf('day')],
-					'Next 7 Days': [moment().startOf('day'), moment().add(6, 'days').endOf('day')],
-					'Next 30 Days': [moment().startOf('day'), moment().add(29, 'days')],
-					'This Month': [moment().startOf('month').startOf('day'), moment().endOf('month').endOf('day')],
-					'Next Month': [moment().add(1, 'month').startOf('month').startOf('day'), moment().add(1, 'month').endOf('month').endOf('day')]
-				},
-				locale: { cancelLabel: 'Clear', format: 'DD/MM/YYYY hh:mm A' }
-			}, updateRangeDisplay);
+			if (typeof $('#' + $id + ' #rangeDateTime') != 'undefined' && $('#' + $id + ' #rangeDateTime') != null && $('#' + $id + ' #rangeDateTime').length > 0) {
+				$('#rangeDateTime').daterangepicker({
+					showDropdowns: true,
+					minYear: 1901,
+					maxYear: parseInt(moment().format('YYYY'), 10),
+					startDate: moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss').isValid()
+						? moment($('#rangeDateTime').data('start'), 'YYYY-MM-DD HH:mm:ss')
+						: moment().startOf('day'),
+					endDate: moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss').isValid()
+						? moment($('#rangeDateTime').data('end'), 'YYYY-MM-DD HH:mm:ss')
+						: moment().add(6, 'days').endOf('day'),
+					timePicker: true,
+					ranges: {
+						'Today': [moment().startOf('day'), moment().endOf('day')],
+						'Tomorrow': [moment().add(1, 'days').startOf('day'), moment().add(1, 'days').endOf('day')],
+						'Next 7 Days': [moment().startOf('day'), moment().add(6, 'days').endOf('day')],
+						'Next 30 Days': [moment().startOf('day'), moment().add(29, 'days')],
+						'This Month': [moment().startOf('month').startOf('day'), moment().endOf('month').endOf('day')],
+						'Next Month': [moment().add(1, 'month').startOf('month').startOf('day'), moment().add(1, 'month').endOf('month').endOf('day')]
+					},
+					locale: { cancelLabel: 'Clear', format: 'DD/MM/YYYY hh:mm A' }
+				}, updateRangeDisplay);
 
-			let drp = $('#rangeDateTime').data('daterangepicker');
-			updateRangeDisplay(drp.startDate, drp.endDate);
+				let drp = $('#rangeDateTime').data('daterangepicker');
+				updateRangeDisplay(drp.startDate, drp.endDate);
+			}
 		}
 
 		function fnAddEditQuestion(surveyId, id) {
-			debugger;
+
 			if (id > 0) {
 				// Fetch existing data first, then open Swal
 				$.ajax({
 					url: '@Url.Action("Partial_AddEditForm_Question", "Survey")?Id=' + id + '&SurveyId=' + surveyId, // Change to your endpoint
 					type: 'GET',
 					data: {},
-					success: function (data) {
-						debugger;
-						openQuestionModal(surveyId, id, data);
-					},
-					error: function () {
-						Swal.fire('Error', 'Could not load question details.', 'error');
-					}
+					success: function (data) { openQuestionModal(surveyId, id, data); },
+					error: function () { Swal.fire('Error', 'Could not load question details.', 'error'); }
 				});
 			} else {
 				openQuestionModal(surveyId, id, null);
@@ -194,23 +191,24 @@
 		}
 
 		function openQuestionModal(surveyId, id, data) {
-			debugger;
+
 			Swal.fire({
 				title: (id == 0 ? 'Add' : 'Edit') + ' Question',
 				html: '<input type="hidden" id="questionId" value="' + id + '">' +
 					'<input type="hidden" id="surveyId" value="' + surveyId + '">' +
 					'<div class="mb-3">' +
 					'<label class="m-0">Question Text</label>' +
-					'<input type="text" class="swal2-input my-2" id="questionText" value="' + (data ? data.QuestionText : '') + '">' +
+					//'<input type="text" class="swal2-input m-1 mx-2" id="questionText" value="' + (data ? data.QuestionText : '') + '">' +
+					'<textarea id="questionText" class="form-control m-1 mx-2" rows="5">' + (data ? data.QuestionText : '') + '</textarea>' +
 					'</div>' +
 
 					'<div class="mb-3">' +
 					'<label class="m-0">Question Type</label>' +
-					'<select class="swal2-input my-2" id="questionType">' +
+					'<select class="swal2-input m-1 mx-2" id="questionType">' +
 					'<option value="MCQ">MCQ</option>' +
-					'<option value="Rating">Rating</option>' +
-					'<option value="Text">Text</option>' +
-					'<option value="Yes/No">Yes/No</option>' +
+					'<option value="RAT">Rating</option>' +
+					'<option value="TEXT">Text</option>' +
+					'<option value="YN">Yes/No</option>' +
 					'</select>' +
 					'</div>' +
 
@@ -222,9 +220,9 @@
 
 					'<div id="ratingRange" class="mb-3" style="display:none;">' +
 					'<label class="m-0">Min</label>' +
-					'<input type="number" class="swal2-input my-2" id="ratingMin" value="' + (data && data.Min ? data.Min : 1) + '">' +
+					'<input type="number" class="swal2-input m-1 mx-2 rat-min-option" id="ratingMin" value="1">' +
 					'<label class="m-0">Max</label>' +
-					'<input type="number" class="swal2-input my-2" id="ratingMax" value="' + (data && data.Max ? data.Max : 5) + '">' +
+					'<input type="number" class="swal2-input m-1 mx-2 rat-max-option" id="ratingMax" value="5">' +
 					'</div>',
 				didOpen: function () {
 					var $popup = $(Swal.getPopup());
@@ -232,25 +230,41 @@
 
 					// Preselect question type if editing
 					if (data && data.QuestionType) {
+						debugger;
 						$questionType.val(data.QuestionType);
+
+						$popup.find('#swal2-validation-message').html('');
+						$popup.find('#swal2-validation-message').css('display', 'none');
+						$popup.find('.swal2-actions button').removeAttr('disabled');
 					}
 
 					// Handle QuestionType change
 					$questionType.on('change', function () {
 						var type = $(this).val();
 						$popup.find('#questionOptions').toggle(type === 'MCQ');
-						$popup.find('#ratingRange').toggle(type === 'Rating');
+						$popup.find('#ratingRange').toggle(type === 'RAT');
+
+						$popup.find('#mcqOptions').html(''); // Clear previous options
+						$popup.find('#ratingMin').val(1);
+						$popup.find('#ratingMax').val(5);
+
+						$popup.find('#swal2-validation-message').html('');
+						$popup.find('#swal2-validation-message').css('display', 'none');
+						$popup.find('.swal2-actions button').removeAttr('disabled');
 					}).trigger('change'); // Trigger once to show relevant section
 
 					// Add MCQ Option button
 					$popup.find('#addOptionBtn').on('click', function () {
-						addMcqOption('');
+						addMcqOption({ Id: 0, Text: '' });
+						$popup.find('#swal2-validation-message').html('');
+						$popup.find('#swal2-validation-message').css('display', 'none');
+						$popup.find('.swal2-actions button').removeAttr('disabled');
 					});
 
 					// Function to add MCQ option with delete button
-					function addMcqOption(value) {
+					function addMcqOption(option) {
 						var $optionRow = $('<div class="d-flex align-items-center my-1"></div>');
-						var $input = $('<input type="text" class="form-control mcq-option" placeholder="Option">').val(value);
+						var $input = $('<input type="text" class="form-control mcq-option" placeholder="Option" data-id=' + option.Id + '>').val(option.Text);
 						var $deleteBtn = $('<button type="button" class="btn btn-sm btn-danger ml-2">&times;</button>');
 
 						$deleteBtn.on('click', function () {
@@ -263,79 +277,113 @@
 
 					// Add existing MCQ options if editing
 					if (data && data.QuestionType === 'MCQ' && data.Options) {
+						debugger;
 						data.Options.forEach(function (opt) {
 							addMcqOption(opt);
 						});
 					}
 
-				},
-				showCancelButton: true,
-				confirmButtonText: 'Save'
-			}).then(function (result) {
-				debugger;
-				if (result.isConfirmed) {
-					var popup = $(Swal.getPopup());
-
-					var questionId = popup.find('#questionId').val();
-					var surveyId = popup.find('#surveyId').val();
-					var questionText = popup.find('#questionText').val();
-					var questionType = popup.find('#questionType').val();
-					var options = [];
-
-					if (questionType === 'MCQ') {
-						popup.find('.mcq-option').each(function () {
-							var val = $(this).val();
-							if (val) options.push(val);
+					// Add existing MCQ options if editing
+					if (data && data.QuestionType === 'RAT' && data.Options) {
+						debugger;
+						data.Options.forEach(function (opt) {
+							if (opt.Text == 'MIN' && opt.Value) {
+								$popup.find('#ratingMin').val(opt.Value);
+							}
+							else if (opt.Text == 'MAX' && opt.Value) {
+								$popup.find('#ratingMax').val(opt.Value);
+							}
 						});
 					}
 
-					var minVal = questionType === 'Rating' ? popup.find('#ratingMin').val() : null;
-					var maxVal = questionType === 'Rating' ? popup.find('#ratingMax').val() : null;
+				},
+				showCancelButton: true,
+				confirmButtonText: 'Save',
+				allowOutsideClick: false,
+				preConfirm: () => {
+					return new Promise((resolve, reject) => {
+						debugger;
+						var popup = $(Swal.getPopup());
 
-					debugger;
-					// AJAX Save
-					$.ajax({
-						url: '@Url.Action("SaveQuestion", "Survey")', // <-- your backend endpoint
-						method: 'POST',
-						contentType: 'application/json',
-						data: JSON.stringify({
-							Id: questionId,
-							SurveyId: surveyId, // <-- make sure you have this value from somewhere
-							QuestionText: questionText,
-							QuestionType: questionType,
-							Options: questionType === 'MCQ' ? options.map(function (opt) { return { Text: opt, Value: opt }; }) : [],
-							Rating: questionType === 'Rating' ? { Text: parseInt(minVal), Value: parseInt(maxVal) } : { Text: 0, Value: 0 },
-							IsYesNo: (questionType === 'Yes/No')
-						}),
-						success: function (response) {
-							debugger;
-							if (response.success) {
-								Swal.fire({
-									icon: 'success',
-									title: 'Saved!',
-									text: 'Your question has been saved successfully.',
-									timer: 1500,
-									showConfirmButton: false
-								}).then(function () {
-									debugger;
-									// reload your table or page here
-									fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm_Question", "Survey")?SurveyId=' + surveyId)
-								});
-							} else {
-								debugger;
-								// Server returned error (e.g. validation failed)
-								popup.find('#questionText')
-									.addClass('swal2-inputerror')
-									.after('<div class="swal2-validation-message" style="display:block;">' + response.message + '</div>');
-							}
-						},
-						error: function () {
-							Swal.fire({
-								icon: 'error',
-								title: 'Error!',
-								text: 'Something went wrong while saving.'
+						var questionId = popup.find('#questionId').val();
+						var surveyId = popup.find('#surveyId').val();
+						var questionText = popup.find('#questionText').val();
+						var questionType = popup.find('#questionType').val();
+						var options = [];
+
+						if (questionType === 'MCQ') {
+							popup.find('.mcq-option').each(function () {
+								var val = { Id: $(this).attr('data-id'), Text: $(this).val() }
+								if (val) options.push(val);
 							});
 						}
+
+						if (questionType === 'RAT') {							
+							options.push({ Id: popup.find('#ratingMin').attr('data-id'), Text: "MIN", Value: popup.find('#ratingMin').val() });
+							options.push({ Id: popup.find('#ratingMax').attr('data-id'), Text: "MAX", Value: popup.find('#ratingMax').val() });
+						}
+
+						let formData = new FormData();
+
+						formData.append("Id", questionId);
+						formData.append("SurveyId", surveyId);
+						formData.append("QuestionText", questionText);
+						formData.append("QuestionType", questionType);
+
+						for (let i = 0; i < options.length; i++) {
+							formData.append(`Options[${i}].Id`, options[i].Id ?? '');
+							formData.append(`Options[${i}].Text`, options[i].Text ?? '');
+							formData.append(`Options[${i}].Value`, options[i].Value ?? '');
+						}
+
+						formData.append("IsYesNo", (questionType === 'YN'));
+
+						debugger;
+
+						// AJAX Save
+						$.ajax({
+							type: 'POST',
+							url: '@Url.Action("SaveQuestion", "Survey")', // <-- your backend endpoint
+							data: formData,
+							cache: false,
+							contentType: false,
+							processData: false,
+							dataType: "json",
+							success: function (response) {
+								debugger;
+								if (response.success) {
+									resolve();
+									$popup.find('.swal2-actions button').removeAttr('disabled');
+								} else {
+									debugger;
+									Swal.showValidationMessage(response.message || "Failed to save");
+									reject();
+									$popup.find('.swal2-actions button').removeAttr('disabled');
+								}
+							},
+							error: function () {
+								Swal.showValidationMessage("Something went wrong while saving.");
+								reject();
+								$popup.find('.swal2-actions button').removeAttr('disabled');
+							}
+						});
+
+					});
+
+					return true;
+				}
+			}).then(function (result) {
+				debugger;
+				if (result.isConfirmed) {
+					Swal.fire({
+						icon: 'success',
+						title: 'Saved!',
+						text: 'Your question has been saved successfully.',
+						showConfirmButton: true
+					}).then(function () {
+						debugger;
+						// reload your table or page here
+						fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm_Question", "Survey")?SurveyId=' + surveyId)
 					});
 				}
 			});

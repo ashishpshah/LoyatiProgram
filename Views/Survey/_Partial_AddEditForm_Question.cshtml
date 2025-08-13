@@ -49,7 +49,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							@if (Model.ObjList != null)
+							@if (Model.Obj != null && Model.Obj.Questions != null)
 							{
 								foreach (var item in Model.Obj.Questions.OrderBy(x => x.DisplayOrder))
 								{

@@ -604,7 +604,7 @@ function fnLoadParialView($id, url) {
                         try { fnLoadCommonTable_Buttons('#table_Common_buttons'); } catch { }
                         try { fnLoadCommonTable_Buttons('.table_Common_buttons'); } catch { }
 
-                        try { fnParialView_Loaded_Success($id, (response.indexOf("Alert") > -1)); } catch { debugger; }
+                        try { fnParialView_Loaded_Success($id, (response.indexOf("Alert") > -1)); } catch (e) { console.error("Error in fnPartialView_Loaded_Success : ", e); }
 
 
                         $('html, body').scrollTop($('#' + $id).offset().top);
@@ -641,10 +641,9 @@ function fnCloseParialView($id) {
     //try { fnLoadCommonTable_Buttons('.table_Common_buttons'); } catch { }
 
 
-    try { dataTable_CommonTable.ajax.reload(); } catch { }
-    try { dataTable_CommonTable_SrNo.ajax.reload(); } catch { }
-    try { dataTable_CommonTable_Buttons.ajax.reload(); } catch { }
-
+    try { if (dataTable_CommonTable != null && dataTable_CommonTable.settings()[0].ajax && dataTable_CommonTable.ajax.url()) dataTable_CommonTable.ajax.reload(); } catch { }
+    try { if (dataTable_CommonTable_SrNo != null && dataTable_CommonTable_SrNo.settings()[0].ajax && dataTable_CommonTable_SrNo.ajax.url()) dataTable_CommonTable_SrNo.ajax.reload(); } catch { }
+    try { if (dataTable_CommonTable_Buttons != null && dataTable_CommonTable_Buttons.settings()[0].ajax && dataTable_CommonTable_Buttons.ajax.url()) dataTable_CommonTable_Buttons.ajax.reload(); } catch { }
 
     try { fnParialView_Close_Success($id); } catch { }
 
@@ -1269,6 +1268,7 @@ function fnLoadCommonTable_SrNo($selector) {
     }
 
     dataTable_CommonTable_SrNo = $($selector).DataTable({
+        destroy: true,
         paging: true,
         lengthChange: true,
         searching: true,

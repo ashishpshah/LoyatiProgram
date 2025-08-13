@@ -15,7 +15,6 @@ public partial class Question : EntitiesBase
 	public string QuestionType { get; set; } = null!;
 	[NotMapped] public string QuestionType_Text { get; set; }
 	[NotMapped] public List<OptionDto> Options { get; set; }
-	[NotMapped] public OptionDto Rating { get; set; }
 	[NotMapped] public bool IsYesNo { get; set; }
 
 	public int? DisplayOrder { get; set; }
@@ -23,6 +22,7 @@ public partial class Question : EntitiesBase
 
 public class OptionDto
 {
+	public long Id { get; set; }
 	public string Text { get; set; }
 	public string Value { get; set; }
 }
