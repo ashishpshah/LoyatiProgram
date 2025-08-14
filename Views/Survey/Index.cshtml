@@ -353,18 +353,18 @@
 								debugger;
 								if (response.success) {
 									resolve();
-									$popup.find('.swal2-actions button').removeAttr('disabled');
+									popup.find('.swal2-actions button').removeAttr('disabled');
 								} else {
 									debugger;
 									Swal.showValidationMessage(response.message || "Failed to save");
 									reject();
-									$popup.find('.swal2-actions button').removeAttr('disabled');
+									popup.find('.swal2-actions button').removeAttr('disabled');
 								}
 							},
 							error: function () {
 								Swal.showValidationMessage("Something went wrong while saving.");
 								reject();
-								$popup.find('.swal2-actions button').removeAttr('disabled');
+								popup.find('.swal2-actions button').removeAttr('disabled');
 							}
 						});
 
