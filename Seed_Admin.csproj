@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\BatchController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Views\LoyaltyPoint\Index1.cshtml" />
   </ItemGroup>
 

@@ -1,0 +1,337 @@
+﻿@model ResponseModel<ProductBatch>
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Product Batch</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsCreate == true)
+					{
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","ProductBatch")');">
+							<i class="fas fa-plus"></i> &nbsp; Add new item
+						</button>
+					}
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+
+		<div class="row no-gooters divformSave_Display d-none">
+			<div class="col-md-12" id="divformSave"></div>
+			<div class="clearfix"></div>
+		</div>
+
+		<div class="row no-gooters divformSave_Hide">
+			<section class="col-md-12">
+				<div class="card">
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1 table-responsive" data-col="3" data-order="desc">
+								<table class="table table-bordered table-striped table_Common_SrNo">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th hidden>Ticks</th>
+											<th>Batch No.</th>
+											<th>Product</th>
+											<th width="10%">QR Code Count</th>
+											<th width="10%">Manufacture Date</th>
+											<th width="10%">Expiry Date</th>
+											<th width="10%">Created Date & Time</th>
+											@* <th width="5%">Status</th> *@
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model.ObjList != null)
+										{
+											foreach (var item in Model.ObjList.OrderByDescending(x => x.CreatedDate?.Ticks))
+											{
+												<tr>
+													<td></td>
+													<td hidden>@item.CreatedDate?.Ticks</td>
+													<td>@item.BatchNo</td>
+													<td>@item.Product_Text</td>
+													<td></td>
+													<td>@item.MfgBy_Text</td>
+													<td>@item.ExpiryDate_Text</td>
+													<td>@item.CreatedDate_Text</td>
+													@* <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td> *@
+													<td>
+														<div class="btn-group">
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+															{
+																<button type="button" class="btn btn-success btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="View"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","ProductBatch")?Id=@item.Id&IsProductQRView=true');">
+																	<i class="far fa-eye"></i>
+																</button>
+															}
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
+															{
+																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","ProductBatch")?Id=@item.Id');">
+																	<i class="far fa-edit"></i>
+																</button>
+															}
+															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsDelete == true && item.IsDeleted == false)
+															{
+																<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																		onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","ProductBatch")?Id=@item.Id');">
+																	<i class="far fa-trash-alt"></i>
+																</button>
+															}
+														</div>
+													</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+
+		});
+
+		function fnSubmitForm_Success(response, $id) {
+			if (response.StatusCode === 1) {
+				fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "ProductBatch")?Id=' + response.Data1 + '&IsProductQRView=true');
+			}
+		}
+
+		function fnParialView_Loaded_Success($id, $IsAlert) {
+
+		}
+
+		function openQuestionModal(surveyId, id, data) {
+
+			Swal.fire({
+				title: (id == 0 ? 'Add' : 'Edit') + ' Question',
+				html: '<input type="hidden" id="questionId" value="' + id + '">' +
+					'<input type="hidden" id="surveyId" value="' + surveyId + '">' +
+					'<div class="mb-3">' +
+					'<label class="m-0">Question Text</label>' +
+					//'<input type="text" class="swal2-input m-1 mx-2" id="questionText" value="' + (data ? data.QuestionText : '') + '">' +
+					'<textarea id="questionText" class="form-control m-1 mx-2" rows="5">' + (data ? data.QuestionText : '') + '</textarea>' +
+					'</div>' +
+
+					'<div class="mb-3">' +
+					'<label class="m-0">Question Type</label>' +
+					'<select class="swal2-input m-1 mx-2" id="questionType">' +
+					'<option value="MCQ">MCQ</option>' +
+					'<option value="RAT">Rating</option>' +
+					'<option value="TEXT">Text</option>' +
+					'<option value="YN">Yes/No</option>' +
+					'</select>' +
+					'</div>' +
+
+					'<div id="questionOptions" class="mb-3" style="display:none;">' +
+					'<label class="m-0">Options</label>' +
+					'<div id="mcqOptions"></div>' +
+					'<button type="button" class="btn btn-sm btn-primary" id="addOptionBtn">Add Option</button>' +
+					'</div>' +
+
+					'<div id="ratingRange" class="mb-3" style="display:none;">' +
+					'<label class="m-0">Min</label>' +
+					'<input type="number" class="swal2-input m-1 mx-2 rat-min-option" id="ratingMin" value="1">' +
+					'<label class="m-0">Max</label>' +
+					'<input type="number" class="swal2-input m-1 mx-2 rat-max-option" id="ratingMax" value="5">' +
+					'</div>',
+				didOpen: function () {
+					var $popup = $(Swal.getPopup());
+					var $questionType = $popup.find('#questionType');
+
+					// Preselect question type if editing
+					if (data && data.QuestionType) {
+						debugger;
+						$questionType.val(data.QuestionType);
+
+						$popup.find('#swal2-validation-message').html('');
+						$popup.find('#swal2-validation-message').css('display', 'none');
+						$popup.find('.swal2-actions button').removeAttr('disabled');
+					}
+
+					// Handle QuestionType change
+					$questionType.on('change', function () {
+						var type = $(this).val();
+						$popup.find('#questionOptions').toggle(type === 'MCQ');
+						$popup.find('#ratingRange').toggle(type === 'RAT');
+
+						$popup.find('#mcqOptions').html(''); // Clear previous options
+						$popup.find('#ratingMin').val(1);
+						$popup.find('#ratingMax').val(5);
+
+						$popup.find('#swal2-validation-message').html('');
+						$popup.find('#swal2-validation-message').css('display', 'none');
+						$popup.find('.swal2-actions button').removeAttr('disabled');
+					}).trigger('change'); // Trigger once to show relevant section
+
+					// Add MCQ Option button
+					$popup.find('#addOptionBtn').on('click', function () {
+						addMcqOption({ Id: 0, Text: '' });
+						$popup.find('#swal2-validation-message').html('');
+						$popup.find('#swal2-validation-message').css('display', 'none');
+						$popup.find('.swal2-actions button').removeAttr('disabled');
+					});
+
+					// Function to add MCQ option with delete button
+					function addMcqOption(option) {
+						var $optionRow = $('<div class="d-flex align-items-center my-1"></div>');
+						var $input = $('<input type="text" class="form-control mcq-option" placeholder="Option" data-id=' + option.Id + '>').val(option.Text);
+						var $deleteBtn = $('<button type="button" class="btn btn-sm btn-danger ml-2">&times;</button>');
+
+						$deleteBtn.on('click', function () {
+							$optionRow.remove();
+						});
+
+						$optionRow.append($input).append($deleteBtn);
+						$popup.find('#mcqOptions').append($optionRow);
+					}
+
+					// Add existing MCQ options if editing
+					if (data && data.QuestionType === 'MCQ' && data.Options) {
+						debugger;
+						data.Options.forEach(function (opt) {
+							addMcqOption(opt);
+						});
+					}
+
+					// Add existing MCQ options if editing
+					if (data && data.QuestionType === 'RAT' && data.Options) {
+						debugger;
+						data.Options.forEach(function (opt) {
+							if (opt.Text == 'MIN' && opt.Value) {
+								$popup.find('#ratingMin').val(opt.Value);
+							}
+							else if (opt.Text == 'MAX' && opt.Value) {
+								$popup.find('#ratingMax').val(opt.Value);
+							}
+						});
+					}
+
+				},
+				showCancelButton: true,
+				confirmButtonText: 'Save',
+				allowOutsideClick: false,
+				preConfirm: () => {
+					return new Promise((resolve, reject) => {
+						debugger;
+						var popup = $(Swal.getPopup());
+
+						var questionId = popup.find('#questionId').val();
+						var surveyId = popup.find('#surveyId').val();
+						var questionText = popup.find('#questionText').val();
+						var questionType = popup.find('#questionType').val();
+						var options = [];
+
+						if (questionType === 'MCQ') {
+							popup.find('.mcq-option').each(function () {
+								var val = { Id: $(this).attr('data-id'), Text: $(this).val() }
+								if (val) options.push(val);
+							});
+						}
+
+						if (questionType === 'RAT') {
+							options.push({ Id: popup.find('#ratingMin').attr('data-id'), Text: "MIN", Value: popup.find('#ratingMin').val() });
+							options.push({ Id: popup.find('#ratingMax').attr('data-id'), Text: "MAX", Value: popup.find('#ratingMax').val() });
+						}
+
+						let formData = new FormData();
+
+						formData.append("Id", questionId);
+						formData.append("ProductBatchId", surveyId);
+						formData.append("QuestionText", questionText);
+						formData.append("QuestionType", questionType);
+
+						for (let i = 0; i < options.length; i++) {
+							formData.append(`Options[${i}].Id`, options[i].Id ?? '');
+							formData.append(`Options[${i}].Text`, options[i].Text ?? '');
+							formData.append(`Options[${i}].Value`, options[i].Value ?? '');
+						}
+
+						formData.append("IsYesNo", (questionType === 'YN'));
+
+						debugger;
+
+						// AJAX Save
+						$.ajax({
+							type: 'POST',
+							url: '@Url.Action("SaveQuestion", "ProductBatch")', // <-- your backend endpoint
+							data: formData,
+							cache: false,
+							contentType: false,
+							processData: false,
+							dataType: "json",
+							success: function (response) {
+								debugger;
+								if (response.success) {
+									resolve();
+									$popup.find('.swal2-actions button').removeAttr('disabled');
+								} else {
+									debugger;
+									Swal.showValidationMessage(response.message || "Failed to save");
+									reject();
+									$popup.find('.swal2-actions button').removeAttr('disabled');
+								}
+							},
+							error: function () {
+								Swal.showValidationMessage("Something went wrong while saving.");
+								reject();
+								$popup.find('.swal2-actions button').removeAttr('disabled');
+							}
+						});
+
+					});
+
+					return true;
+				}
+			}).then(function (result) {
+				debugger;
+				if (result.isConfirmed) {
+					Swal.fire({
+						icon: 'success',
+						title: 'Saved!',
+						text: 'Your question has been saved successfully.',
+						showConfirmButton: true
+					}).then(function () {
+						debugger;
+						// reload your table or page here
+						fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm_Question", "ProductBatch")?ProductBatchId=' + surveyId)
+					});
+				}
+			});
+		}
+
+	</script>
+}
+
+

@@ -43,6 +43,9 @@ namespace Seed_Admin
 			Data3 = null;
 			Data4 = null;
 			Data5 = null;
+			
+			SelectListItems = new List<SelectListItem_Custom>();
+
 		}
 
 	}

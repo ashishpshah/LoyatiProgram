@@ -35,23 +35,23 @@
 			background-color: #007D39 !important;
 		}
 		/*
-																				[class*=sidebar-dark-] .sidebar a {
-																					color: #007D39 !important;
-																				}
+																						[class*=sidebar-dark-] .sidebar a {
+																							color: #007D39 !important;
+																						}
 
-																				.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-																					background-color: lightgray !important;
-																				}
+																						.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+																							background-color: lightgray !important;
+																						}
 
-																				.navbar-light .navbar-nav .nav-link {
-																					color: #fff !important;
-																				}
+																						.navbar-light .navbar-nav .nav-link {
+																							color: #fff !important;
+																						}
 
-																				[class*=sidebar-dark] .brand-link {
-																					border-bottom: 0 !important;
-																					color: rgba(255,255,255,.8);
-																				}
-																		 */
+																						[class*=sidebar-dark] .brand-link {
+																							border-bottom: 0 !important;
+																							color: rgba(255,255,255,.8);
+																						}
+																				 */
 		.elevation-4 {
 			box-shadow: none !important;
 		}
@@ -94,6 +94,13 @@
 			height: 1.625em !important;
 			padding: 0 .75em !important;
 		}
+
+		.input-group-text-sm {
+			height: calc(1.8125rem + 2px);
+			padding: .25rem .5rem;
+			font-size: .875rem;
+			line-height: 1.5;
+		}
 	</style>
 
 	<link rel="stylesheet" href="~/Seed_Admin.styles.css" asp-append-version="true" />
@@ -131,7 +138,7 @@
 						<!-- Menu Footer-->
 						<li class="user-footer">
 							<a href="javascript:void(0);" class="btn btn-default btn-flat d-none">&nbsp;</a>
-							<a href="@Url.Action("Logout","Home", new { Area = "" })" class="btn btn-default btn-flat float-right">Log out</a>
+							<a href="@Url.Action("Logout", "Home", new { Area = "" })" class="btn btn-default btn-flat float-right">Log out</a>
 						</li>
 					</ul>
 				</li>
@@ -141,7 +148,7 @@
 		<!-- Main Sidebar Container -->
 		<aside class="main-sidebar sidebar-dark-primary elevation-4">
 			<!-- Brand Logo -->
-			<a href="@Url.Action("Index","Home", new { Area = "" })" class="brand-link">
+			<a href="@Url.Action("Index", "Home", new { Area = "" })" class="brand-link">
 				<img src="~/dist/img/AdminLTELogo.png"
 					 alt="AdminLTE Logo"
 					 class="brand-image img-circle elevation-3"
@@ -157,7 +164,7 @@
 						<!-- Add icons to the links using the .nav-icon class
 							 with font-awesome or any other icon font library -->
 						<li class="nav-item">
-							<a href="@Url.Action("Index","Home", new { Area = "" })" class="nav-link">
+							<a href="@Url.Action("Index", "Home", new { Area = "" })" class="nav-link">
 								<i class="nav-icon fas fa-tachometer-alt"></i>
 								<p> Dashboard</p>
 							</a>
@@ -195,7 +202,7 @@
 													}
 													else
 													{
-														<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.MenuName" class="nav-link">
+														<a href="@(Url.Content("~/") + menuChild.Url)" data-title="@menuChild.MenuName" class="nav-link">
 															<i class="nav-icon fas fa-th"></i>
 															<p>@menuChild.MenuName</p>
 														</a>
@@ -210,14 +217,14 @@
 									<li class="nav-item">
 										@if (string.IsNullOrEmpty(menu.Key.Url))
 										{
-											<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" data-title="@menu.Key.MenuName" class="nav-link">
+											<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area })" data-title="@menu.Key.MenuName" class="nav-link">
 												<i class="nav-icon fas fa-th"></i>
 												<p> @menu.Key.MenuName </p>
 											</a>
 										}
 										else
 										{
-											<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
+											<a href="@(Url.Content("~/") + menu.Key.Url)" data-title="@menu.Key.MenuName" class="nav-link">
 												<i class="nav-icon fas fa-th"></i>
 												<p>@menu.Key.MenuName</p>
 											</a>

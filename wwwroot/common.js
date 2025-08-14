@@ -777,7 +777,7 @@ function fnSubmitForm($id) {
                             if (typeof response.RedirectURL != 'undefined' && response.RedirectURL != null && response.RedirectURL != '')
                                 window.location = response.RedirectURL;
                             else
-                                fnSubmitForm_Success(response, $id);
+                                try { fnSubmitForm_Success(response, $id); } catch { }
                     }
                     else {
                         CommonAlert_Error(response.Message, null)
@@ -882,7 +882,7 @@ function fnSubmitForm_WithoutAlert($id) {
                         if (typeof response.RedirectURL != 'undefined' && response.RedirectURL != null && response.RedirectURL != '')
                             window.location = response.RedirectURL;
                         else
-                            fnSubmitForm_Success(response, $id);
+                            try { fnSubmitForm_Success(response, $id); } catch { }
                     else
                         CommonAlert_Error(response.Message, null);
                 } catch { window.location.reload(); }

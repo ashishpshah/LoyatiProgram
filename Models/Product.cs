@@ -1,4 +1,6 @@
-﻿namespace Seed_Admin
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Seed_Admin
 {
     public class Product : EntitiesBase
     {
@@ -6,6 +8,6 @@
         public string Product_ID { get; set; }
         public string Name { get; set; }
         public string UOM { get; set; }
-        public string UOM_TEXT { get; set; }
+        [NotMapped] public string UOM_TEXT { get; set; }
     }
 }
