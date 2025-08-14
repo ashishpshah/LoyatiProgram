@@ -17,7 +17,7 @@
             <div class="col-sm-6">
                 <div class="float-sm-right">
                     <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","State")?CountryId=@ViewBag.CountryId')">
-                        <i class="fas fa-plus"></i> &nbsp; Add new item
+                        <i class="fas fa-plus"></i> &nbsp; Add State
                     </button>
 
                     <button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display " onclick="fnBackToList('@Url.Action("index","Country")?CountryId=@ViewBag.CountryId');">
@@ -58,7 +58,7 @@
                                             <th>#</th>
                                             <th>StateName</th>
                                             <th>Status</th>
-                                            <th width="40%">Action</th>
+                                            <th width="20%">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -70,7 +70,7 @@
                                                     <td></td>
                                                     <td>@item.StateName</td>
                                                     <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
-                                                    <td width="40%">
+                                                    <td width="20%">
                                                         <div class="btn-group">
 
                                                             <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
@@ -82,11 +82,10 @@
                                                             <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
                                                                     onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","State")?Id=@item.Id&CountryId=@item.CountryId');">
                                                                 <i class="far fa-trash-alt"></i>
-                                                            </button>
-                                                            &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;
-                                                            <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="location.href='@Url.Action("Index","District")?StateId=@item.Id&CountryId=@item.CountryId'">
+                                                            </button>                                                            
+                                                            <button type="button" id="btnAddNewItem" class="btn btn-info btn-sm btn-flat ml-2" onclick="location.href='@Url.Action("Index", "District")?StateId=@item.Id&CountryId=@item.CountryId'">
 
-                                                                <i class="fas fa-plus"></i> &nbsp; Add District
+                                                                District
                                                             </button>
                                                         </div>
                                                     </td>

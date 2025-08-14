@@ -20,7 +20,7 @@
 
                     <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","City")?TalukaId=@ViewBag.TalukaId&DistrictId=@ViewBag.DistrictId&StateId=@ViewBag.StateId&CountryId=@ViewBag.CountryId')">
 
-                        <i class="fas fa-plus"></i> &nbsp; Add new item
+                        <i class="fas fa-plus"></i> &nbsp; Add City
                     </button>
 
                     <button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display" onclick="fnBackToList('@Url.Action("Index","Taluka")?CountryId=@ViewBag.CountryId&StateId=@ViewBag.StateId&DistrictId=@ViewBag.DistrictId');">
@@ -61,7 +61,7 @@
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Status</th>
-                                            <th width="40%">Action</th>
+                                            <th width="20%">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -73,7 +73,7 @@
                                                     <td></td>
                                                     <td>@item.Name</td>
                                                     <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
-                                                    <td width="40%">
+                                                    <td width="20%">
                                                         <div class="btn-group">
 
                                                             <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
