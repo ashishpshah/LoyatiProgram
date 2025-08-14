@@ -43,14 +43,14 @@
 
                     <div class="card-body">
                         <div class="row no-gooters">
-                            <div class="col-md-12 my-1">
+                            <div class="col-md-12 my-1 table-responsive">
                                 <table class="table table-bordered table-striped table_Common_SrNo">
                                     <thead>
                                         <tr>
                                             <th>#</th>
                                             <th>CountryName</th>
                                             <th>Status</th>
-                                            <th width="40%">Action</th>
+                                            <th width="20%">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -62,7 +62,7 @@
                                                     <td></td>
                                                     <td>@item.CountryName</td>
                                                     <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
-                                                    <td width="40%">
+                                                    <td width="20%">
                                                         <div class="btn-group">
                                                            
                                                                 <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
@@ -75,10 +75,10 @@
                                                                         onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","Country")?Id=@item.Id');">
                                                                     <i class="far fa-trash-alt"></i>
                                                                 </button>
-                                                            &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;
-                                                            <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="location.href='@Url.Action("Index","State")?CountryId=@item.Id'">
-                                                                <i class="fas fa-plus"></i> &nbsp; Add State
-                                                            </button>
+
+                                                                <button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="State" onclick="location.href='@Url.Action("Index", "State")?CountryId=@item.Id'">
+                                                                    State
+                                                                </button>
 
                                                             
                                                         </div>

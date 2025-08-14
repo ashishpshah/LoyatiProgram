@@ -19,7 +19,7 @@
 
                     <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Taluka")?DistrictId=@ViewBag.DistrictId&StateId=@ViewBag.StateId&CountryId=@ViewBag.CountryId')">
 
-                        <i class="fas fa-plus"></i> &nbsp; Add new item
+                        <i class="fas fa-plus"></i> &nbsp; Add Taluka
                     </button>
 
                     <button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display" onclick="fnBackToList('@Url.Action("Index","District")?CountryId=@ViewBag.CountryId&StateId=@ViewBag.StateId&DistrictId=@ViewBag.DistrictId');">
@@ -60,7 +60,7 @@
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Status</th>
-                                            <th width="40%">Action</th>
+                                            <th width="20%">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,7 +72,7 @@
                                                     <td></td>
                                                     <td>@item.Name</td>
                                                     <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
-                                                    <td width="40%">
+                                                    <td width="20%">
                                                         <div class="btn-group">
 
                                                             <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
@@ -83,10 +83,8 @@
                                                                     onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","Taluka")?Id=@item.Id&DistrictId=@item.DistrictId&CountryId=@ViewBag.CountryId&StateId=@ViewBag.StateId');">
                                                                 <i class="far fa-trash-alt"></i>
                                                             </button>
-                                                            &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;
-                                                            <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="location.href='@Url.Action("Index","City")?TalukaId=@item.Id&DistrictId=@item.DistrictId&StateId=@ViewBag.StateId&CountryId=@ViewBag.CountryId'">
-
-                                                                <i class="fas fa-plus"></i> &nbsp; Add City
+                                                            <button type="button" id="btnAddNewItem" class="btn btn-info btn-sm btn-flat ml-2" onclick="location.href='@Url.Action("Index", "City")?TalukaId=@item.Id&DistrictId=@item.DistrictId&StateId=@ViewBag.StateId&CountryId=@ViewBag.CountryId'">
+                                                                City
                                                             </button>
                                                         </div>
                                                     </td>
