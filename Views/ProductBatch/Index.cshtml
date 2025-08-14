@@ -17,7 +17,7 @@
 				<div class="float-sm-right">
 					@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsCreate == true)
 					{
-						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","ProductBatch")');">
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "ProductBatch")');">
 							<i class="fas fa-plus"></i> &nbsp; Add new item
 						</button>
 					}
@@ -70,7 +70,7 @@
 													<td>@item.BatchNo</td>
 													<td>@item.Product_Text</td>
 													<td></td>
-													<td>@item.MfgBy_Text</td>
+													<td>@item.MfgDate_Text</td>
 													<td>@item.ExpiryDate_Text</td>
 													<td>@item.CreatedDate_Text</td>
 													@* <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td> *@
@@ -79,21 +79,21 @@
 															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
 															{
 																<button type="button" class="btn btn-success btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="View"
-																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","ProductBatch")?Id=@item.Id&IsProductQRView=true');">
-																	<i class="far fa-eye"></i>
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "ProductBatch")?Id=@item.Id&IsProductQRView=true');">
+																	Product QR Code
 																</button>
 															}
 															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsUpdate == true)
 															{
 																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
-																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","ProductBatch")?Id=@item.Id');">
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "ProductBatch")?Id=@item.Id');">
 																	<i class="far fa-edit"></i>
 																</button>
 															}
 															@if ((Common.IsSuperAdmin() || Common.IsAdmin()) && Model.IsDelete == true && item.IsDeleted == false)
 															{
 																<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
-																		onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","ProductBatch")?Id=@item.Id');">
+																		onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed", "ProductBatch")?Id=@item.Id');">
 																	<i class="far fa-trash-alt"></i>
 																</button>
 															}
@@ -118,6 +118,8 @@
 @section Scripts {
 	<script type="text/javascript">
 
+		var dataTableMain = {};
+
 		$(document).ready(function () {
 
 		});
@@ -130,6 +132,53 @@
 
 		function fnParialView_Loaded_Success($id, $IsAlert) {
 
+			if ($('#divformSave').find('#dataTable_ProductQRCode').length > 0){
+				if ($.fn.DataTable.isDataTable('#dataTable_ProductQRCode')) { $('#dataTable_ProductQRCode').DataTable().destroy(); }
+
+				var batchId = $('#divformSave input[id="Id"]').val();
+
+				dataTableMain = $("#dataTable_ProductQRCode").DataTable({
+					"destroy": true,
+					"pageLength": 50,
+					"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+					"sAjaxSource": "@Url.Action("GetData", "ProductQRCode")",
+					//"sServerMethod": "POST",
+					"bServerSide": true,
+					"bProcessing": true,
+					"bSearchable": true,
+					"order": [[4, 'desc']],
+					"language": { "sInfoFiltered":'', "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+					"fnServerParams": function (aoData) {
+						aoData.push({ "name": "BatchId", "value": batchId });
+					},
+					"columns": [
+						{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+						{ "title": "QR Code", "data": "QrCode", "autoWidth": true, "searchable": true },
+						{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },
+						{ "title": "Product", "data": "Product_Text", "autoWidth": true, "searchable": true },
+						{ "title": "Updated Date & Time", "data": "LastModifiedDate_Text", "autoWidth": true, "searchable": true }
+						,{
+							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+							"render": function (data, type, row, meta) {
+								// if (data.IsClaimed == false)
+								// 	return '<div class="btn-group"><a class="btn btn-danger btn-sm btn-flat ml-2" href="javascript:void(0);" onclick="divShow(\'/DeleteConfirmed?Id=' + data.Id + '\');"><span class="nme"><i class="far fa-trash-alt"></i></span></a></div>';
+								// else 
+								return '';
+							}
+						}
+					],
+					"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+						var index = iDisplayIndexFull + 1;
+						$("td:first", nRow).html(index);
+						return nRow;
+					},
+				   dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+					   "<'row'<'col-sm-12'tr>>" +
+					   "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+					initComplete: function (settings, json) { try { $('#QRCount').val(settings._iRecordsDisplay).trigger('change');}catch{} }
+				});
+
+			}
 		}
 
 		function openQuestionModal(surveyId, id, data) {
@@ -330,6 +379,50 @@
 				}
 			});
 		}
+
+
+		$(document).on('input', '#input_Scan_QR_Code', function (e) {
+			e.preventDefault();
+
+			var qr_code = $(this).val();
+			debugger;
+			qr_code = qr_code.replace(/^https?:\/\/[^\/]+\/?/, "");
+
+			var batchId = $('input[id="Id"]').val();
+
+			if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length >= 15) {
+
+				ShowLoader(true);
+				$.ajax({
+					type: "GET",
+					url: '@Url.Action("Check_QR_Code", "ProductBatch")?qr_code=' + qr_code + '&batchId=' + batchId,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						try { dataTableMain.ajax.reload(); } catch { }
+
+						setTimeout(function () {
+							debugger;
+							try {
+								if (response.StatusCode === 1) { }
+								else { CommonAlert_Error(response.Message); }
+							} catch { window.location.reload(); }
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					},
+					failure: function (response) { CommonAlert_Error(null) },
+					error: function (response) { CommonAlert_Error(null) }
+				});
+			}
+
+			return false;
+		});
+
 
 	</script>
 }

@@ -9,7 +9,14 @@
 	<div class="card card-info">
 
 		<div class="card-header">
-			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") Product Batch</h3>
+			@if ((bool)Model.Data5)
+			{
+				<h3 class="card-title">Scan QR and Add Product in Batch</h3>
+			}
+			else
+			{
+				<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") Product Batch</h3>
+			}
 			<input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
 		</div>
 
@@ -26,7 +33,7 @@
 					<div class="form-group row">
 						<label for="ProductId" class="col-sm-2 col-form-label text-right">Product </label>
 						<div class="col-sm-4">
-							@if (Model.Obj != null && Model.Obj.Id > 0)
+							@if (Model.Obj != null && Model.Obj.Id > 0 && Model.Obj.ProductId > 0)
 							{
 								<input type="text" class="form-control form-control-sm" value="@Model.Obj.Product_Text" readonly />
 							}
@@ -51,36 +58,69 @@
 								</select>
 							}
 						</div>
+
+						@if ((bool)Model.Data5)
+						{
+							<label for="QRCount" class="col-sm-2 col-form-label text-right">Generated QR Code Count</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" id="QRCount" autocomplete="off" readonly />
+							</div>
+						}
 					</div>
 
 					<div class="form-group row">
 						<label for="MfgDate_Text" class="col-sm-2 col-form-label text-right">Manufacture Date</label>
 						<div class="col-sm-4">
-							<input type="text" class="form-control form-control-sm datepicker" id="MfgDate_Text" name="MfgDate_Text" data-value="@Model.Obj.MfgDate_Text" autocomplete="off" @(Model.Obj != null && Model.Obj.Id > 0 ? "readonly" : "") />
+							<input type="text" class="form-control form-control-sm datepicker" id="MfgDate_Text" name="MfgDate_Text" data-value="@Model.Obj.MfgDate_Text" autocomplete="off" @(Model.Obj != null && Model.Obj.MfgDate != null ? "readonly" : "") />
 						</div>
 						<label for="ExpiryDate_Text" class="col-sm-2 col-form-label text-right">Expiry Date</label>
 						<div class="col-sm-4">
-							<input type="text" class="form-control form-control-sm datepicker" id="ExpiryDate_Text" name="ExpiryDate_Text" data-value="@Model.Obj.ExpiryDate_Text" autocomplete="off" @(Model.Obj != null && Model.Obj.Id > 0 ? "readonly" : "") />
+							<input type="text" class="form-control form-control-sm datepicker" id="ExpiryDate_Text" name="ExpiryDate_Text" data-value="@Model.Obj.ExpiryDate_Text" autocomplete="off" @(Model.Obj != null && Model.Obj.ExpiryDate != null ? "readonly" : "") />
 						</div>
 					</div>
 
 				</div>
 			</div>
+
+			@if ((bool)Model.Data5)
+			{
+				<hr />
+				<div class="row no-gutters">
+					<div class="col-sm-12">
+						<div class="form-group row">
+							<label for="input_Scan_QR_Code" class="col-sm-2 col-form-label">Enter OR Code <span class="text-danger">*</span> <span class="float-right">:</span> </label>
+							<div class="col-sm-6">
+								<div class="input-group input-group-sm">
+									<input type="text" id="input_Scan_QR_Code" class="form-control form-control-sm">
+									<span class="input-group-append ml-2">
+										<button type="button" class="btn btn-info btn-flat mr-2" onclick="$('#input_Scan_QR_Code').trigger('input');">Add</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row no-gooters">
+					<div class="col-md-12 my-1">
+						<table class="table table-bordered table-striped table-hover w-100" id="dataTable_ProductQRCode"></table>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			}
 		</div>
 
-		<div class="card-footer">
-			<div class="row no-gutters">
-				<div class="col-sm-1">&nbsp;</div>
-				<div class="col-sm-6 text-left">
-					@if (Model.Obj != null && Model.Obj.Id > 0) { }
-					else
-					{
+		@if (!(bool)Model.Data5)
+		{
+			<div class="card-footer">
+				<div class="row no-gutters">
+					<div class="col-sm-1">&nbsp;</div>
+					<div class="col-sm-6 text-left">
 						<button type="submit" class="btn btn-success btnSubmit">Save</button>
-					}
-					<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '.table_Common_SrNo');">Cancel</button>
+						<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '.table_Common_SrNo');">Cancel</button>
+					</div>
 				</div>
 			</div>
-		</div>
+		}
 	</div>
 
 </form>

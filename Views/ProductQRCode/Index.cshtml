@@ -84,6 +84,7 @@
 					"pageLength": 50,
 					"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
 					"sAjaxSource": "@Url.Action("GetData", "ProductQRCode")",
+					//"sServerMethod": "POST",
 					"bServerSide": true,
 					"bProcessing": true,
 					"bSearchable": true,
@@ -97,6 +98,7 @@
 						{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
 						{ "title": "QR Code", "data": "QrCode", "autoWidth": true, "searchable": true },
 						{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },
+						{ "title": "Product", "data": "Product_Text", "autoWidth": true, "searchable": true },
 						{ "title": "Created Date", "data": "CreatedDate_Text", "autoWidth": true, "searchable": true }
 						@* ,{
 							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",

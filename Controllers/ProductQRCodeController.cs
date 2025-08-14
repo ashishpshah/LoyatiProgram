@@ -18,7 +18,6 @@ namespace Seed_Admin.Areas.Admin.Controllers
             return View(CommonViewModel);
         }
 
-
         [HttpGet]
         public IActionResult GetData(JqueryDatatableParam param)
         {
@@ -27,7 +26,9 @@ namespace Seed_Admin.Areas.Admin.Controllers
             if (Common.IsAdmin())
                 try
                 {
-                    var listQrcode = _context.Using<ProductQrCode>().GetAll();
+                    long batchId = Convert.ToInt64((string)HttpContext.Request.Query["BatchId"] ?? "0");
+
+                    var listQrcode = _context.Using<ProductQrCode>().GetByCondition(x => batchId > 0 ? x.BatchId == batchId : true).ToList();
 
                     var dictProduct = _context.Using<Product>().GetAll().ToDictionary(x => x.Id);
 
@@ -45,7 +46,10 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
                             ProductId = lp?.Id ?? 0,
                             Product_Text = lp?.Name ?? "",
-                            CreatedDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+                            CreatedDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+                            LastModifiedDate_Text = x.LastModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+                            CreatedDate_Ticks = x.CreatedDate?.Ticks ?? 0,
+                            LastModifiedDate_Ticks = x.LastModifiedDate?.Ticks ?? 0
                         };
                     }).ToList();
 
@@ -71,8 +75,9 @@ namespace Seed_Admin.Areas.Admin.Controllers
                         "qrcode" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.QrCode) : query.OrderByDescending(x => x.QrCode),
                         "points" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.Points) : query.OrderByDescending(x => x.Points),
                         "generatedate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.CreatedDate?.Ticks) : query.OrderByDescending(x => x.CreatedDate?.Ticks),
+                        "lastmodifieddate_text" => Convert.ToString(HttpContext.Request.Query["sSortDir_0"]).ToLower() == "asc" ? query.OrderBy(x => x.LastModifiedDate?.Ticks) : query.OrderByDescending(x => x.LastModifiedDate?.Ticks),
 
-                        _ => query.OrderByDescending(x => x.CreatedDate?.Ticks)
+                        _ => query.OrderByDescending(x => batchId > 0 ? x.LastModifiedDate?.Ticks : x.CreatedDate?.Ticks)
                     };
 
                     // Pagination
@@ -84,7 +89,6 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
             return Json(new { param.sEcho, iTotalRecords = 0, iTotalDisplayRecords = 0, aaData = new JArray() }, new System.Text.Json.JsonSerializerOptions());
         }
-
 
         //[CustomAuthorizeAttribute(AccessType_Enum.Read)]
         public ActionResult Partial_AddEditForm()
