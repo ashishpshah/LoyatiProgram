@@ -7,13 +7,13 @@ namespace Seed_Admin;
 public partial class ProductBatch : EntitiesBase
 {
     public override long Id { get; set; }
-    public string BatchNo { get; set; } = null!;
+    public string ? BatchNo { get; set; } = null!;
 
     public long ProductId { get; set; }
 
     public string? SeedType { get; set; }
 
-    public decimal Qty { get; set; }
+    public decimal? Qty { get; set; }
 
     public long? MfgBy { get; set; }
 
