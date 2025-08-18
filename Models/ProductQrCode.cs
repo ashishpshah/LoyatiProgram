@@ -22,7 +22,7 @@ public partial class ProductQrCode : EntitiesBase
 
     public bool IsScanned { get; set; }
 
-    public long CreatedDate_Ticks { get; set; }
-    public long LastModifiedDate_Ticks { get; set; }
+    [NotMapped]public long CreatedDate_Ticks { get; set; }
+    [NotMapped] public long LastModifiedDate_Ticks { get; set; }
     [NotMapped] public string Product_Text { get; set; }
 }
