@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Seed_Admin.Infra;
 using System.Collections.Generic;
 using System.Data;
@@ -23,6 +24,7 @@ namespace Seed_Admin.Controllers
 
                 List<SqlParameter> sqlParameters = new List<SqlParameter>();
                 sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+                sqlParameters.Add(new SqlParameter("@User_Id", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
 
                 dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_ORDERS_GET", sqlParameters, true);
 
@@ -68,10 +70,10 @@ namespace Seed_Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Partial_AddEditForm(long Id = 0)
+        public IActionResult Partial_AddEditForm(long Id = 0 , string ORDER_DETAIL = "")
         {
             var obj = new Orders();
-            obj.list_Order_Details = new List<Order_Detail>();
+            var listOrderDetail = new List<Order_Detail>();
 
             var ds = new DataSet();
             var dt = new DataTable();
@@ -85,6 +87,7 @@ namespace Seed_Admin.Controllers
                 if (Id > 0)
                 {
                     sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = Id });
+                    sqlParameters.Add(new SqlParameter("@User_Id", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
 
                     ds = DataContext_Command.ExecuteStoredProcedure_DataSet("SP_ORDERS_GET", sqlParameters);
 
@@ -99,7 +102,7 @@ namespace Seed_Admin.Controllers
                         };
                         foreach (DataRow dr in ds.Tables[1].Rows)
                         {
-                            obj.list_Order_Details.Add(new Order_Detail()
+                            listOrderDetail.Add(new Order_Detail()
                             {
                                 Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
                                 Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToInt64(dr["Product_ID"]) : 0,
@@ -137,7 +140,7 @@ namespace Seed_Admin.Controllers
 
             CommonViewModel.SelectListItems = list;
             CommonViewModel.Obj = obj;
-
+            CommonViewModel.Obj.list_Order_Details = listOrderDetail;          
             return PartialView("_Partial_AddEditForm", CommonViewModel);
         }
         [HttpPost]
@@ -146,7 +149,7 @@ namespace Seed_Admin.Controllers
             try
             {
                 //DateTime? Order_Date = viewModel.Order_Date_Text != null ? DateTime.ParseExact(viewModel.Order_Date_Text, "dd/MM/yyyy", CultureInfo.InvariantCulture) : null;
-                if (string.IsNullOrEmpty(viewModel.Order_No))
+                if (string.IsNullOrEmpty(viewModel.Order_No) && viewModel.Id  == 0)
                 {
                     CommonViewModel.IsSuccess = false;
                     CommonViewModel.StatusCode = ResponseStatusCode.Error;

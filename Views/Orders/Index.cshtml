@@ -71,11 +71,7 @@
 													@* <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td> *@
 													<td>
 														<div class="btn-group">
-																<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="View"
-																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
-																	<i class="far fa-eye"></i>
-																</button>
-															
+																											
 															
 																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
 																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
@@ -123,16 +119,17 @@
 			let newRowId = "tr_" + rowCount;
 
 			let newRow = `<tr id="${newRowId}">
-			<td> <select class="form-control show-tick select2" id="list_Order_Details_${rowCount}_Product" name="listForexCardDetails[${rowCount}].Product">
+			<td width="5%" class="text-center">${rowCount + 1}</td>
+			<td width="10%" class="text-center"> <select class="form-control show-tick select2" id="list_Order_Details_${rowCount}_Product_ID" name="list_Order_Details[${rowCount}].Product_ID">
 					 ${productOptions}
 				</select>
 			</td>
-			<td><input type="text" id="list_Order_Details_${rowCount}_Qty" name="listForexCardDetails[${rowCount}].Qty" class="form-control isNumberKey_Decimal" value="" /></td>
-			<td><button class="btn btn-danger btn-sm btn-flat deleteBtn" onclick="javascript:function(){ debugger;}"><span class="nme"><i class="far fa-trash-alt"></i></span></button></td></tr>`;
+			<td width="5%" class="text-center"><input type="text" id="list_Order_Details_${rowCount}_Qty" name="list_Order_Details[${rowCount}].Qty" class="form-control isNumberKey_Decimal" value="" /></td>
+			<td width="5%" class="text-center"><button class="btn btn-danger btn-sm btn-flat deleteBtn"><span class="nme"><i class="far fa-trash-alt"></i></span></button></td></tr>`;
 			 setTimeout(() => {
 				$(".select2").select2();
 			}, 100);
-			$("#visitorTable tbody").append(newRow);
+			$("#Order_Detail_Table tbody").append(newRow);
 
 			rowCount++;
 		}
