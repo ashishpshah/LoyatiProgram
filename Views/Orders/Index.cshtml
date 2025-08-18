@@ -1,0 +1,147 @@
+﻿@model ResponseModel<Orders>
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Product Batch</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					
+						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")');">
+							<i class="fas fa-plus"></i> &nbsp; Add new item
+						</button>
+					
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+
+		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+			<div class="col-12">
+				<form id="formSave" asp-controller="Orders" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+
+		<div class="row no-gooters divformSave_Hide">
+			<section class="col-md-12">
+				<div class="card">
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1 table-responsive" data-col="3" data-order="desc">
+								<table class="table table-bordered table-striped table_Common_SrNo">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th>Order No</th>
+											<th>Order Date</th>
+											<th>Total Quantity</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model.ObjList != null)
+										{
+											foreach (var item in Model.ObjList.OrderByDescending(x => x.CreatedDate?.Ticks))
+											{
+												<tr>
+													<td></td>
+													<td>@item.Order_No</td>
+													<td>@item.Order_Date?.ToString(Common.DateTimeFormat_ddMMMyyyy)</td>
+													<td>@item.Total_Qty</td>
+													@* <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td> *@
+													<td>
+														<div class="btn-group">
+																<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="View"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
+																	<i class="far fa-eye"></i>
+																</button>
+															
+															
+																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
+																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
+																	<i class="far fa-edit"></i>
+																</button>													
+															
+															
+															
+														</div>
+													</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+
+		var dataTableMain = {};
+
+		$(document).ready(function () {
+
+		});
+
+
+		 function fnBtnAddNewItem() {
+			 debugger;
+			 var listProduct = @Html.Raw(Json.Serialize(Model.SelectListItems.Where(x => x.Group == "Product")));
+			 var productOptions = '<option value="0">---Select Product---</option>';
+			  listProduct.forEach(product => {
+					productOptions += `<option value="${product.Value}">${product.Text}</option>`;
+				});
+			var rowCount = $('#Order_Detail_Table tbody tr').length;
+			let newRowId = "tr_" + rowCount;
+
+			let newRow = `<tr id="${newRowId}">
+			<td> <select class="form-control show-tick select2" id="list_Order_Details_${rowCount}_Product" name="listForexCardDetails[${rowCount}].Product">
+					 ${productOptions}
+				</select>
+			</td>
+			<td><input type="text" id="list_Order_Details_${rowCount}_Qty" name="listForexCardDetails[${rowCount}].Qty" class="form-control isNumberKey_Decimal" value="" /></td>
+			<td><button class="btn btn-danger btn-sm btn-flat deleteBtn" onclick="javascript:function(){ debugger;}"><span class="nme"><i class="far fa-trash-alt"></i></span></button></td></tr>`;
+			 setTimeout(() => {
+				$(".select2").select2();
+			}, 100);
+			$("#visitorTable tbody").append(newRow);
+
+			rowCount++;
+		}
+
+		$(document).on('click', '.deleteBtn', function () {
+			$(this).closest('tr').remove(); // Find the closest row (<tr>) to the clicked delete button and remove it
+		});
+
+	</script>
+}
+
+

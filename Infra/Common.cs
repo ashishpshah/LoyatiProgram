@@ -20,7 +20,8 @@ namespace Seed_Admin
 		public static string DateTimeFormat_ddMMyyyy_hhmm => "dd/MM/yyyy hh:mm tt";
 		public static string DateTimeFormat_ddMMyyyy_HHmmss => "dd/MM/yyyy HH:mm:ss";
 		public static string DateTimeFormat_ddMMyyyy_hhmmss => "dd/MM/yyyy hh:mm:ss tt";
-		public static string DateTimeFormat_HHmm => "HH:mm";
+        public static string DateTimeFormat_ddMMMyyyy => "dd-MMM-yyyy";
+        public static string DateTimeFormat_HHmm => "HH:mm";
 		public static string DateTimeFormat_HHmmss => "HH:mm:ss";
 		public static string DateTimeFormat_hhmm => "hh:mm tt";
 		public static string DateTimeFormat_hhmmss => "hh:mm:ss tt";

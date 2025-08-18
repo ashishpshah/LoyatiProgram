@@ -2,6 +2,7 @@
 
 var dataTable_main = null;
 var dataTable_Checkboxes = null;
+var locale_date_format = 'DD/MM/YYYY';
 
 var dataTable_CommonTable = null;
 var dataTable_CommonTable_SrNo = null;
@@ -49,9 +50,9 @@ $(document).ready(function () {
     try {
 
         //Datemask dd/mm/yyyy
+       /* var locale_date_format = 'DD/MM/YYYY';*/
 
-        var locale_date_format = 'DD/MM/YYYY';
-
+        
         $('.datepicker').each(function (i, e) {
 
             $(e).daterangepicker({
@@ -545,12 +546,13 @@ function fnLoadParialView($id, url) {
 
                             //Datemask dd/mm/yyyy
 
-                            var locale_date_format = 'DD/MM/YYYY';
+                            //var locale_date_format = 'DD/MM/YYYY';
 
-                            $('#' + $id + ' .datepicker').each(function (i, e) {
-
+                            $('.datepicker').each(function (i, e) {
+                                debugger;
                                 $(e).daterangepicker({
                                     singleDatePicker: true,
+                                    /* timePicker: true,*/
                                     autoclose: true,
                                     autoApply: true,
                                     //timePicker: true,
@@ -566,6 +568,8 @@ function fnLoadParialView($id, url) {
                                     //maxDate: moment().format('DD/MM/YYYY'),
                                     locale: { cancelLabel: 'Clear', format: locale_date_format/*, format: 'DD/MM/YYYY hh:mm A'*/ }
                                 }, function (start, end, label) { try { fnChangeDatePicker(this, start, end, label); } catch { } });
+
+
 
 
                                 var defaultDate = '';
@@ -584,13 +588,30 @@ function fnLoadParialView($id, url) {
                                     defaultDate = e.getAttribute('data-value');
                                 }
 
-                                $(e).val(defaultDate);
-
                                 $(e).data('daterangepicker').maxDate = moment(maxDate, locale_date_format)
                                 $(e).data('daterangepicker').minDate = moment(minDate, locale_date_format)
 
+                                $(e).val(defaultDate);
+
+                                if (defaultDate && typeof defaultDate != 'undefined' && defaultDate != null && defaultDate.length > 0) {
+                                    $(e).data("daterangepicker").setStartDate(moment(defaultDate, locale_date_format));
+                                    $(e).data("daterangepicker").setEndDate(moment(defaultDate, locale_date_format));
+                                }
+
                                 $(e).trigger('change');
                             })
+
+                            $('.datepicker').on('cancel.daterangepicker', function (ev, picker) {
+                                $(this).val('');
+                                $(this).trigger('change');
+                            });
+
+
+                           
+                            $('.datepicker').on('cancel.daterangepicker', function (ev, picker) {
+                                $(this).val('');
+                                $(this).trigger('change');
+                            });
 
                         } catch { }
 
@@ -604,7 +625,7 @@ function fnLoadParialView($id, url) {
                         try { fnLoadCommonTable_Buttons('#table_Common_buttons'); } catch { }
                         try { fnLoadCommonTable_Buttons('.table_Common_buttons'); } catch { }
 
-                        try { fnParialView_Loaded_Success($id, (response.indexOf("Alert") > -1)); } catch (e) { console.error("Error in fnPartialView_Loaded_Success : ", e); }
+                        try { fnParialView_Loaded_Success($id, (response.indexOf("Alert") > -1)); } catch { }
 
 
                         $('html, body').scrollTop($('#' + $id).offset().top);
