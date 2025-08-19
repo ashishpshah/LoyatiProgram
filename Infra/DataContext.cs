@@ -58,7 +58,7 @@ namespace Seed_Admin.Infra
             {
                 entity.ToTable("Product_Batch", "dbo");
 
-                entity.Property(e => e.BatchNo).HasColumnName("Batch_No");
+                entity.Property(e => e.BatchNo).HasColumnName("BatchNo");
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 0)");
             });
 
