@@ -1,0 +1,205 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Seed_Admin.Infra;
+using System.Data;
+
+namespace Seed_Admin.Controllers
+{
+    public class LoyaltyPointSchemeController : BaseController<ResponseModel<LoyaltyPointScheme>>
+    {
+        public LoyaltyPointSchemeController(IRepositoryWrapper repository) : base(repository) { }
+
+        public IActionResult Index()
+        {
+            try
+            {
+                var dt = new DataTable();
+
+                CommonViewModel.ObjList = new List<LoyaltyPointScheme>();
+
+                List<SqlParameter> sqlParameters = new List<SqlParameter>();
+                sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_LoyaltyPointScheme_GET", sqlParameters, true);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        CommonViewModel.ObjList.Add(new LoyaltyPointScheme()
+                        {
+                            Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
+                            ProductID = dr["ProductID"] != DBNull.Value ? Convert.ToInt64(dr["ProductID"]) : 0,
+                            MinPurchaseQty = dr["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MinPurchaseQty"]) : 0,
+                            MaxPurchaseQty = dr["MaxPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MaxPurchaseQty"]) : 0,
+                            LoyaltyPoints = dr["LoyaltyPoints"] != DBNull.Value ? Convert.ToInt32(dr["LoyaltyPoints"]) : 0,
+                            EffectiveStartDate = dr["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveStartDate"]) : nullDateTime,
+                            EffectiveEndDate = dr["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveEndDate"]) : nullDateTime,
+                            Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",
+                           
+                        });
+                    }
+                }
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            return View(CommonViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult Partial_AddEditForm(long Id = 0)
+        {
+            var obj = new LoyaltyPointScheme();
+
+            var dt = new DataTable();
+
+            var list = new List<SelectListItem_Custom>();
+
+            try
+            {
+
+                List<SqlParameter> sqlParameters = new List<SqlParameter>();
+                if (Id > 0)
+                {
+                    sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = Id });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_LoyaltyPointScheme_GET", sqlParameters, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        obj = new LoyaltyPointScheme()
+                        {
+                            Id = dt.Rows[0]["Id"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["Id"]) : 0,
+                            ProductID = dt.Rows[0]["ProductID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["ProductID"]) : 0,
+                            MinPurchaseQty = dt.Rows[0]["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MinPurchaseQty"]) : 0,
+                            MaxPurchaseQty = dt.Rows[0]["MaxPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MaxPurchaseQty"]) : 0,
+                            LoyaltyPoints = dt.Rows[0]["LoyaltyPoints"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["LoyaltyPoints"]) : 0,
+                            EffectiveStartDate = dt.Rows[0]["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveStartDate"]) : nullDateTime,
+                            EffectiveEndDate = dt.Rows[0]["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveEndDate"]) : nullDateTime,
+                            Product_Name = dt.Rows[0]["Product_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Product_Name"]) : "",
+
+                        };
+                    }
+
+
+
+                }
+
+
+
+                sqlParameters = new List<SqlParameter>();
+                sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+                dt = new DataTable();
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_GET", sqlParameters, true);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["Name"]), "Product")
+                        {
+                            Value = dr["Id"] != DBNull.Value ? Convert.ToString(dr["Id"]) : "",
+                            Text = dr["Name"] != DBNull.Value ? Convert.ToString(dr["Name"]) : ""
+                        });
+                    }
+
+                }
+
+
+
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            CommonViewModel.SelectListItems = list;
+            CommonViewModel.Obj = obj;
+
+            return PartialView("_Partial_AddEditForm", CommonViewModel);
+        }
+        [HttpPost]
+        public JsonResult Save(LoyaltyPointScheme viewModel)
+        {
+            try
+            {
+
+                if (viewModel.ProductID == 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select Product.";
+
+                    return Json(CommonViewModel);
+                }
+
+                if (viewModel.MinPurchaseQty == 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please enter min purchase quanity .";
+
+                    return Json(CommonViewModel);
+                }
+                if (viewModel.MaxPurchaseQty == 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please enter max purchase quanity .";
+
+                    return Json(CommonViewModel);
+                }
+                if (viewModel.LoyaltyPoints == 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please enter loyalty points .";
+
+                    return Json(CommonViewModel);
+                }
+                if (viewModel.EffectiveStartDate == null)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select atleast one date.";
+
+                    return Json(CommonViewModel);
+                }
+
+
+                var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
+
+
+
+                List<SqlParameter> oParams = new List<SqlParameter>();
+
+                oParams.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = viewModel.Id });
+                oParams.Add(new SqlParameter("@ProductID", SqlDbType.BigInt) { Value = viewModel.ProductID });
+                oParams.Add(new SqlParameter("@MinPurchaseQty", SqlDbType.Int) { Value = viewModel.MinPurchaseQty });
+                oParams.Add(new SqlParameter("@MaxPurchaseQty", SqlDbType.Int) { Value = viewModel.MaxPurchaseQty });
+                oParams.Add(new SqlParameter("@LoyaltyPoints", SqlDbType.Int) { Value = viewModel.LoyaltyPoints });
+                oParams.Add(new SqlParameter("@EffectiveStartDate", SqlDbType.DateTime) { Value = viewModel.EffectiveStartDate ?? null });
+                oParams.Add(new SqlParameter("@EffectiveEndDate", SqlDbType.DateTime) { Value = viewModel.EffectiveEndDate ?? null });
+                oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
+                oParams.Add(new SqlParameter("@Action", SqlDbType.VarChar) { Value = viewModel.Id == 0 ? "INSERT" : "UPDATE" });
+
+                (IsSuccess, response, Id) = DataContext_Command.ExecuteStoredProcedure("SP_LoyaltyPointScheme_SAVE", oParams, true);
+
+                CommonViewModel.IsConfirm = true;
+                CommonViewModel.IsSuccess = IsSuccess;
+                CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+                CommonViewModel.Message = response;
+
+                CommonViewModel.RedirectURL = IsSuccess ? Url.Content("~/") + GetCurrentControllerUrl() + "/Index" : "";
+
+                return Json(CommonViewModel);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogInsert(GetCurrentAction(), "", ex);
+
+                CommonViewModel.IsSuccess = false;
+                CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+            }
+            return Json(CommonViewModel);
+        }
+    }
+}
