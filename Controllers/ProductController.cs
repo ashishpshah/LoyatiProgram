@@ -29,11 +29,16 @@ namespace Seed_Admin.Controllers
                         CommonViewModel.ObjList.Add(new Product()
                         {
                             Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
+                            PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
+                            SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
                             Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToString(dr["Product_ID"]) : "",
+                            MRP = dr["MRP"] != DBNull.Value ? Convert.ToDecimal(dr["MRP"]) : 0,
                             Name = dr["Name"] != DBNull.Value ? Convert.ToString(dr["Name"]) : "",
                             UOM = dr["UOM"] != DBNull.Value ? Convert.ToString(dr["UOM"]) : "",
                             UOM_TEXT = dr["UOM_TEXT"] != DBNull.Value ? Convert.ToString(dr["UOM_TEXT"]) : "",
-                           
+                            PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",
+                            SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",
+
                         });
                     }
                 }
@@ -67,10 +72,15 @@ namespace Seed_Admin.Controllers
                         obj = new Product()
                         {
                             Id = dt.Rows[0]["Id"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["Id"]) : 0,
-                            Product_ID = dt.Rows[0]["Product_ID"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Product_ID"]) : "",
+                            PackageType_ID = dt.Rows[0]["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["PackageType_ID"]) : 0,
+                            SKUSize_ID =  dt.Rows[0]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64( dt.Rows[0]["SKUSize_ID"]) : 0,
+                            Product_ID =  dt.Rows[0]["Product_ID"] != DBNull.Value ? Convert.ToString( dt.Rows[0]["Product_ID"]) : "",
+                            MRP =  dt.Rows[0]["MRP"] != DBNull.Value ? Convert.ToDecimal( dt.Rows[0]["MRP"]) : 0,
                             Name = dt.Rows[0]["Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Name"]) : "",
                             UOM = dt.Rows[0]["UOM"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["UOM"]) : "",
                             UOM_TEXT = dt.Rows[0]["UOM_TEXT"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["UOM_TEXT"]) : "",
+                            PackageType_Name = dt.Rows[0]["PackageType_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["PackageType_Name"]) : "",
+                            SKUSize_Name = dt.Rows[0]["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["SKUSize_Name"]) : "",
                         };
                     }
 
@@ -98,8 +108,39 @@ namespace Seed_Admin.Controllers
                     }
 
                 }
-              
 
+               
+                dt = new DataTable();
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", null, true);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["PackageTypeName"]), "PackageType")
+                        {
+                            Value = dr["Id"] != DBNull.Value ? Convert.ToString(dr["Id"]) : "",
+                            Text = dr["PackageTypeName"] != DBNull.Value ? Convert.ToString(dr["PackageTypeName"]) : ""
+                        });
+                    }
+
+                }
+                
+                dt = new DataTable();
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", null, true);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["SKUSizeName"]), "SKUSize")
+                        {
+                            Value = dr["Id"] != DBNull.Value ? Convert.ToString(dr["Id"]) : "",
+                            Text = dr["SKUSizeName"] != DBNull.Value ? Convert.ToString(dr["SKUSizeName"]) : ""
+                        });
+                    }
+
+                }
 
             }
             catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
@@ -141,7 +182,22 @@ namespace Seed_Admin.Controllers
                     return Json(CommonViewModel);
                 }
 
+                if (viewModel.PackageType_ID == 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select package type.";
 
+                    return Json(CommonViewModel);
+                }
+                if (viewModel.SKUSize_ID == 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select SKUSize.";
+
+                    return Json(CommonViewModel);
+                }
 
                 var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
 
@@ -152,6 +208,9 @@ namespace Seed_Admin.Controllers
                 oParams.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = viewModel.Id });
                 oParams.Add(new SqlParameter("@Product_ID", SqlDbType.VarChar) { Value = viewModel.Product_ID ?? "" });
                 oParams.Add(new SqlParameter("@Name", SqlDbType.VarChar) { Value = viewModel.Name ?? "" });
+                oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.VarChar) { Value = viewModel.PackageType_ID });
+                oParams.Add(new SqlParameter("@SKUSize_ID", SqlDbType.VarChar) { Value = viewModel.SKUSize_ID });
+                oParams.Add(new SqlParameter("@MRP", SqlDbType.VarChar) { Value = viewModel.MRP });
                 oParams.Add(new SqlParameter("@UOM", SqlDbType.VarChar) { Value = viewModel.UOM ?? "" });
                 oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
                 oParams.Add(new SqlParameter("@Action", SqlDbType.VarChar) { Value = viewModel.Id == 0 ? "INSERT" : "UPDATE" });

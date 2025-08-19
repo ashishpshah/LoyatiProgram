@@ -1,4 +1,4 @@
-﻿@model ResponseModel<Product>
+﻿@model ResponseModel<SKUSize>
 @{
 	ViewData["Title"] = "Index";
 	Layout = "~/Views/Shared/_Layout.cshtml";
@@ -27,14 +27,14 @@
 	<div class="container-fluid">
 		<div class="row mb-2">
 			<div class="col-sm-6">
-				<h1 class="m-0">Product</h1>
+				<h1 class="m-0">SKUSize</h1>
 			</div>
 			<div class="col-sm-6">
 				<div class="float-sm-right">
 					@*@if (Model.IsCreate == true)
 					{*@
-					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Product")');">
-						<i class="fas fa-plus"></i> &nbsp; Add Product
+					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "SKUSize")');">
+						<i class="fas fa-plus"></i> &nbsp; Add SKUSize
 					</button>
 					@*}*@
 				</div>
@@ -46,7 +46,7 @@
 	<div class="container-fluid">
 		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
 			<div class="col-12">
-				<form id="formSave" asp-controller="Product" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+				<form id="formSave" asp-controller="SKUSize" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
 					<div class="row no-gutters" id="divformSave"></div>
 					<div class="clearfix"></div>
 					<hr />
@@ -63,12 +63,9 @@
 								<table class="table table-bordered table-striped table_Common_SrNo">
 									<thead>
 										<tr>
-											<th>#</th>
-											@* <th>User ID</th> *@
-											<th>Product ID</th>											
-											<th>Product Name</th>	
-											<th> Package Type</th>											
-											<th> SKU Size</th>											
+											<th>#</th>									
+											<th>SKUSize Name</th>	
+											<th>Description</th>											
 											<th>Action</th>
 										</tr>
 									</thead>
@@ -78,21 +75,14 @@
 											<tr>
 												<td></td>
 												@* <td>@item.User_ID</td> *@
-												<td>@item.Product_ID</td>
-												<td>@item.Name</td>
-												<td>@item.PackageType_Name</td>																								
-												<td>@item.SKUSize_Name</td>																								
+												<td>@item.SKUSizeName</td>
+												<td>@item.Description</td>																																			
 												<td>
 													<div class="btn-group">
 														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
-																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Product")?Id=@item.Id');">
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "SKUSize")?Id=@item.Id');">
 															<i class="far fa-edit"></i>
-														</button>
-
-														<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
-																onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed", "Product")?Id=@item.Id');">
-															<i class="far fa-trash-alt"></i>
-														</button>
+														</button>											
 
 													</div>
 												</td>
