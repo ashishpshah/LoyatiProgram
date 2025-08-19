@@ -1,0 +1,183 @@
+﻿@model ResponseModel<Plant>
+
+@{
+	Layout = null;
+}
+
+<div class="col-md-12">
+	<div class="card card-primary card-outline">
+
+		<div class="card-header">
+			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") Plant</h3>
+			<input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
+
+		</div>
+
+		<div class="card-body">
+			<div class="row no-gutters">
+				<div class="col-12">
+					<div class="form-group row">
+						<label for="Obj.PlantCode" class="col-sm-2 col-form-label text-right">Plant Code<span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" id="PlantCode" name="PlantCode" value="@Model.Obj.PlantCode" placeholder="Plant Code" autocomplete="off">
+						</div>
+						<label for="Obj.PlantName" class="col-sm-2 col-form-label text-right">Plant Name</label>
+						<div class="col-sm-4">
+							<div class="input-group mb-3">
+								<input type="text" data-altType="text" class="form-control form-control-sm" id="PlantName" name="PlantName" placeholder="Plant Name" autocomplete="off" value="@Model.Obj.PlantName">
+							
+							</div>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label for="Obj.DealerName" class="col-sm-2 col-form-label text-right">AddressLine1<span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" id="AddressLine1" name="AddressLine1" value="@Model.Obj.AddressLine1" placeholder="AddressLine1" autocomplete="off">
+						</div>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">AddressLine2</label>
+						<div class="col-sm-4">
+							<div class="input-group mb-3">
+								<input type="text" class="form-control form-control-sm" id="AddressLine2" name="AadharNumber" value="@Model.Obj.AddressLine2" placeholder="AddressLine2" autocomplete="off">
+							</div>
+						</div>
+					</div>
+					
+					<div class="form-group row">
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Country</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="Country_Id" name="Country_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'STATE', '#State_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Country"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.Country_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+						</div>
+					   <label class="form-control-label col-sm-2" style="line-height: 2.5;">State</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="State_Id" name="State_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'DISTRICT', '#District_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "State"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.State_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">District</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="District_Id" name="District_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'TALUKA', '#Taluka_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "District"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.District_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Taluka</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="Taluka_Id" name="Taluka_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'VILLAGE', '#City_Id')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Taluka"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.Taluka_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="form-control-label col-sm-2" style="line-height: 2.5;">City</label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="City_Id" name="City_Id">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Village"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.City_Id.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+
+						</div>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">PinCode</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm isNumberKey" id="PinCode" name="PinCode" value="@Model.Obj.PinCode" placeholder="PinCode" autocomplete="off" maxlength="6">
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+		<div class="card-footer">
+			<div class="row no-gutters">
+				<div class="col-sm-1">&nbsp;</div>
+				<div class="col-sm-12 text-center">
+					<button type="submit" class="btn btn-success btnSubmit">Save</button>
+					<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave','#table_Common_SrNo')">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script type="text/javascript">
+		$(document).ready(function () {
+
+		});
+	</script>
+}
+
