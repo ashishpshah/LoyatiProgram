@@ -30,12 +30,9 @@ namespace Seed_Admin.Controllers
                         {
                             Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
                             PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
-                            SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
-                            Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToString(dr["Product_ID"]) : "",
+                            SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,                            
                             MRP = dr["MRP"] != DBNull.Value ? Convert.ToDecimal(dr["MRP"]) : 0,
-                            Name = dr["Name"] != DBNull.Value ? Convert.ToString(dr["Name"]) : "",
-                            UOM = dr["UOM"] != DBNull.Value ? Convert.ToString(dr["UOM"]) : "",
-                            UOM_TEXT = dr["UOM_TEXT"] != DBNull.Value ? Convert.ToString(dr["UOM_TEXT"]) : "",
+                            Name = dr["Name"] != DBNull.Value ? Convert.ToString(dr["Name"]) : "",                           
                             PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",
                             SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",
 
@@ -51,7 +48,7 @@ namespace Seed_Admin.Controllers
         [HttpGet]
         public IActionResult Partial_AddEditForm(long Id = 0)
         {
-            var obj = new Product() { UOM = "0" };
+            var obj = new Product();
 
             var dt = new DataTable();
 
@@ -73,12 +70,9 @@ namespace Seed_Admin.Controllers
                         {
                             Id = dt.Rows[0]["Id"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["Id"]) : 0,
                             PackageType_ID = dt.Rows[0]["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["PackageType_ID"]) : 0,
-                            SKUSize_ID =  dt.Rows[0]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64( dt.Rows[0]["SKUSize_ID"]) : 0,
-                            Product_ID =  dt.Rows[0]["Product_ID"] != DBNull.Value ? Convert.ToString( dt.Rows[0]["Product_ID"]) : "",
+                            SKUSize_ID =  dt.Rows[0]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64( dt.Rows[0]["SKUSize_ID"]) : 0,                           
                             MRP =  dt.Rows[0]["MRP"] != DBNull.Value ? Convert.ToDecimal( dt.Rows[0]["MRP"]) : 0,
                             Name = dt.Rows[0]["Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Name"]) : "",
-                            UOM = dt.Rows[0]["UOM"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["UOM"]) : "",
-                            UOM_TEXT = dt.Rows[0]["UOM_TEXT"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["UOM_TEXT"]) : "",
                             PackageType_Name = dt.Rows[0]["PackageType_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["PackageType_Name"]) : "",
                             SKUSize_Name = dt.Rows[0]["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["SKUSize_Name"]) : "",
                         };
@@ -156,14 +150,7 @@ namespace Seed_Admin.Controllers
             try
             {
 
-                if (string.IsNullOrEmpty(viewModel.Product_ID))
-                {
-                    CommonViewModel.IsSuccess = false;
-                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
-                    CommonViewModel.Message = "Please enter product id.";
-
-                    return Json(CommonViewModel);
-                }
+                
 
                 if (string.IsNullOrEmpty(viewModel.Name))
                 {
@@ -172,15 +159,7 @@ namespace Seed_Admin.Controllers
                     CommonViewModel.Message = "Please enter product name.";
 
                     return Json(CommonViewModel);
-                }
-                if (viewModel.UOM == "0")
-                {
-                    CommonViewModel.IsSuccess = false;
-                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
-                    CommonViewModel.Message = "Please select unit of measurement.";
-
-                    return Json(CommonViewModel);
-                }
+                }               
 
                 if (viewModel.PackageType_ID == 0)
                 {
@@ -205,13 +184,11 @@ namespace Seed_Admin.Controllers
 
                 List<SqlParameter> oParams = new List<SqlParameter>();
 
-                oParams.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = viewModel.Id });
-                oParams.Add(new SqlParameter("@Product_ID", SqlDbType.VarChar) { Value = viewModel.Product_ID ?? "" });
+                oParams.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = viewModel.Id });               
                 oParams.Add(new SqlParameter("@Name", SqlDbType.VarChar) { Value = viewModel.Name ?? "" });
                 oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.VarChar) { Value = viewModel.PackageType_ID });
                 oParams.Add(new SqlParameter("@SKUSize_ID", SqlDbType.VarChar) { Value = viewModel.SKUSize_ID });
-                oParams.Add(new SqlParameter("@MRP", SqlDbType.VarChar) { Value = viewModel.MRP });
-                oParams.Add(new SqlParameter("@UOM", SqlDbType.VarChar) { Value = viewModel.UOM ?? "" });
+                oParams.Add(new SqlParameter("@MRP", SqlDbType.VarChar) { Value = viewModel.MRP });               
                 oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
                 oParams.Add(new SqlParameter("@Action", SqlDbType.VarChar) { Value = viewModel.Id == 0 ? "INSERT" : "UPDATE" });
 
