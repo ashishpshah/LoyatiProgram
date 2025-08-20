@@ -97,9 +97,10 @@
 					"columns": [
 						{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
 						{ "title": "Product", "data": "Product_Text", "autoWidth": true, "searchable": true },
+						{ "title": "PackageType", "data": "PackageType_Text", "autoWidth": true, "searchable": true },
+						{ "title": "SKU Size", "data": "SKUSize_Text", "autoWidth": true, "searchable": true },
 						{ "title": "QR Code", "data": "QrCode", "autoWidth": true, "searchable": true },
-						{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },
-						{ "title": "Product", "data": "Product_Text", "autoWidth": true, "searchable": true },
+						{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },						
 						{ "title": "Created Date", "data": "CreatedDate_Text", "autoWidth": true, "searchable": true }
 						@* ,{
 							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
@@ -119,7 +120,46 @@
 				});
 
 			}
+			function fnChangeProductDetail($this, $type, $selector) {
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				ShowLoader(true);
 
+				 if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'PACKTYPE') {
+					$('#SKUSize_ID').empty().append('<option value="0">-- Select --</option>');
+				 }
+				
+
+
+
+
+				var stateDropdown = $($selector);
+				stateDropdown.empty();
+				stateDropdown.append('<option value="0">-- Select --</option>');
+
+				var $url = '@Url.Action("GetProductDetails", "ProductQRCode")?Type=' + $type + '&ParentId=' + $($this).val();
+
+				if ($type === "PACKTYPE") {
+					$url += "&Product=" + encodeURIComponent($($this).find("option:selected").text());
+				}
+				$.ajax({
+					url: $url,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						debugger;
+						ShowLoader(false);
+						$.each(response, function (index, state) {
+							stateDropdown.append('<option value="' + state.Value + '">' + state.Text + '</option>');
+						});
+
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+			}
+			
 			function fnSubmitForm_Success(response, $id) {
 				debugger;
 				if (response.StatusCode === 1) fnCloseParialView('divformSave', null);

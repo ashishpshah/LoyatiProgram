@@ -11,14 +11,17 @@
 	<div class="container-fluid">
 		<div class="row mb-2">
 			<div class="col-sm-6">
-				<h1 class="m-0">Product Batch</h1>
+				<h1 class="m-0">Orders</h1>
 			</div>
 			<div class="col-sm-6">
 				<div class="float-sm-right">
-					
+					@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) != "Admin")
+					{
 						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")');">
 							<i class="fas fa-plus"></i> &nbsp; Add new item
 						</button>
+					}
+					
 					
 					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
 						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
@@ -54,8 +57,9 @@
 											<th>#</th>
 											<th>Order No</th>
 											<th>Order Date</th>
-											<th>Total Quantity</th>
+											<th>Total Quantity</th>											
 											<th>Action</th>
+											
 										</tr>
 									</thead>
 									<tbody>
@@ -69,19 +73,28 @@
 													<td>@item.Order_Date?.ToString(Common.DateTimeFormat_ddMMMyyyy)</td>
 													<td>@item.Total_Qty</td>
 													@* <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td> *@
-													<td>
-														<div class="btn-group">
-																											
-															
+													
+														<td>
+															<div class="btn-group">
+
+															@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) != "Admin")
+															{
+																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
+																	<i class="far fa-edit"></i>
+																</button>
+															}
+															@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin")
+															{
 																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
 																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
-																	<i class="far fa-edit"></i>
-																</button>													
-															
-															
-															
-														</div>
-													</td>
+																	<i class="far fa-eye"></i>
+																</button>
+															}
+
+															</div>
+														</td>
+													
 												</tr>
 											}
 										}
@@ -108,31 +121,106 @@
 		});
 
 
-		 function fnBtnAddNewItem() {
-			 debugger;
-			 var listProduct = @Html.Raw(Json.Serialize(Model.SelectListItems.Where(x => x.Group == "Product")));
-			 var productOptions = '<option value="0">---Select Product---</option>';
-			  listProduct.forEach(product => {
-					productOptions += `<option value="${product.Value}">${product.Text}</option>`;
-				});
+		function fnBtnAddNewItem() {
+			debugger;
+			var listProduct = @Html.Raw(Json.Serialize(Model.SelectListItems.Where(x => x.Group == "Product")));
+			var productOptions = '<option value="0">--- Select ---</option>';
+			var packagetypeOptions = '<option value="0">--- Select ---</option>';
+			var skusizeoptions = '<option value="0">--- Select ---</option>';
+
+			listProduct.forEach(product => {
+				productOptions += `<option value="${product.Value}">${product.Text}</option>`;
+			});
+
 			var rowCount = $('#Order_Detail_Table tbody tr').length;
 			let newRowId = "tr_" + rowCount;
 
 			let newRow = `<tr id="${newRowId}">
-			<td width="5%" class="text-center">${rowCount + 1}</td>
-			<td width="10%" class="text-center"> <select class="form-control show-tick select2" id="list_Order_Details_${rowCount}_Product_ID" name="list_Order_Details[${rowCount}].Product_ID">
-					 ${productOptions}
-				</select>
-			</td>
-			<td width="5%" class="text-center"><input type="text" id="list_Order_Details_${rowCount}_Qty" name="list_Order_Details[${rowCount}].Qty" class="form-control isNumberKey_Decimal" value="" /></td>
-			<td width="5%" class="text-center"><button class="btn btn-danger btn-sm btn-flat deleteBtn"><span class="nme"><i class="far fa-trash-alt"></i></span></button></td></tr>`;
-			 setTimeout(() => {
+				<td width="5%" class="text-center">${rowCount + 1}</td>
+				<td width="10%" class="text-center">
+					<select class="form-control show-tick select2"
+						id="list_Order_Details_${rowCount}_Product_ID"
+						name="list_Order_Details[${rowCount}].Product_ID"
+						onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_${rowCount}_PackageType_ID')">
+						${productOptions}
+					</select>
+				</td>
+				<td width="10%" class="text-center">
+					<select class="form-control show-tick select2"
+						id="list_Order_Details_${rowCount}_PackageType_ID"
+						name="list_Order_Details[${rowCount}].PackageType_ID"
+						onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_${rowCount}_SKUSize_ID')">
+						${packagetypeOptions}
+					</select>
+				</td>
+				<td width="10%" class="text-center">
+					<select class="form-control show-tick select2"
+						id="list_Order_Details_${rowCount}_SKUSize_ID"
+						name="list_Order_Details[${rowCount}].SKUSize_ID">
+						${skusizeoptions}
+					</select>
+				</td>
+				<td width="5%" class="text-center">
+					<input type="text" id="list_Order_Details_${rowCount}_Qty"
+						name="list_Order_Details[${rowCount}].Qty"
+						class="form-control isNumberKey_Decimal" value="" />
+				</td>
+				<td width="5%" class="text-center">
+					<button class="btn btn-danger btn-sm btn-flat deleteBtn">
+						<span class="nme"><i class="far fa-trash-alt"></i></span>
+					</button>
+				</td>
+			</tr>`;
+
+			setTimeout(() => {
 				$(".select2").select2();
 			}, 100);
+
 			$("#Order_Detail_Table tbody").append(newRow);
 
 			rowCount++;
 		}
+
+		 function fnChangeProductDetail($this, $type, $selector) {
+			 debugger;
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				ShowLoader(true);
+
+				 if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'PACKTYPE') {
+					$('#SKUSize_ID').empty().append('<option value="0">-- Select --</option>');
+				 }
+
+
+
+
+
+				var stateDropdown = $($selector);
+				stateDropdown.empty();
+				stateDropdown.append('<option value="0">-- Select --</option>');
+
+				var $url = '@Url.Action("GetProductDetails", "Orders")?Type=' + $type + '&ParentId=' + $($this).val();
+
+				if ($type === "PACKTYPE") {
+					$url += "&Product=" + encodeURIComponent($($this).find("option:selected").text());
+				}
+				$.ajax({
+					url: $url,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						debugger;
+						ShowLoader(false);
+						$.each(response, function (index, state) {
+							stateDropdown.append('<option value="' + state.Value + '">' + state.Text + '</option>');
+						});
+
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+			}
 
 		$(document).on('click', '.deleteBtn', function () {
 			$(this).closest('tr').remove(); // Find the closest row (<tr>) to the clicked delete button and remove it

@@ -11,6 +11,8 @@ public partial class ProductQrCode : EntitiesBase
     public long BatchId { get; set; }
 
     public long ProductId { get; set; }
+    public long PackageType_ID { get; set; }
+    public long SKUSize_ID { get; set; }
 
     public string? QrCode_Base64 { get; set; }
 
@@ -25,4 +27,6 @@ public partial class ProductQrCode : EntitiesBase
     [NotMapped]public long CreatedDate_Ticks { get; set; }
     [NotMapped] public long LastModifiedDate_Ticks { get; set; }
     [NotMapped] public string Product_Text { get; set; }
+    [NotMapped] public string PackageType_Text { get; set; }
+    [NotMapped] public string SKUSize_Text { get; set; }
 }

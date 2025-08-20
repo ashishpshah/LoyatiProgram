@@ -83,29 +83,13 @@ namespace Seed_Admin.Controllers
                 }
 
 
-                
+
+
+
                 sqlParameters = new List<SqlParameter>();
-                sqlParameters.Add(new SqlParameter("@Lov_Column", SqlDbType.VarChar) { Value = "UOM" });
+                sqlParameters.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = "" });
                 dt = new DataTable();
-                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Multiple_Lov_Combo", sqlParameters, true);
-
-                if (dt != null && dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        list.Add(new SelectListItem_Custom(Convert.ToString(dr["Lov_Code"]), Convert.ToString(dr["Lov_Desc"]), Convert.ToString(dr["Lov_Column"]))
-                        {
-                            Value = dr["Lov_Code"] != DBNull.Value ? Convert.ToString(dr["Lov_Code"]) : "",
-                            Text = dr["Lov_Desc"] != DBNull.Value ? Convert.ToString(dr["Lov_Desc"]) : "",
-                            Group = dr["Lov_Column"] != DBNull.Value ? Convert.ToString(dr["Lov_Column"]) : "",
-                        });
-                    }
-
-                }
-
-               
-                dt = new DataTable();
-                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", null, true);
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", sqlParameters, true);
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -119,9 +103,10 @@ namespace Seed_Admin.Controllers
                     }
 
                 }
-                
+                sqlParameters = new List<SqlParameter>();
+                sqlParameters.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = 0 });
                 dt = new DataTable();
-                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", null, true);
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", sqlParameters, true);
 
                 if (dt != null && dt.Rows.Count > 0)
                 {

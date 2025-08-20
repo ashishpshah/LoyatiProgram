@@ -41,10 +41,9 @@ namespace Seed_Admin.Controllers
                         });
                     }
                 }
-                sqlParameters = new List<SqlParameter>();
-                sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+               
                 dt = new DataTable();
-                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_GET", sqlParameters, true);
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -102,23 +101,65 @@ namespace Seed_Admin.Controllers
                         };
                         foreach (DataRow dr in ds.Tables[1].Rows)
                         {
+                            var product = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "";
+                            var PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0;
                             listOrderDetail.Add(new Order_Detail()
                             {
                                 Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
                                 Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToInt64(dr["Product_ID"]) : 0,
+                                PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
+                                SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
                                 Qty = dr["Qty"] != DBNull.Value ? Convert.ToDecimal(dr["Qty"]) : 0,
                                 Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",                               
+                                PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",                               
+                                SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",                               
                             });
+
+                            sqlParameters = new List<SqlParameter>();
+                            sqlParameters.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = product });
+                            dt = new DataTable();
+                            dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", sqlParameters, true);
+
+                            if (dt != null && dt.Rows.Count > 0)
+                            {
+                                foreach (DataRow drpkg in dt.Rows)
+                                {
+                                    list.Add(new SelectListItem_Custom(Convert.ToString(drpkg["Id"]), Convert.ToString(drpkg["PackageTypeName"]),product ,"PackageType")
+                                    {
+                                        Value = drpkg["Id"] != DBNull.Value ? Convert.ToString(drpkg["Id"]) : "",
+                                        Text = drpkg["PackageTypeName"] != DBNull.Value ? Convert.ToString(drpkg["PackageTypeName"]) : ""
+                                    });
+                                }
+
+                            }
+
+                            sqlParameters = new List<SqlParameter>();
+                            sqlParameters.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = PackageType_ID });
+                            dt = new DataTable();
+                            dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", sqlParameters, true);
+
+                            if (dt != null && dt.Rows.Count > 0)
+                            {
+                                foreach (DataRow drpkg in dt.Rows)
+                                {
+                                    list.Add(new SelectListItem_Custom(Convert.ToString(drpkg["Id"]), Convert.ToString(drpkg["SKUSizeName"]), PackageType_ID.ToString(), "SKUSize")
+                                    {
+                                        Value = drpkg["Id"] != DBNull.Value ? Convert.ToString(drpkg["Id"]) : "",
+                                        Text = drpkg["SKUSizeName"] != DBNull.Value ? Convert.ToString(drpkg["SKUSizeName"]) : ""
+                                    });
+                                }
+
+                            }
+
                         }
-                    }                  
-                    
+                    }
+                   
 
                 }
 
-                sqlParameters = new List<SqlParameter>();
-                sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0});
+               
                 dt = new DataTable();
-                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_GET", sqlParameters, true);
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -193,6 +234,32 @@ namespace Seed_Admin.Controllers
                 {
                     for (int i = 0; i < viewModel.list_Order_Details.Count; i++)
                     {
+                        if (viewModel.list_Order_Details[i].PackageType_ID == 0)
+                        {
+                            CommonViewModel.IsSuccess = false;
+                            CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                            CommonViewModel.Message = "Please select package type at  line no " + (i + 1);
+                            return Json(CommonViewModel);
+                        }
+                    }
+                }
+                if (viewModel.list_Order_Details != null && viewModel.list_Order_Details.Count > 0)
+                {
+                    for (int i = 0; i < viewModel.list_Order_Details.Count; i++)
+                    {
+                        if (viewModel.list_Order_Details[i].SKUSize_ID == 0)
+                        {
+                            CommonViewModel.IsSuccess = false;
+                            CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                            CommonViewModel.Message = "Please select SKU Size at  line no " + (i + 1);
+                            return Json(CommonViewModel);
+                        }
+                    }
+                }
+                if (viewModel.list_Order_Details != null && viewModel.list_Order_Details.Count > 0)
+                {
+                    for (int i = 0; i < viewModel.list_Order_Details.Count; i++)
+                    {
                         if (viewModel.list_Order_Details[i].Qty == 0)
                         {
                             CommonViewModel.IsSuccess = false;
@@ -205,13 +272,15 @@ namespace Seed_Admin.Controllers
 
                 DataTable orderdetailtable = new DataTable();
                 orderdetailtable.Columns.Add("Product_ID", typeof(long));
+                orderdetailtable.Columns.Add("PackageType_ID", typeof(long));
+                orderdetailtable.Columns.Add("SKUSize_ID", typeof(long));
                 orderdetailtable.Columns.Add("Qty", typeof(decimal));
 
                 if (viewModel.list_Order_Details != null && viewModel.list_Order_Details.Count > 0)
                 {
                     foreach (var order_Detail in viewModel.list_Order_Details)
                     {
-                        orderdetailtable.Rows.Add(order_Detail.Product_ID , order_Detail.Qty);
+                        orderdetailtable.Rows.Add(order_Detail.Product_ID ,order_Detail.PackageType_ID ,order_Detail.SKUSize_ID, order_Detail.Qty);
                     }
                 }
 
@@ -249,8 +318,54 @@ namespace Seed_Admin.Controllers
             }
             return Json(CommonViewModel);
         }
+        [HttpGet]
+        public IActionResult GetProductDetails(string Type = "", string Product = "", long ParentId = 0)
+        {
+            var list = new List<SelectListItem_Custom>();
+
+            List<SqlParameter> oParams = new List<SqlParameter>();
+
+            var dt = new DataTable();
+
+            try
+            {
+                if (string.IsNullOrEmpty(Type))
+                {
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["Name"]), "Product"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "PACKTYPE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = Product });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["PackageTypeName"]), "PACKTYPE"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "SKUSIZE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = ParentId });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["SKUSizeName"]), "SKUSIZE"));
+                }
+
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            return Json(list);
+        }
 
 
-        
     }
 }

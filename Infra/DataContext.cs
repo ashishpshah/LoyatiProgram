@@ -3,6 +3,7 @@ using Azure;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Seed_Admin.Models;
 using System.Data;
 using System.Text;
 
@@ -36,6 +37,8 @@ namespace Seed_Admin.Infra
         public virtual DbSet<LovMaster> LovMasters { get; set; }
 
         public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<PackageType> PackageType { get; set; }
+        public virtual DbSet<SKUSize> SKUSize { get; set; }
         public virtual DbSet<ProductBatch> ProductBatches { get; set; }
 
         public virtual DbSet<ProductQrCode> ProductQrCodes { get; set; }
@@ -65,6 +68,14 @@ namespace Seed_Admin.Infra
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.ToTable("Product", "dbo");
+            });
+            modelBuilder.Entity<PackageType>(entity =>
+            {
+                entity.ToTable("PackageType", "dbo");
+            });
+            modelBuilder.Entity<SKUSize>(entity =>
+            {
+                entity.ToTable("SKUSize", "dbo");
             });
 
             modelBuilder.Entity<LovMaster>(entity =>

@@ -3,6 +3,8 @@ using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
 using Seed_Admin.Controllers;
 using Seed_Admin.Infra;
+using Seed_Admin.Models;
+using System.Collections.Generic;
 using System.Data;
 
 namespace Seed_Admin.Areas.Admin.Controllers
@@ -31,11 +33,14 @@ namespace Seed_Admin.Areas.Admin.Controllers
                     var listQrcode = _context.Using<ProductQrCode>().GetByCondition(x => batchId > 0 ? x.BatchId == batchId : true).ToList();
 
                     var dictProduct = _context.Using<Product>().GetAll().ToDictionary(x => x.Id);
+                    var dictPurchaseType = _context.Using<PackageType>().GetAll().ToDictionary(x => x.Id);
+                    var dictSKUSize = _context.Using<SKUSize>().GetAll().ToDictionary(x => x.Id);
 
                     var list = listQrcode.Select(x =>
                     {
                         dictProduct.TryGetValue(x.ProductId, out var lp);
-
+                        dictPurchaseType.TryGetValue(x.PackageType_ID, out var lpt);
+                        dictSKUSize.TryGetValue(x.SKUSize_ID, out var ls);
                         return new ProductQrCode
                         {
                             Id = x.Id,
@@ -44,8 +49,12 @@ namespace Seed_Admin.Areas.Admin.Controllers
                             Points = x.Points,
                             IsScanned = x.IsScanned,
 
-                            ProductId = lp?.Id ?? 0,
+                            ProductId = lp?.Id ?? 0,                            
                             Product_Text = lp?.Name ?? "",
+                            PackageType_ID = lpt?.Id ?? 0,
+                            PackageType_Text = lpt?.PackageTypeName ?? "",
+                            SKUSize_ID = ls?.Id ?? 0,
+                            SKUSize_Text = ls?.SKUSizeName ??"",
                             CreatedDate_Text = x.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
                             LastModifiedDate_Text = x.LastModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
                             CreatedDate_Ticks = x.CreatedDate?.Ticks ?? 0,
@@ -62,6 +71,8 @@ namespace Seed_Admin.Areas.Admin.Controllers
                         query = query.Where(x =>
                             (x.QrCode?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
                             (x.Product_Text?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (x.PackageType_Text?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (x.SKUSize_Text?.Contains(param.sSearch, StringComparison.OrdinalIgnoreCase) ?? false) ||
                             x.Points.ToString().Contains(param.sSearch) ||
                             x.CreatedDate_Text.Contains(param.sSearch)
                         );
@@ -102,21 +113,20 @@ namespace Seed_Admin.Areas.Admin.Controllers
                 return Json(CommonViewModel);
             }
 
-            List<SqlParameter> sqlParameters = new List<SqlParameter>();
-            sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+          
 
-            var dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_GET", sqlParameters, true);
+            var dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
 
             if (dt != null && dt.Rows.Count > 0)
                 foreach (DataRow dr in dt.Rows)
-                    CommonViewModel.SelectListItems.Add(new SelectListItem_Custom(dr["Id"] != DBNull.Value ? Convert.ToString(dr["Id"]) : "0", dr["Name"] != DBNull.Value ? Convert.ToString(dr["Name"]) : ""));
+                    CommonViewModel.SelectListItems.Add(new SelectListItem_Custom(dr["Id"] != DBNull.Value ? Convert.ToString(dr["Id"]) : "0", dr["Name"] != DBNull.Value ? Convert.ToString(dr["Name"]) : "", "Product"));
 
             return PartialView("_Partial_AddEditForm", CommonViewModel);
         }
 
         [HttpPost]
         //[CustomAuthorizeAttribute(AccessType_Enum.Write)]
-        public ActionResult Save(long ProductId, int NoOfQRCode, int MinPointRange, int MaxPointRange)
+        public ActionResult Save(long ProductId,long PackageType_ID, long SKUSize_ID, int NoOfQRCode, int MinPointRange, int MaxPointRange)
         {
             try
             {
@@ -131,6 +141,22 @@ namespace Seed_Admin.Areas.Admin.Controllers
                     return Json(CommonViewModel);
                 }
 
+                if (PackageType_ID <= 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select Package type.";
+
+                    return Json(CommonViewModel);
+                }
+                if (SKUSize_ID <= 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select SKU Size.";
+
+                    return Json(CommonViewModel);
+                }
                 if (ProductId <= 0)
                 {
                     CommonViewModel.IsSuccess = false;
@@ -156,6 +182,8 @@ namespace Seed_Admin.Areas.Admin.Controllers
                 List<SqlParameter> oParams = new List<SqlParameter>();
 
                 oParams.Add(new SqlParameter("@ProductId", SqlDbType.BigInt) { Value = ProductId });
+                oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = PackageType_ID });
+                oParams.Add(new SqlParameter("@SKUSize_ID", SqlDbType.BigInt) { Value = SKUSize_ID });
                 oParams.Add(new SqlParameter("@NoOfQRCode", SqlDbType.Int) { Value = NoOfQRCode });
                 oParams.Add(new SqlParameter("@MinValue", SqlDbType.Int) { Value = MinPointRange });
                 oParams.Add(new SqlParameter("@MaxValue", SqlDbType.Int) { Value = MaxPointRange });
@@ -221,6 +249,53 @@ namespace Seed_Admin.Areas.Admin.Controllers
             CommonViewModel.Message = ResponseStatusMessage.Unable_Delete;
 
             return Json(CommonViewModel);
+        }
+        [HttpGet]
+        public IActionResult GetProductDetails(string Type = "", string Product = "" , long ParentId = 0)
+        {
+            var list = new List<SelectListItem_Custom>();
+
+            List<SqlParameter> oParams = new List<SqlParameter>();
+
+            var dt = new DataTable();
+
+            try
+            {
+                if (string.IsNullOrEmpty(Type))
+                {
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["Name"]), "Product"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "PACKTYPE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = Product });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["PackageTypeName"]), "PackageType"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "SKUSIZE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = ParentId });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["SKUSizeName"]), "SKUSize"));
+                }
+
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            return Json(list);
         }
 
     }

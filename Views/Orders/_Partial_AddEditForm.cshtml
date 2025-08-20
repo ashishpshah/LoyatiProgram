@@ -39,6 +39,8 @@
 								<tr>
 									<th width="5%" class="text-center">#</th>
 									<th width="10%" class="text-center">Product</th>
+									<th width="10%" class="text-center">Package Type</th>
+									<th width="10%" class="text-center">SKU Size</th>
 									<th class="text-center">Quantity</th>
 									<th width="5%" class="text-center">Action</th>
 								</tr>
@@ -57,13 +59,51 @@
 											<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Id" name="list_Order_Details[@i].Id" class="form-control" value="@Model.Obj.list_Order_Details[i].Id" /></td>
 											<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Order_ID" name="list_Order_Details[@i].Order_ID" class="form-control" value="@Model.Obj.list_Order_Details[i].Order_ID" /></td>
 											<td width="10%" class="text-center">
-												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_Product_ID" name="list_Order_Details[@i].Product_ID">
+												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_Product_ID" name="list_Order_Details[@i].Product_ID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_@(i)_PackageType_ID');">
 													<option value="0">-- Select --</option>
 													@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
 													{
 														foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Product"))
 														{
 															if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].Product_ID.ToString())
+															{
+																<option value="@item.Value" selected>@item.Text</option>
+															}
+															else
+															{
+																<option value="@item.Value">@item.Text</option>
+															}
+														}
+													}
+												</select>
+											</td>
+											<td width="10%" class="text-center">
+												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_PackageType_ID" name="list_Order_Details[@i].PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_@(i)_SKUSize_ID');">
+													<option value="0">-- Select --</option>
+													@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+													{
+														foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "PackageType" && x.Value2 == Model.Obj.list_Order_Details[i].Product_Name))
+														{
+															if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].PackageType_ID.ToString())
+															{
+																<option value="@item.Value" selected>@item.Text</option>
+															}
+															else
+															{
+																<option value="@item.Value">@item.Text</option>
+															}
+														}
+													}
+												</select>
+											</td>
+											<td width="10%" class="text-center">
+												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_SKUSize_ID" name="list_Order_Details[@i].SKUSize_ID" >
+													<option value="0">-- Select --</option>
+													@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+													{
+														foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "SKUSize" && x.Value2 == Model.Obj.list_Order_Details[i].PackageType_ID.ToString()))
+														{
+															if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].SKUSize_ID.ToString())
 															{
 																<option value="@item.Value" selected>@item.Text</option>
 															}
@@ -89,8 +129,8 @@
 									<tr id="tr_@trid">
 										<td width="5%" class="text-center">@(trid + 1)</td>
 										<td width="10%" class="text-center">
-											<select class="form-control show-tick select2" id="list_Order_Details@(trid)_Product_ID" name="list_Order_Details[@trid].Product_ID">
-												<option value="0">-- Select Product --</option>
+											<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_Product_ID" name="list_Order_Details[@trid].Product_ID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_@(trid)_PackageType_ID');">
+												<option value="0">-- Select --</option>
 												@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
 												{
 													foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Product"))
@@ -100,6 +140,16 @@
 
 													}
 												}
+											</select>
+										</td>
+										<td width="10%" class="text-center">
+											<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_PackageType_ID" name="list_Order_Details[@trid].PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_@(trid)_SKUSize_ID');">
+												<option value="0">-- Select --</option>												
+											</select>
+										</td>
+										<td width="10%" class="text-center">
+											<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_SKUSize_ID" name="list_Order_Details[@trid].SKUSize_ID">
+												<option value="0">-- Select --</option>
 											</select>
 										</td>
 										<td width="5%" class="text-center">
