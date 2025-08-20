@@ -18,7 +18,7 @@
 						<label for="ProductId" class="col-sm-2 col-form-label text-right">Select Product</label>
 						<div class="col-sm-4">
 							<select id="ProductId" name="ProductId" class="form-control form-control-sm select2 w-100" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#PackageType_ID')">
-								<option value="">-- Select --</option>
+								<option value="0">-- Select --</option>
 								@if (Model.SelectListItems != null)
 								{
 									foreach (var item in Model.SelectListItems)
@@ -43,6 +43,7 @@
 								<option value="0">-- Select --</option>
 							</select>
 						</div>
+						
 					</div>
 					<div class="form-group row" style="padding-top: 33px !important;">
 						<label for="NoOfQRCode" class="col-sm-2 col-form-label text-right">No. of QR Code</label>

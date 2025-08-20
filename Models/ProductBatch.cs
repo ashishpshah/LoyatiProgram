@@ -9,7 +9,10 @@ public partial class ProductBatch : EntitiesBase
     public override long Id { get; set; }
     public string ? BatchNo { get; set; } = null!;
 
-    public long ProductId { get; set; }
+    public long  ProductId { get; set; }
+    public long PackageType_ID { get; set; }
+    public long  SKUSize_ID { get; set; }
+
 
     public string? SeedType { get; set; }
 
@@ -27,5 +30,7 @@ public partial class ProductBatch : EntitiesBase
     [NotMapped] public string ExpiryDate_Text { get; set; }
     [NotMapped] public string MfgBy_Text { get; set; }
     [NotMapped] public string Product_Text { get; set; }
+    [NotMapped] public string PackageType_Text { get; set; }
+    [NotMapped] public string SKUSize_Text { get; set; }
 
 }

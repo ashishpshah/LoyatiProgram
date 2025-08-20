@@ -39,8 +39,8 @@
 							}
 							else
 							{
-								<select id="ProductId" name="ProductId" class="form-control form-control-sm select2 w-100">
-									<option value="">-- Select --</option>
+								<select id="ProductId" name="ProductId" class="form-control form-control-sm select2 w-100" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#PackageType_ID')">
+									<option value="0">-- Select --</option>
 									@if (Model.SelectListItems != null)
 									{
 										foreach (var item in Model.SelectListItems)
@@ -55,6 +55,37 @@
 											}
 										}
 									}
+								</select>
+							}
+						</div>
+						<label for="PackageType_ID" class="col-sm-2 col-form-label text-right">Package Type </label>
+						<div class="col-sm-4">
+							@if (Model.Obj != null && Model.Obj.Id > 0 && Model.Obj.PackageType_ID > 0)
+							{
+								<input type="text" class="form-control form-control-sm" value="@Model.Obj.PackageType_Text" readonly />
+							}
+							else
+							{
+								<select class="form-control form-control-sm select2 w-100" id="PackageType_ID" name="PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#SKUSize_ID')">
+									<option value="0">-- Select --</option>
+								</select>
+							}
+						</div>
+						
+					</div>
+
+					<div class="form-group row">
+						
+						<label for="PackageType_ID" class="col-sm-2 col-form-label text-right">SKU Size </label>
+						<div class="col-sm-4">
+							@if (Model.Obj != null && Model.Obj.Id > 0 && Model.Obj.SKUSize_ID > 0)
+							{
+								<input type="text" class="form-control form-control-sm" value="@Model.Obj.SKUSize_Text" readonly />
+							}
+							else
+							{
+								<select class="form-control form-control-sm select2 w-100" id="SKUSize_ID" name="SKUSize_ID">
+									<option value="0">-- Select --</option>
 								</select>
 							}
 						</div>

@@ -1,9 +1,10 @@
-﻿using Seed_Admin.Controllers;
-using Seed_Admin.Infra;
-using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Seed_Admin.Controllers;
+using Seed_Admin.Infra;
+using Seed_Admin.Models;
 using System.Data;
+using System.Globalization;
 
 namespace Seed_Admin.Areas.Admin.Controllers
 {
@@ -18,11 +19,17 @@ namespace Seed_Admin.Areas.Admin.Controllers
             if (Common.IsSuperAdmin() || Common.IsAdmin()) CommonViewModel.ObjList = _context.Using<ProductBatch>().GetAll().ToList();
 
             var dictProduct = _context.Using<Product>().GetAll().ToDictionary(x => x.Id);
+            var dictPackageType = _context.Using<PackageType>().GetAll().ToDictionary(x => x.Id);
+            var dictSKUSize = _context.Using<SKUSize>().GetAll().ToDictionary(x => x.Id);
 
             for (int i = 0; i < CommonViewModel.ObjList.Count(); i++)
             {
                 dictProduct.TryGetValue(CommonViewModel.ObjList[i].ProductId, out var lp);
+                dictPackageType.TryGetValue(CommonViewModel.ObjList[i].PackageType_ID, out var lpt);
+                dictSKUSize.TryGetValue(CommonViewModel.ObjList[i].SKUSize_ID, out var ls);
                 CommonViewModel.ObjList[i].Product_Text = lp?.Name ?? "";
+                CommonViewModel.ObjList[i].PackageType_Text = lpt?.PackageTypeName ?? "";
+                CommonViewModel.ObjList[i].SKUSize_Text = ls?.SKUSizeName ?? "";
                 CommonViewModel.ObjList[i].MfgDate_Text = CommonViewModel.ObjList[i].MfgDate?.ToString(Common.DateTimeFormat_ddMMyyyy);
                 CommonViewModel.ObjList[i].ExpiryDate_Text = CommonViewModel.ObjList[i].ExpiryDate?.ToString(Common.DateTimeFormat_ddMMyyyy);
                 CommonViewModel.ObjList[i].CreatedDate_Text = CommonViewModel.ObjList[i].CreatedDate?.ToString(Common.DateTimeFormat_ddMMyyyy_HHmm);
@@ -58,10 +65,10 @@ namespace Seed_Admin.Areas.Admin.Controllers
             CommonViewModel.Obj.ExpiryDate_Text = CommonViewModel.Obj.ExpiryDate?.ToString(Common.DateTimeFormat_ddMMyyyy).Replace("-", "/");
             CommonViewModel.Obj.CreatedDate_Text = CommonViewModel.Obj.CreatedDate?.ToString(Common.DateTimeFormat_ddMMyyyy_HHmm).Replace("-", "/");
 
-            List<SqlParameter> sqlParameters = new List<SqlParameter>();
-            sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+            //List<SqlParameter> sqlParameters = new List<SqlParameter>();
+            //sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
 
-            var dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_GET", sqlParameters, true);
+            var dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
 
             if (dt != null && dt.Rows.Count > 0)
                 foreach (DataRow dr in dt.Rows)
@@ -69,7 +76,10 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
             if (CommonViewModel.Obj != null && CommonViewModel.Obj.ProductId > 0)
                 CommonViewModel.Obj.Product_Text = CommonViewModel.SelectListItems.Where(x => x.Value == CommonViewModel.Obj.ProductId.ToString()).Select(x => x.Text).FirstOrDefault();
-
+            if (CommonViewModel.Obj != null && CommonViewModel.Obj.PackageType_ID > 0)
+                CommonViewModel.Obj.PackageType_Text = _context.Using<PackageType>().GetByCondition(x => x.Id == CommonViewModel.Obj.PackageType_ID).Select(x => x.PackageTypeName).FirstOrDefault();
+            if (CommonViewModel.Obj != null && CommonViewModel.Obj.SKUSize_ID > 0)
+                CommonViewModel.Obj.SKUSize_Text = _context.Using<SKUSize>().GetByCondition(x => x.Id == CommonViewModel.Obj.SKUSize_ID).Select(x => x.SKUSizeName).FirstOrDefault();
             CommonViewModel.Data5 = IsProductQRView;
 
             return PartialView("_Partial_AddEditForm", CommonViewModel);
@@ -106,6 +116,22 @@ namespace Seed_Admin.Areas.Admin.Controllers
                     CommonViewModel.IsSuccess = false;
                     CommonViewModel.StatusCode = ResponseStatusCode.Error;
                     CommonViewModel.Message = "Please select Product.";
+
+                    return Json(CommonViewModel);
+                }
+                if (viewModel.PackageType_ID <= 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select Package type.";
+
+                    return Json(CommonViewModel);
+                }
+                if (viewModel.SKUSize_ID <= 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select SKU Size.";
 
                     return Json(CommonViewModel);
                 }
@@ -146,8 +172,10 @@ namespace Seed_Admin.Areas.Admin.Controllers
                         {
                             obj.ProductId = viewModel.ProductId;
                             obj.MfgDate = viewModel.MfgDate;
+                            obj.PackageType_ID = viewModel.PackageType_ID;
+                            obj.SKUSize_ID = viewModel.SKUSize_ID;
                             obj.ExpiryDate = viewModel.ExpiryDate;
-
+                           
                             obj.IsActive = true;
                             obj.IsDeleted = obj.IsActive ? false : obj.IsDeleted;
 
@@ -291,6 +319,54 @@ namespace Seed_Admin.Areas.Admin.Controllers
             CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
             return Json(CommonViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult GetProductDetails(string Type = "", string Product = "", long ParentId = 0)
+        {
+            var list = new List<SelectListItem_Custom>();
+
+            List<SqlParameter> oParams = new List<SqlParameter>();
+
+            var dt = new DataTable();
+
+            try
+            {
+                if (string.IsNullOrEmpty(Type))
+                {
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["Name"]), "Product"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "PACKTYPE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = Product });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["PackageTypeName"]), "PackageType"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "SKUSIZE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = ParentId });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["SKUSizeName"]), "SKUSize"));
+                }
+
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            return Json(list);
         }
 
     }

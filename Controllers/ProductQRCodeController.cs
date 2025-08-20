@@ -33,13 +33,13 @@ namespace Seed_Admin.Areas.Admin.Controllers
                     var listQrcode = _context.Using<ProductQrCode>().GetByCondition(x => batchId > 0 ? x.BatchId == batchId : true).ToList();
 
                     var dictProduct = _context.Using<Product>().GetAll().ToDictionary(x => x.Id);
-                    var dictPurchaseType = _context.Using<PackageType>().GetAll().ToDictionary(x => x.Id);
+                    var dictPackageType = _context.Using<PackageType>().GetAll().ToDictionary(x => x.Id);
                     var dictSKUSize = _context.Using<SKUSize>().GetAll().ToDictionary(x => x.Id);
 
                     var list = listQrcode.Select(x =>
                     {
                         dictProduct.TryGetValue(x.ProductId, out var lp);
-                        dictPurchaseType.TryGetValue(x.PackageType_ID, out var lpt);
+                        dictPackageType.TryGetValue(x.PackageType_ID, out var lpt);
                         dictSKUSize.TryGetValue(x.SKUSize_ID, out var ls);
                         return new ProductQrCode
                         {
@@ -140,7 +140,14 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
                     return Json(CommonViewModel);
                 }
+                if (ProductId <= 0)
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "Please select Product.";
 
+                    return Json(CommonViewModel);
+                }
                 if (PackageType_ID <= 0)
                 {
                     CommonViewModel.IsSuccess = false;
@@ -157,14 +164,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 
                     return Json(CommonViewModel);
                 }
-                if (ProductId <= 0)
-                {
-                    CommonViewModel.IsSuccess = false;
-                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
-                    CommonViewModel.Message = "Please select Product.";
-
-                    return Json(CommonViewModel);
-                }
+                
 
                 if (NoOfQRCode <= 0)
                 {

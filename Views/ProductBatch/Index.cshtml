@@ -51,6 +51,8 @@
 											<th hidden>Ticks</th>
 											<th>Batch No.</th>
 											<th>Product</th>
+											<th>Package Type</th>
+											<th>SKU Size</th>
 											<th width="10%">QR Code Count</th>
 											<th width="10%">Manufacture Date</th>
 											<th width="10%">Expiry Date</th>
@@ -69,6 +71,8 @@
 													<td hidden>@item.CreatedDate?.Ticks</td>
 													<td>@item.BatchNo</td>
 													<td>@item.Product_Text</td>
+													<td>@item.PackageType_Text</td>
+													<td>@item.SKUSize_Text</td>
 													<td></td>
 													<td>@item.MfgDate_Text</td>
 													<td>@item.ExpiryDate_Text</td>
@@ -422,6 +426,49 @@
 
 			return false;
 		});
+
+
+
+
+		function fnChangeProductDetail($this, $type, $selector) {
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				ShowLoader(true);
+
+				 if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'PACKTYPE') {
+					$('#SKUSize_ID').empty().append('<option value="0">-- Select --</option>');
+				 }
+
+
+
+
+
+				var stateDropdown = $($selector);
+				stateDropdown.empty();
+				stateDropdown.append('<option value="0">-- Select --</option>');
+
+				var $url = '@Url.Action("GetProductDetails", "ProductQRCode")?Type=' + $type + '&ParentId=' + $($this).val();
+
+				if ($type === "PACKTYPE") {
+					$url += "&Product=" + encodeURIComponent($($this).find("option:selected").text());
+				}
+				$.ajax({
+					url: $url,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						debugger;
+						ShowLoader(false);
+						$.each(response, function (index, state) {
+							stateDropdown.append('<option value="' + state.Value + '">' + state.Text + '</option>');
+						});
+
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+			}
 
 
 	</script>
