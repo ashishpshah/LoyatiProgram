@@ -23,147 +23,198 @@
 						</div>
 						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Order Date<span style="color:red">*</span></label>
 						<div class="col-sm-4">
-							<input type="date" class="form-control form-control-sm" id="Order_Date" name="Order_Date"  placeholder="Order Date" autocomplete="off" value="@(Model.Obj.Order_Date.HasValue? Model.Obj.Order_Date.Value.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))">
+							<input type="date" class="form-control form-control-sm" id="Order_Date" name="Order_Date" placeholder="Order Date" autocomplete="off" value="@(Model.Obj.Order_Date.HasValue? Model.Obj.Order_Date.Value.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))" disabled="@(Model.Obj.Id > 0 && Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin" ? true : false)">
 						</div>
 					</div>
-					<div class="form-group row">
-						<div class="float-sm-right">
-							<button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnBtnAddNewItem()">
-								<i class="fas fa-plus"></i> &nbsp; Add Order Details
-							</button>
-						</div>
-					</div>
-					<div class="table-responsive">
-						<table id="Order_Detail_Table" class="table table-bordered table-striped m-0">
-							<thead>
-								<tr>
-									<th width="5%" class="text-center">#</th>
-									<th width="10%" class="text-center">Product</th>
-									<th width="10%" class="text-center">Package Type</th>
-									<th width="10%" class="text-center">SKU Size</th>
-									<th class="text-center">Quantity</th>
-									<th width="5%" class="text-center">Action</th>
-								</tr>
-							</thead>
-							<tbody>
-								@{
-									int trid = 0;
-								}
-								@if (Model.Obj.list_Order_Details != null && Model.Obj.list_Order_Details.Count > 0)
-								{
+					@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) != "Admin")
+					{
+						<div class="form-group row">
+							<div class="float-sm-right">
+								<button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnBtnAddNewItem()">
+									<i class="fas fa-plus"></i> &nbsp; Add Order Details
+								</button>
+							</div>
 
-									for (int i = 0; i < Model.Obj.list_Order_Details.Count(); i++)
+						</div>
+					}					
+					@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin")
+					{
+						<div class="table-responsive">
+							<table id="Order_Detail_Table_admin" class="table table-bordered table-striped m-0">
+								<thead>
+									<tr>
+										<th width="5%" class="text-center">#</th>
+										<th width="10%" class="text-center">Product</th>
+										<th width="10%" class="text-center">Package Type</th>
+										<th width="10%" class="text-center">SKU Size</th>
+										<th class="text-center">Quantity</th>										
+									</tr>
+								</thead>
+								<tbody>
+									
+									@if (Model.Obj.list_Order_Details != null && Model.Obj.list_Order_Details.Count > 0)
 									{
-										<tr id="tr_@i">
-											<td width="5%" class="text-center">@(i + 1)</td>
-											<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Id" name="list_Order_Details[@i].Id" class="form-control" value="@Model.Obj.list_Order_Details[i].Id" /></td>
-											<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Order_ID" name="list_Order_Details[@i].Order_ID" class="form-control" value="@Model.Obj.list_Order_Details[i].Order_ID" /></td>
+
+										for (int i = 0; i < Model.Obj.list_Order_Details.Count(); i++)
+										{
+											<tr id="tr_@i">
+												<td width="5%" class="text-center">@(i + 1)</td>
+												<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Id" name="list_Order_Details[@i].Id" class="form-control" value="@Model.Obj.list_Order_Details[i].Id" /></td>
+												<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Order_ID" name="list_Order_Details[@i].Order_ID" class="form-control" value="@Model.Obj.list_Order_Details[i].Order_ID" /></td>
+												<td width="10%" class="text-center">
+													@Model.Obj.list_Order_Details[i].Product_Name
+												</td>
+												<td width="10%" class="text-center">
+													@Model.Obj.list_Order_Details[i].PackageType_Name
+												</td>
+												<td width="10%" class="text-center">
+													@Model.Obj.list_Order_Details[i].SKUSize_Name
+												</td>
+												<td width="10%" class="text-center">
+													@Model.Obj.list_Order_Details[i].Qty
+												</td>
+											</tr>
+										}
+									}
+									
+								</tbody>
+							</table>
+						</div>
+					}
+					else
+					{
+						<div class="table-responsive">
+							<table id="Order_Detail_Table" class="table table-bordered table-striped m-0">
+								<thead>
+									<tr>
+										<th width="5%" class="text-center">#</th>
+										<th width="10%" class="text-center">Product</th>
+										<th width="10%" class="text-center">Package Type</th>
+										<th width="10%" class="text-center">SKU Size</th>
+										<th class="text-center">Quantity</th>
+										<th width="5%" class="text-center">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									@{
+										int trid = 0;
+									}
+									@if (Model.Obj.list_Order_Details != null && Model.Obj.list_Order_Details.Count > 0)
+									{
+
+										for (int i = 0; i < Model.Obj.list_Order_Details.Count(); i++)
+										{
+											<tr id="tr_@i">
+												<td width="5%" class="text-center">@(i + 1)</td>
+												<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Id" name="list_Order_Details[@i].Id" class="form-control" value="@Model.Obj.list_Order_Details[i].Id" /></td>
+												<td class="d-none"><input type="hidden" id="list_Order_Details@(i)_Order_ID" name="list_Order_Details[@i].Order_ID" class="form-control" value="@Model.Obj.list_Order_Details[i].Order_ID" /></td>
+												<td width="10%" class="text-center">
+													<select class="form-control show-tick select2" id="list_Order_Details_@(i)_Product_ID" name="list_Order_Details[@i].Product_ID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_@(i)_PackageType_ID');">
+														<option value="0">-- Select --</option>
+														@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+														{
+															foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Product"))
+															{
+																if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].Product_ID.ToString())
+																{
+																	<option value="@item.Value" selected>@item.Text</option>
+																}
+																else
+																{
+																	<option value="@item.Value">@item.Text</option>
+																}
+															}
+														}
+													</select>
+												</td>
+												<td width="10%" class="text-center">
+													<select class="form-control show-tick select2" id="list_Order_Details_@(i)_PackageType_ID" name="list_Order_Details[@i].PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_@(i)_SKUSize_ID');">
+														<option value="0">-- Select --</option>
+														@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+														{
+															foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "PackageType" && x.Value2 == Model.Obj.list_Order_Details[i].Product_Name))
+															{
+																if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].PackageType_ID.ToString())
+																{
+																	<option value="@item.Value" selected>@item.Text</option>
+																}
+																else
+																{
+																	<option value="@item.Value">@item.Text</option>
+																}
+															}
+														}
+													</select>
+												</td>
+												<td width="10%" class="text-center">
+													<select class="form-control show-tick select2" id="list_Order_Details_@(i)_SKUSize_ID" name="list_Order_Details[@i].SKUSize_ID">
+														<option value="0">-- Select --</option>
+														@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+														{
+															foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "SKUSize" && x.Value2 == Model.Obj.list_Order_Details[i].PackageType_ID.ToString()))
+															{
+																if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].SKUSize_ID.ToString())
+																{
+																	<option value="@item.Value" selected>@item.Text</option>
+																}
+																else
+																{
+																	<option value="@item.Value">@item.Text</option>
+																}
+															}
+														}
+													</select>
+												</td>
+												<td width="5%" class="text-center">
+													<input type="text" class="form-control isNumberKey_Decimal" id="list_Order_Details_@(i)_Qty" name="list_Order_Details[@i].Qty" value="@Model.Obj.list_Order_Details[i].Qty" autocomplete="off">
+												</td>
+												<td width="5%" class="text-center">
+													<button class="btn btn-danger btn-sm btn-flat deleteBtn"><span class="nme"><i class="far fa-trash-alt"></i></span></button>
+												</td>
+											</tr>
+										}
+									}
+									@if (Model.Obj.Id == 0)
+									{
+										<tr id="tr_@trid">
+											<td width="5%" class="text-center">@(trid + 1)</td>
 											<td width="10%" class="text-center">
-												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_Product_ID" name="list_Order_Details[@i].Product_ID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_@(i)_PackageType_ID');">
+												<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_Product_ID" name="list_Order_Details[@trid].Product_ID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_@(trid)_PackageType_ID');">
 													<option value="0">-- Select --</option>
 													@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
 													{
 														foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Product"))
 														{
-															if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].Product_ID.ToString())
-															{
-																<option value="@item.Value" selected>@item.Text</option>
-															}
-															else
-															{
-																<option value="@item.Value">@item.Text</option>
-															}
+
+															<option value="@item.Value">@item.Text</option>
+
 														}
 													}
 												</select>
 											</td>
 											<td width="10%" class="text-center">
-												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_PackageType_ID" name="list_Order_Details[@i].PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_@(i)_SKUSize_ID');">
+												<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_PackageType_ID" name="list_Order_Details[@trid].PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_@(trid)_SKUSize_ID');">
 													<option value="0">-- Select --</option>
-													@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
-													{
-														foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "PackageType" && x.Value2 == Model.Obj.list_Order_Details[i].Product_Name))
-														{
-															if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].PackageType_ID.ToString())
-															{
-																<option value="@item.Value" selected>@item.Text</option>
-															}
-															else
-															{
-																<option value="@item.Value">@item.Text</option>
-															}
-														}
-													}
 												</select>
 											</td>
 											<td width="10%" class="text-center">
-												<select class="form-control show-tick select2" id="list_Order_Details_@(i)_SKUSize_ID" name="list_Order_Details[@i].SKUSize_ID" >
+												<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_SKUSize_ID" name="list_Order_Details[@trid].SKUSize_ID">
 													<option value="0">-- Select --</option>
-													@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
-													{
-														foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "SKUSize" && x.Value2 == Model.Obj.list_Order_Details[i].PackageType_ID.ToString()))
-														{
-															if (item.Value.ToUpper() == Model.Obj.list_Order_Details[i].SKUSize_ID.ToString())
-															{
-																<option value="@item.Value" selected>@item.Text</option>
-															}
-															else
-															{
-																<option value="@item.Value">@item.Text</option>
-															}
-														}
-													}
 												</select>
 											</td>
 											<td width="5%" class="text-center">
-												<input type="text" class="form-control isNumberKey_Decimal" id="list_Order_Details_@(i)_Qty" name="list_Order_Details[@i].Qty" value="@Model.Obj.list_Order_Details[i].Qty" autocomplete="off">
+												<input type="text" class="form-control isNumberKey_Decimal" id="list_Order_Details_@(trid)_Qty" name="list_Order_Details[@trid].Qty" autocomplete="off">
 											</td>
-											<td width="5%" class="text-center">
+											<td class="text-center">
 												<button class="btn btn-danger btn-sm btn-flat deleteBtn"><span class="nme"><i class="far fa-trash-alt"></i></span></button>
 											</td>
 										</tr>
 									}
-								}
-								@if (Model.Obj.Id == 0)
-								{
-									<tr id="tr_@trid">
-										<td width="5%" class="text-center">@(trid + 1)</td>
-										<td width="10%" class="text-center">
-											<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_Product_ID" name="list_Order_Details[@trid].Product_ID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#list_Order_Details_@(trid)_PackageType_ID');">
-												<option value="0">-- Select --</option>
-												@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
-												{
-													foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Product"))
-													{
 
-														<option value="@item.Value">@item.Text</option>
-
-													}
-												}
-											</select>
-										</td>
-										<td width="10%" class="text-center">
-											<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_PackageType_ID" name="list_Order_Details[@trid].PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#list_Order_Details_@(trid)_SKUSize_ID');">
-												<option value="0">-- Select --</option>												
-											</select>
-										</td>
-										<td width="10%" class="text-center">
-											<select class="form-control show-tick select2" id="list_Order_Details_@(trid)_SKUSize_ID" name="list_Order_Details[@trid].SKUSize_ID">
-												<option value="0">-- Select --</option>
-											</select>
-										</td>
-										<td width="5%" class="text-center">
-											<input type="text" class="form-control isNumberKey_Decimal" id="list_Order_Details_@(trid)_Qty" name="list_Order_Details[@trid].Qty" autocomplete="off">
-										</td>
-										<td class="text-center">
-											<button class="btn btn-danger btn-sm btn-flat deleteBtn"><span class="nme"><i class="far fa-trash-alt"></i></span></button>
-										</td>
-									</tr>
-								}
-
-							</tbody>
-						</table>
-					</div>
+								</tbody>
+							</table>
+						</div>
+					}
 
 				</div>
 

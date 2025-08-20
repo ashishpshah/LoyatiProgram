@@ -19,12 +19,12 @@
 					<div class="form-group row">
 						<label for="Obj.DealerName" class="col-sm-2 col-form-label text-right">User ID<span style="color:red">*</span></label>
 						<div class="col-sm-4">
-							<input type="text" class="form-control form-control-sm" id="User_ID" name="User_ID" value="@Model.Obj.User_ID" placeholder="User ID" autocomplete="off">
+							<input type="text" class="form-control form-control-sm" id="User_ID" name="User_ID" value="@Model.Obj.User_ID" placeholder="User ID" autocomplete="off"disabled ="@(Model.Obj.Id> 0 ? true:false)">
 						</div>
 						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Password</label>
 						<div class="col-sm-4">
 							<div class="input-group mb-3">
-								<input type="password" data-altType="text" class="form-control form-control-sm" id="Password" name="Password" placeholder="********" autocomplete="off" value="@Model.Obj.Password">
+								<input type="password" data-altType="text" class="form-control form-control-sm" id="Password" name="Password" placeholder="********" autocomplete="off" value="@Model.Obj.Password"disabled ="@(Model.Obj.Id> 0 ? true:false)">
 								<div class="input-group-append">
 									<div class="input-group-text">
 										<i class="fa fa-eye-slash" data-defaultClass="fa-eye-slash" data-altClass="fa-eye" onclick="fnShow_Password('Password', this)" style="cursor: pointer;"></i>

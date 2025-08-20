@@ -230,7 +230,7 @@ namespace Seed_Admin.Controllers
             try
             {
 
-                if (string.IsNullOrEmpty(viewModel.User_ID))
+                if (viewModel.Id == 0 && string.IsNullOrEmpty(viewModel.User_ID))
                 {
                     CommonViewModel.IsSuccess = false;
                     CommonViewModel.StatusCode = ResponseStatusCode.Error;
@@ -239,7 +239,7 @@ namespace Seed_Admin.Controllers
                     return Json(CommonViewModel);
                 }
 
-                if (string.IsNullOrEmpty(viewModel.Password))
+                if (viewModel.Id == 0 && string.IsNullOrEmpty(viewModel.Password))
                 {
                     CommonViewModel.IsSuccess = false;
                     CommonViewModel.StatusCode = ResponseStatusCode.Error;

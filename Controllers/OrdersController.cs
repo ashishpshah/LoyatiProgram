@@ -194,7 +194,7 @@ namespace Seed_Admin.Controllers
                 {
                     CommonViewModel.IsSuccess = false;
                     CommonViewModel.StatusCode = ResponseStatusCode.Error;
-                    CommonViewModel.Message = "Please enter user id.";
+                    CommonViewModel.Message = "Please enter order id.";
 
                     return Json(CommonViewModel);
                 }
