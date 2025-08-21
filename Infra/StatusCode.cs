@@ -11,6 +11,8 @@
 		public static string KEY_USER_TYPE => "AuthenticatedUser_Type";
 		public static string KEY_USER_ROLE_ID => "AuthenticatedUserRole";
 		public static string KEY_USER_ROLE => "AuthenticatedUserRole_Name";
+		public static string KEY_USER_PLANT_ID => "AuthenticatedUserPlant";
+		public static string KEY_USER_PLANT => "AuthenticatedUserPlant_Name";
 		public static string KEY_USER_MENUACCESS => "AuthenticatedUserMenuAccess";
 		public static string CURRENT_MENU_ID => "CurrentMenu";
 	}

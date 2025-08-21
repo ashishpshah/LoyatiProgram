@@ -10,77 +10,170 @@
 		<div class="card-header">
 			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") User</h3>
 			<input type="text" class="form-control d-none" id="Id" name="Obj.Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
-			<input type="text" class="form-control d-none" id="RoleId" name="Obj.RoleId" value="@(Model.Obj != null && Model.Obj.RoleId > 0 ? Model.Obj.RoleId.ToString() : "")">
+			@* <input type="text" class="form-control d-none" id="RoleId" name="Obj.RoleId" value="@(Model.Obj != null && Model.Obj.RoleId > 0 ? Model.Obj.RoleId.ToString() : "")"> *@
+			<input type="text" class="form-control d-none" id="Plant_Role" name="Obj.Plant_Role" value="@Model.Obj.Plant_Role">
+			<input type="text" class="form-control d-none" id="Default_Plant" name="Obj.Default_Plant" value="@Model.Obj.Default_Plant">
 		</div>
 
 		<div class="card-body">
-			<div class="row no-gutters">
-				<div class="col-6">
-					<div class="form-group row">
-						<label for="Obj.UserName" class="col-sm-2 col-form-label text-right">User Name</label>
-						<div class="col-sm-6">
-							<input type="text" class="form-control form-control-sm" id="UserName" name="Obj.UserName" value="@Model.Obj.UserName" placeholder="Username" autocomplete="off">
-						</div>
-					</div>
-				</div>
-				<div class="col-6">
-					<div class="form-group row">
-						<label for="Obj.User_Role_Id" class="col-sm-2 col-form-label text-right">Role</label>
-						<div class="col-sm-6">
-							<select class="form-control select2 w-100" id="User_Role_Id" name="Obj.User_Role_Id">
-								@foreach (var item in Model.SelectListItems.Where(x => x.Group == "R"))
-								{
-									if (item.Value == Model.Obj.User_Role_Id.ToString())
-									{
-										<option value="@item.Value" selected>@item.Text</option>
-									}
-									else
-									{
-										<option value="@item.Value">@item.Text</option>
-									}
-								}
-							</select>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row no-gutters">
-				<div class="col-6">
-					<div class="form-group row @(Model.Obj != null && Model.Obj.Id > 0 ? "d-none": "")">
-						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Password</label>
-						<div class="col-sm-6">
-							<div class="input-group mb-3">
-								<input type="password" data-altType="text" class="form-control form-control-sm" id="Password" name="Obj.Password" placeholder="********" autocomplete="off">
-								<div class="input-group-append"> <div class="input-group-text"> <i class="fa fa-eye-slash" data-defaultClass="fa-eye-slash" data-altClass="fa-eye" onclick="fnChange_InputType(this, 'Password')" style="cursor: pointer;"></i> </div> </div>
-							</div>
-						</div>
-					</div>
 
-					<div class="form-group row">
-						<label for="Obj.IsActive" class="col-sm-2 col-form-label text-right">Status</label>
-						<div class="col-sm-6">
-							<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0">
-								<input type="checkbox" class="custom-control-input" id="switch_Status"
-									   name="Obj.IsActive" @((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj.Id == 0 ? "checked" : "")
-									   onchange="fnChange_Switch(this, 'label_Switch_Status')">
-								<label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">
-									@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj.Id == 0 ? "Active" : "Inactive")
-								</label>
+			<div class="panel-divider">
+				<span>Credential Details</span>
+				<div class="row no-gutters">
+					<div class="col-6">
+						<div class="form-group row">
+							<label for="Obj.UserName" class="col-sm-2 col-form-label text-right">User Name</label>
+							<div class="col-sm-6">
+								<input type="text" class="form-control form-control-sm" id="UserName" name="Obj.UserName" value="@Model.Obj.UserName" placeholder="Username" autocomplete="off">
 							</div>
 						</div>
 					</div>
-					<div class="form-group row @(Model.Obj != null && Model.Obj.Id > 0 ? "": "d-none")">
-						<label for="Obj.IsPassword_Reset" class="col-sm-2 col-form-label text-right">Password Reset</label>
-						<div class="col-sm-6">
-							<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0">
-								<input type="checkbox" class="custom-control-input" id="switch_Password_Reset"
-									   name="Obj.IsPassword_Reset" onchange="fnChange_Switch(this, 'label_Switch_Password_Reset')">
-								<label class="custom-control-label" for="switch_Password_Reset" id="label_Switch_Password_Reset" data-true="Yes" data-false="No">No</label>
+					<div class="col-6">
+						<div class="form-group row">
+							@* <label for="Obj.User_Role_Id" class="col-sm-2 col-form-label text-right">Role</label>
+							<div class="col-sm-6">
+							<select class="form-control select2 w-100" id="User_Role_Id" name="Obj.User_Role_Id">
+							@foreach (var item in Model.SelectListItems.Where(x => x.Group == "R"))
+							{
+							if (item.Value == Model.Obj.User_Role_Id.ToString())
+							{
+							<option value="@item.Value" selected>@item.Text</option>
+							}
+							else
+							{
+							<option value="@item.Value">@item.Text</option>
+							}
+							}
+							</select>
+							</div>*@
+						</div>
+					</div>
+				</div>
+				<div class="row no-gutters">
+					<div class="col-6">
+						<div class="form-group row @(Model.Obj != null && Model.Obj.Id > 0 ? "d-none": "")">
+							<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Password</label>
+							<div class="col-sm-6">
+								<div class="input-group mb-3">
+									<input type="password" data-altType="text" class="form-control form-control-sm" id="Password" name="Obj.Password" placeholder="********" autocomplete="off">
+									<div class="input-group-append"> <div class="input-group-text"> <i class="fa fa-eye-slash" data-defaultClass="fa-eye-slash" data-altClass="fa-eye" onclick="fnChange_InputType(this, 'Password')" style="cursor: pointer;"></i> </div> </div>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label for="Obj.IsActive" class="col-sm-2 col-form-label text-right">Status</label>
+							<div class="col-sm-6">
+								<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0">
+									<input type="checkbox" class="custom-control-input" id="switch_Status"
+										   name="Obj.IsActive" @((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj.Id == 0 ? "checked" : "")
+										   onchange="fnChange_Switch(this, 'label_Switch_Status')">
+									<label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">
+										@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj.Id == 0 ? "Active" : "Inactive")
+									</label>
+								</div>
+							</div>
+						</div>
+						<div class="form-group row @(Model.Obj != null && Model.Obj.Id > 0 ? "": "d-none")">
+							<label for="Obj.IsPassword_Reset" class="col-sm-2 col-form-label text-right">Password Reset</label>
+							<div class="col-sm-6">
+								<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success form-control border-0">
+									<input type="checkbox" class="custom-control-input" id="switch_Password_Reset"
+										   name="Obj.IsPassword_Reset" onchange="fnChange_Switch(this, 'label_Switch_Password_Reset')">
+									<label class="custom-control-label" for="switch_Password_Reset" id="label_Switch_Password_Reset" data-true="Yes" data-false="No">No</label>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+
+
+			<div class="panel-divider">
+				<span>User Access</span>
+				<div class="row no-gutters p-0 m-0">
+					<div class="col-sm-6">
+						<h1 class="m-0">&nbsp;</h1>
+					</div>
+					<div class="col-sm-4">
+						<div class="float-sm-right">
+							<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2" onclick="fnAddNewRow('@string.Join("||", Model.SelectListItems.Where(x => x.Group == "P").Select(x=>x.Value + "|" + x.Text).ToList())', '@string.Join("||", Model.SelectListItems.Where(x => x.Group == "R").Select(x=>x.Value + "|" + x.Text).ToList())');">
+								<i class="fas fa-plus"></i> &nbsp; Add new
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="row no-gutters p-0 m-0 User_Access" style="margin-top:0rem !important;">
+					<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+
+						@{
+							if (Model.Obj.UserRoleMappings != null)
+							{
+								for (int i = 0; i < Model.Obj.UserRoleMappings.Count(); i++)
+								{
+									<div class="form-group row">
+
+										<label class="col-sm-1 col-form-label text-right">Plant</label>
+										<div class="col-sm-3">
+											<select class="form-control select2 w-100 Plant_Id" data-id="Plant_Id" onchange="fnChange_UserAccess(this)">
+												@foreach (var item in Model.SelectListItems.Where(x => x.Group == "P"))
+												{
+													if (item.Value == Model.Obj.UserRoleMappings[i].PlantId.ToString())
+													{
+														<option value="@item.Value" selected>@item.Text</option>
+													}
+													else
+													{
+														<option value="@item.Value">@item.Text</option>
+													}
+												}
+											</select>
+										</div>
+
+										<div class="col-sm-2">
+											<div class="icheck-primary d-inline mr-5">
+
+												<input type="radio" id="radioPrimary_@i" onchange="fnChange_UserAccess(null)" @(Model.Obj.UserRoleMappings[i].PlantId == Model.Obj.Default_Plant ? "checked" : "")>
+												<label for="radioPrimary_@i"> Is Default?</label>
+
+											</div>
+										</div>
+
+										<label class="col-sm-1 col-form-label text-right">Role</label>
+										<div class="col-sm-3">
+											<select class="form-control select2 w-100 Role_Id" onchange="fnChange_UserAccess(null)">
+												@foreach (var item in Model.SelectListItems.Where(x => x.Group == "R"))
+												{
+													var disabled = Convert.ToBoolean(item.Value2) ? "disabled" : "";
+
+													if (item.Value == Model.Obj.UserRoleMappings[i].RoleId.ToString())
+													{
+														<option value="@item.Value" selected>@item.Text</option>
+													}
+													else
+													{
+														<option value="@item.Value">@item.Text</option>
+													}
+												}
+											</select>
+										</div>
+
+										<div class="col-sm-1 text-center"> <button type="button" class="btn btn-outline-info btn-sm" onclick="fnShow_Menu(this)">View Menus</button> </div>
+
+										@if (i > 0)
+										{
+											<div class="col-sm-1 text-center"> <button type="button" class="btn btn-outline-danger btn-sm" onclick="fnRemove_Row(this)"><i class="far fa-trash-alt"></i></button> </div>
+										}
+
+									</div>
+								}
+							}
+						}
+
+					</div>
+				</div>
+			</div>
+
 		</div>
 
 		<div class="card-footer">

@@ -43,9 +43,10 @@ namespace Seed_Admin.Controllers
 
 					if (obj != null && obj.IsActive == true && obj.IsDeleted == false)
 					{
-						var userRole = _context.Using<UserRoleMapping>().GetByCondition(x => x.UserId == obj.Id).FirstOrDefault();
+						var userRole = _context.Using<UserRoleMapping>().GetByCondition(x => x.UserId == obj.Id).OrderByDescending(x => x.IsPrimary).FirstOrDefault();
 
 						obj.RoleId = userRole != null ? userRole.RoleId : 0;
+						obj.PlantId = userRole != null ? userRole.PlantId : 0;
 
 						List<UserMenuAccess> listMenuAccess = new List<UserMenuAccess>();
 						List<UserMenuAccess> listMenuPermission = new List<UserMenuAccess>();
@@ -118,6 +119,7 @@ namespace Seed_Admin.Controllers
 
 						Common.Set_Session_Int(SessionKey.KEY_USER_ID, obj.Id);
 						Common.Set_Session_Int(SessionKey.KEY_USER_ROLE_ID, obj.RoleId);
+						Common.Set_Session_Int(SessionKey.KEY_USER_PLANT_ID, obj.PlantId);
 
 						Common.Set_Session(SessionKey.KEY_USER_NAME, obj.UserName);
 						Common.Set_Session(SessionKey.KEY_USER_ROLE, role.Name);

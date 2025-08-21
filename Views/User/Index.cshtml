@@ -65,7 +65,7 @@
 										<tr>
 											<th width="5%">#</th>
 											<th>Username</th>
-											<th>User Role</th>
+											<th>Plant - Role</th>
 											<th width="5%">Status</th>
 											<th width="5%">Action</th>
 										</tr>
@@ -144,5 +144,147 @@
 
 		}
 
+
+		function fnShow_Menu($this) {
+			var roleId = $($this).closest('div.row').find('select.Role_Id option:selected').val();
+
+			if (typeof roleId != 'undefined' && roleId != null && roleId != '' && roleId.trim() != '0' && roleId.trim().length > 0)
+				fnShow_Modal('@Url.Action("Show_Menu", "User")?RoleId=' + roleId, 'Menu Access', true, 'json');
+
+			return false;
+		}
+
+
+		function Get_RoleList($this) {
+
+			$($this).closest('div.row').find('select.Role_Id').empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetRoleByPlant", "User")",
+				dataType: 'json',
+				data: { plant_Id: $($this).closest('div.row').find('select.Plant_Id option:selected').val() }
+
+			}).done(function (role) {
+
+					$.each(role, function (i, role) {
+						$($this).closest('div.row').find('select.Role_Id').append('<option value="' + role.Value + '">' + role.Text + '</option>');
+					});
+			}).fail(function (xhr) {
+				console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+			});
+
+			return false;
+		}
+
+		function fnChange_UserAccess($this) {
+
+			if ($this != null && $($this).attr("data-id") == "Plant_Id")
+				Get_RoleList($this);
+
+			var plan_role = [];
+			$('.User_Access .row').each(function (i, ele) {
+				var Plant_Id = $(ele).find('.Plant_Id option:selected').val();
+				var Role_Id = $(ele).find('.Role_Id option:selected').val();
+
+				plan_role.push(Plant_Id + '|' + Role_Id);
+			});
+
+			if (plan_role != null && plan_role.length > 0)
+				$('#Plant_Role').val(plan_role.join(","));
+			else
+				$('#Plant_Role').val('');
+
+			$('#Plant_Role').trigger('change');
+
+			debugger;
+			let selectedRadio_id = '';
+
+			if (event.currentTarget.type === "radio")
+				selectedRadio_id = $(this.event.currentTarget).attr('id');
+			else
+				selectedRadio_id = $('.User_Access input[type="radio"]:checked').attr('id');
+
+			$('.User_Access input[type="radio"]').not('#' + selectedRadio_id).removeAttr('onchange').prop('checked', false).attr('onchange', 'fnChange_UserAccess(null)');
+
+			$('#Default_Plant').val($('.User_Access input[type="radio"]:checked').closest('div.row').find('select.Plant_Id option:selected').val());
+			$('#Default_Plant').trigger('change');
+			
+		}
+
+		
+		function fnRemove_Row($this) {
+			$($this).parent('div').parent('div').remove();
+			fnChange_UserAccess(null);
+		}
+
+
+		function fnAddNewRow(listPlant, listRole) {
+
+			var optionPlant = '';
+			var optionRole = '';
+
+			var selectedPlant = $('.User_Access select.Plant_Id option:selected').map((i, el) => el.value).get();
+
+			if (typeof listPlant != 'undefined' && listPlant != null && listPlant.length > 0) {
+				if (typeof listRole != 'undefined' && listRole != null && listRole.length > 0) {
+
+					var arr = listPlant.split('||');
+					$.each(arr, function (index, value) {
+						//if (selectedPlant == null || $.inArray('' + value.split('|')[0], selectedPlant) == -1)
+						optionPlant = optionPlant + '<option value="' + value.split('|')[0] + '" selected="">' + value.split('|')[1] + '</option> ';
+					});
+
+					if (typeof optionPlant != 'undefined' && optionPlant != null && optionPlant.length > 0) {
+						arr = listRole.split('||');
+						$.each(arr, function (index, value) {
+							optionRole = optionRole + '<option value="' + value.split('|')[0] + '" selected="">' + value.split('|')[1] + '</option> ';
+						});
+					}
+				}
+			}
+
+
+
+			if (typeof optionPlant != 'undefined' && optionPlant != null && optionPlant.length > 0) {
+
+				var strHtml = '<div class="row no-gutters p-0 m-0 User_Access"> ' +
+					'<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3"> ' +
+					'<div class="form-group row"> ' +
+					'<label class="col-sm-1 col-form-label text-right">Plant</label> ' +
+					'<div class="col-sm-3" data-select2-id="24"> ' +
+					'<select class="form-control select2 w-100 Plant_Id" onchange="fnChange_UserAccess(this)" tabindex="-1" aria-hidden="true"> ';
+
+				//'<option value="1" selected="" data-select2-id="6">IFFCO KALOL</option> ' +
+				if (typeof optionPlant != 'undefined' && optionPlant != null && optionPlant.length > 0)
+					strHtml = strHtml + optionPlant;
+
+				strHtml = strHtml + '</select> ' +
+					'</div> <div class="col-sm-2"> ' +
+					'<div class="icheck-primary d-inline mr-5"> ' +
+					'<input type="radio" id="radioPrimary_' + $('.User_Access select.Plant_Id').length + '" name="PlantID" onchange="fnChange_UserAccess(this)"> ' +
+					'<label for="radioPrimary_' + $('.User_Access select.Plant_Id').length + '"> Is Default?</label> ' +
+					'</div> </div>' +
+					'<label class="col-sm-1 col-form-label text-right">Role</label> ' +
+					'<div class="col-sm-3"> ' +
+					'<select class="form-control select2 w-100 Role_Id" onchange="fnChange_UserAccess(this)" tabindex="-1" aria-hidden="true"> ';
+				//'<option value="2" data-select2-id="9">Admin</option> ' +
+
+				if (typeof optionRole != 'undefined' && optionRole != null && optionRole.length > 0)
+					strHtml = strHtml + optionRole;
+
+				strHtml = strHtml + '</select> ' +
+					'</div> <div class="col-sm-1 text-center"> <button type="button" class="btn btn-outline-info btn-sm" onclick="fnShow_Menu(this)">View Menus</button> </div>' +
+					'<div class="col-sm-1 text-center"> <button type="button" class="btn btn-outline-danger btn-sm" onclick="fnRemove_Row(this)"><i class="far fa-trash-alt"></i></button> </div>' +
+					'</div> ' +
+					'</div> ' +
+					'</div>';
+
+				$('div.User_Access').parent('div').append(strHtml);
+
+				$('div.User_Access').parent('div').find('.select2').select2();
+
+				fnChange_UserAccess(null);
+			}
+		}
 	</script>
 }

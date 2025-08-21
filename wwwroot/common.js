@@ -1413,6 +1413,7 @@ function fnShow_Modal($url, $title, $hasTable, $type, $noAlert = false) {
             success: function (response) {
 
                 if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                    ShowLoader(false);
 
                     if ($noAlert == false)
                         CommonAlert_Error("No any record(s) found");

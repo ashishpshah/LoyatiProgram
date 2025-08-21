@@ -54,13 +54,18 @@ namespace Seed_Admin
 		//public string Fullname { get { return (!string.IsNullOrEmpty(First_Name) ? First_Name : "") + (!string.IsNullOrEmpty(Last_Name) ? " " + Last_Name : ""); } }
 
 
+		[NotMapped] public string Plant_Role { get; set; }
+		[NotMapped] public long Default_Plant { get; set; }
 		[NotMapped] public string User_Role { get; set; }
 		[NotMapped] public long User_Role_Id { get; set; }
 		[NotMapped] public long RoleId { get; set; }
+		[NotMapped] public long PlantId { get; set; }
 		[NotMapped] public bool IsPassword_Reset { get; set; }
 		[NotMapped] public DateTime? Date { get; set; }
 		[NotMapped] public string Date_Text { get; set; }
-		[NotMapped] public string User_Id_Str { get; set; }
-		[NotMapped] public string Role_Id_Str { get; set; }
+
+		[NotMapped] public List<UserRoleMapping> UserRoleMappings { get; set; }
+
+
 	}
 }

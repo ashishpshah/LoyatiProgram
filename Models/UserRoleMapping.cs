@@ -10,7 +10,12 @@ namespace Seed_Admin
         public long UserId { get; set; }
         public long RoleId { get; set; }
 
-        [NotMapped] public string RoleName { get; set; } = null;
+		public long PlantId { get; set; }
+
+		public bool IsPrimary { get; set; }
+
+
+		[NotMapped] public string RoleName { get; set; } = null;
         [NotMapped] public string UserName { get; set; } = null;
         [NotMapped] public long[] SelectedRoleId { get; set; } = null;
         [NotMapped] public long[] SeelectedUserId { get; set; } = null;

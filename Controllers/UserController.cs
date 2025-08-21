@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Seed_Admin.Infra;
 
 namespace Seed_Admin.Controllers
 {
@@ -18,11 +19,26 @@ namespace Seed_Admin.Controllers
 		{
 			CommonViewModel.ObjList = new List<User>();
 
-			CommonViewModel.ObjList = (from x in _context.Using<User>().GetAll().ToList()
-									   join y in _context.Using<UserRoleMapping>().GetAll().ToList() on x.Id equals y.UserId
-									   join z in _context.Using<Role>().GetAll().ToList() on y.RoleId equals z.Id
-									   where y.RoleId > 1 && y.UserId != Common.LoggedUser_Id()
-									   select new User() { Id = x.Id, UserName = x.UserName, /*EmailId = x.EmailId, MobileNo = x.MobileNo,*/ User_Role_Id = z.Id, User_Role = z.Name, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
+			CommonViewModel.ObjList = (from u in _context.Using<User>().GetAll().ToList()
+									   join m in _context.Using<UserRoleMapping>().GetAll().ToList() on u.Id equals m.UserId
+									   join r in _context.Using<Role>().GetAll().ToList() on m.RoleId equals r.Id
+									   join p in _context.Using<Plant>().GetAll().ToList() on m.PlantId equals p.Id
+									   where r.Id > 1 && m.UserId != Common.LoggedUser_Id()
+									   group new { m, r, p } by new { u.Id, u.UserName, u.IsActive, u.IsDeleted } into g
+									   select new User()
+									   {
+										   Id = g.Key.Id,
+										   UserName = g.Key.UserName,
+										   User_Role = string.Join(", ", g.OrderByDescending(x => x.m.IsPrimary).Select(x => x.m.PlantId == 0 ? $"{x.r.Name}" : $"{x.p.PlantName} - {x.r.Name}")),
+										   IsActive = g.Key.IsActive,
+										   IsDeleted = g.Key.IsDeleted
+									   }).ToList();
+
+			//CommonViewModel.ObjList = (from x in _context.Using<User>().GetAll().ToList()
+			//					   join y in _context.Using<UserRoleMapping>().GetAll().ToList() on x.Id equals y.UserId
+			//					   join z in _context.Using<Role>().GetAll().ToList() on y.RoleId equals z.Id
+			//					   where y.RoleId > 1 && y.UserId != Common.LoggedUser_Id()
+			//					   select new User() { Id = x.Id, UserName = x.UserName, User_Role_Id = z.Id, User_Role = z.Name, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
 
 			return View(CommonViewModel);
 		}
@@ -33,11 +49,25 @@ namespace Seed_Admin.Controllers
 
 			if (Id > 0)
 			{
-				CommonViewModel.Obj = (from x in _context.Using<User>().GetAll().ToList()
-									   join y in _context.Using<UserRoleMapping>().GetAll().ToList() on x.Id equals y.UserId
-									   join z in _context.Using<Role>().GetAll().ToList() on y.RoleId equals z.Id
-									   where x.Id == Id && x.Id > 1 && z.Id > 1 && y.RoleId > 1 && y.UserId != Common.LoggedUser_Id()
-									   select new User() { Id = x.Id, UserName = x.UserName, /*EmailId = x.EmailId, MobileNo = x.MobileNo,*/ User_Role_Id = z.Id, RoleId = z.Id, User_Role = z.Name, IsActive = x.IsActive }).FirstOrDefault();
+				//CommonViewModel.Obj = (from x in _context.Using<User>().GetAll().ToList()
+				//					   join y in _context.Using<UserRoleMapping>().GetAll().ToList() on x.Id equals y.UserId
+				//					   join z in _context.Using<Role>().GetAll().ToList() on y.RoleId equals z.Id
+				//					   where x.Id == Id && x.Id > 1 && z.Id > 1 && y.RoleId > 1 && y.UserId != Common.LoggedUser_Id()
+				//					   select new User() { Id = x.Id, UserName = x.UserName, /*EmailId = x.EmailId, MobileNo = x.MobileNo,*/ User_Role_Id = z.Id, RoleId = z.Id, User_Role = z.Name, IsActive = x.IsActive }).FirstOrDefault();
+				CommonViewModel.Obj = (from u in _context.Using<User>().GetAll().ToList()
+									   join m in _context.Using<UserRoleMapping>().GetAll().ToList() on u.Id equals m.UserId
+									   where u.Id == Id && m.RoleId > 1 && m.UserId != Common.LoggedUser_Id()
+									   group new { m } by new { u.Id, u.UserName, u.IsActive, u.IsDeleted } into g
+									   select new User()
+									   {
+										   Id = g.Key.Id,
+										   UserName = g.Key.UserName,
+										   UserRoleMappings = g.Select(x => x.m).ToList(),
+										   IsActive = g.Key.IsActive,
+										   IsDeleted = g.Key.IsDeleted,
+										   Plant_Role = string.Join(",", g.Select(x => x.m.PlantId + "|" + x.m.RoleId).ToArray()),
+										   Default_Plant = g.Select(x => x.m).OrderByDescending(x => x.IsPrimary).Select(x => x.PlantId).FirstOrDefault()
+									   }).FirstOrDefault();
 			}
 
 			//if (!string.IsNullOrEmpty(CommonViewModel.Obj.Password))
@@ -46,12 +76,30 @@ namespace Seed_Admin.Controllers
 
 			CommonViewModel.SelectListItems = new List<SelectListItem_Custom>();
 
-			var listRole = _context.Using<Role>().GetByCondition(x => x.Id > 1 && (x.IsAdmin == false || x.Id == CommonViewModel.Obj.User_Role_Id)).Select(x => new SelectListItem_Custom(x.Id.ToString(), x.Name, "R")).Distinct().ToList();
+			var listRole = _context.Using<Role>().GetByCondition(x => x.Id > 1 && (Common.IsSuperAdmin() ? true : x.IsAdmin == false))
+				.Select(x => new SelectListItem_Custom(x.Id.ToString(), x.Name, x.IsActive.ToString(), "R")).Distinct().ToList();
 
 			if (listRole != null && listRole.Count() > 0) CommonViewModel.SelectListItems.AddRange(listRole);
 
-			CommonViewModel.Obj.User_Id_Str = CommonViewModel.Obj.Id > 0 ? Common.Encrypt(CommonViewModel.Obj.Id.ToString()) : null;
-			CommonViewModel.Obj.Role_Id_Str = CommonViewModel.Obj.User_Role_Id > 0 ? Common.Encrypt(CommonViewModel.Obj.User_Role_Id.ToString()) : null;
+			var listPlant = _context.Using<Plant>().GetAll()
+				.Select(x => new SelectListItem_Custom(x.Id.ToString(), x.PlantName, x.IsActive.ToString(), "P")).Distinct().ToList();
+
+			if (listPlant != null && listPlant.Count() > 0)
+			{
+				listPlant.Insert(0, new SelectListItem_Custom("0", "All Plant", "P"));
+				CommonViewModel.SelectListItems.AddRange(listPlant);
+			}
+
+			if (Id <= 0)
+			{
+				CommonViewModel.Obj = new User()
+				{
+					UserRoleMappings = new List<UserRoleMapping>() { new UserRoleMapping() { PlantId = Common.Get_Session_Int(SessionKey.KEY_USER_PLANT_ID), RoleId = Convert.ToInt64(listRole != null && listRole.Count() > 0 ? listRole.Select(x => x.Value).FirstOrDefault() : "0") } },
+					IsActive = true,
+					Plant_Role = Common.Get_Session_Int(SessionKey.KEY_USER_PLANT_ID) + "|" + (listRole != null && listRole.Count() > 0 ? listRole.Select(x => x.Value).FirstOrDefault() : "0"),
+					Default_Plant = Common.Get_Session_Int(SessionKey.KEY_USER_PLANT_ID)
+				};
+			}
 
 			return PartialView("_Partial_AddEditForm", CommonViewModel);
 		}
@@ -97,7 +145,7 @@ namespace Seed_Admin.Controllers
 						return Json(CommonViewModel);
 					}
 
-					if (viewModel.Obj.User_Role_Id == 0)
+					if (string.IsNullOrEmpty(viewModel.Obj.Plant_Role))
 					{
 
 						CommonViewModel.Message = "Please select Role.";
@@ -107,24 +155,21 @@ namespace Seed_Admin.Controllers
 						return Json(CommonViewModel);
 					}
 
-					//long Decrypt_Id = !string.IsNullOrEmpty(viewModel.Obj.User_Id_Str) ? Convert.ToInt64(Common.Decrypt(viewModel.Obj.User_Id_Str)) : 0;
-					//long Decrypt_RoleId = !string.IsNullOrEmpty(viewModel.Obj.Role_Id_Str) ? Convert.ToInt64(Common.Decrypt(viewModel.Obj.Role_Id_Str)) : 0;
+					//var objAvailable = (from x in _context.Using<User>().GetAll().ToList()
+					//					join y in _context.Using<UserRoleMapping>().GetAll().ToList() on x.Id equals y.UserId
+					//					join z in _context.Using<Role>().GetAll().ToList() on y.RoleId equals z.Id
+					//					where x.UserName.ToLower().Trim().Replace(" ", "") == viewModel.Obj.UserName.ToLower().Trim().Replace(" ", "")
+					//					&& x.Id != viewModel.Obj.Id
+					//					select new User() { Id = x.Id, UserName = x.UserName, User_Role_Id = z.Id, User_Role = z.Name }).FirstOrDefault();
 
-					var objAvailable = (from x in _context.Using<User>().GetAll().ToList()
-										join y in _context.Using<UserRoleMapping>().GetAll().ToList() on x.Id equals y.UserId
-										join z in _context.Using<Role>().GetAll().ToList() on y.RoleId equals z.Id
-										where x.UserName.ToLower().Trim().Replace(" ", "") == viewModel.Obj.UserName.ToLower().Trim().Replace(" ", "")
-										&& x.Id != viewModel.Obj.Id
-										select new User() { Id = x.Id, UserName = x.UserName, User_Role_Id = z.Id, User_Role = z.Name }).FirstOrDefault();
+					//if (objAvailable != null || viewModel.Obj.User_Role_Id == 1)
+					//{
+					//	CommonViewModel.Message = "Username already exist. Please try another Username.";
+					//	CommonViewModel.IsSuccess = false;
+					//	CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
-					if (objAvailable != null || viewModel.Obj.User_Role_Id == 1)
-					{
-						CommonViewModel.Message = "Username already exist. Please try another Username.";
-						CommonViewModel.IsSuccess = false;
-						CommonViewModel.StatusCode = ResponseStatusCode.Error;
-
-						return Json(CommonViewModel);
-					}
+					//	return Json(CommonViewModel);
+					//}
 
 					#endregion
 
@@ -148,62 +193,39 @@ namespace Seed_Admin.Controllers
 
 								if (viewModel.Obj.IsPassword_Reset == true) obj.Password = viewModel.Obj.Password;
 
-								//obj.EmailId = viewModel.Obj.EmailId;
-								//obj.MobileNo = viewModel.Obj.MobileNo;
 								obj.IsActive = viewModel.Obj.IsActive;
 
 								_context.Using<User>().Update(obj);
-								//                        _context.Entry(obj).State = EntityState.Modified;
-								//_context.SaveChanges();
 
 							}
 							else if (Common.IsAdmin())
 							{
 								var _user = _context.Using<User>().Add(viewModel.Obj);
 								viewModel.Obj.Id = _user.Id;
-								//_context.SaveChanges();
-								//_context.Entry(viewModel.Obj).Reload();
 
 							}
 
+							List<UserRoleMapping> UserRole = _context.Using<UserRoleMapping>().GetByCondition(x => x.UserId == viewModel.Obj.Id && x.RoleId > 1).ToList();
 
-							var role = _context.Using<Role>().GetByCondition(x => x.Id == viewModel.Obj.RoleId).FirstOrDefault() ?? new Role();
+							if (UserRole != null) foreach (var item in UserRole) _context.Using<UserRoleMapping>().Delete(item);
 
-							if (viewModel.Obj.Id > 0 && (role != null || viewModel.Obj.RoleId == 0) && (role?.Id != viewModel.Obj.User_Role_Id))
-							{
-								try
+							var listUserMenuAccess = _context.Using<UserMenuAccess>().GetByCondition(x => x.UserId == viewModel.Obj.Id && x.RoleId > 1).ToList();
+
+							if (listUserMenuAccess != null && listUserMenuAccess.Count() > 0) foreach (var access in listUserMenuAccess) _context.Using<UserMenuAccess>().Delete(access);
+
+							var plantRoles = viewModel.Obj.Plant_Role.Split(',', StringSplitOptions.RemoveEmptyEntries)
+											.Select(x =>
+											{
+												var parts = x.Split('|');
+												return new { PlantId = long.Parse(parts[0]), RoleId = long.Parse(parts[1]) };
+											}).ToList();
+
+							if (plantRoles != null)
+								foreach (var _item in plantRoles)
 								{
-									UserRoleMapping UserRole = _context.Using<UserRoleMapping>().GetByCondition(x => x.UserId == viewModel.Obj.Id && x.RoleId == role.Id).FirstOrDefault();
+									_context.Using<UserRoleMapping>().Add(new UserRoleMapping() { UserId = viewModel.Obj.Id, RoleId = _item.RoleId, PlantId = _item.PlantId, IsPrimary = viewModel.Obj.Default_Plant == _item.PlantId });
 
-									if (UserRole != null)
-									{
-										//UserRole.RoleId = viewModel.Obj.User_Role_Id;
-
-										//_context.Using<UserRoleMapping>().Update(UserRole);
-										////_context.Entry(UserRole).State = EntityState.Modified;
-										////_context.SaveChanges();
-										///
-										_context.Using<UserRoleMapping>().Delete(UserRole);
-									}
-									//else
-									//{
-									_context.Using<UserRoleMapping>().Add(new UserRoleMapping() { UserId = viewModel.Obj.Id, RoleId = viewModel.Obj.User_Role_Id });
-									//	//_context.SaveChanges();
-									//}
-
-									var listUserMenuAccess = _context.Using<UserMenuAccess>().GetByCondition(x => x.UserId == viewModel.Obj.Id && x.RoleId == role.Id).ToList();
-
-									if (listUserMenuAccess != null && listUserMenuAccess.Count() > 0)
-									{
-										foreach (var access in listUserMenuAccess)
-										{
-											_context.Using<UserMenuAccess>().Delete(access);
-											//_context.Entry(access).State = EntityState.Deleted;
-											//_context.SaveChanges();
-										}
-									}
-
-									foreach (var item in _context.Using<RoleMenuAccess>().GetByCondition(x => x.RoleId == viewModel.Obj.User_Role_Id).ToList())
+									foreach (var item in _context.Using<RoleMenuAccess>().GetByCondition(x => x.RoleId == _item.RoleId).ToList())
 									{
 										var userMenuAccess = new UserMenuAccess()
 										{
@@ -224,17 +246,64 @@ namespace Seed_Admin.Controllers
 									}
 
 								}
-								catch (Exception ex)
-								{
-									transaction.Rollback();
 
-									CommonViewModel.Message = ResponseStatusMessage.Error;
-									CommonViewModel.IsSuccess = false;
-									CommonViewModel.StatusCode = ResponseStatusCode.Error;
+							//var role = _context.Using<Role>().GetByCondition(x => x.Id == viewModel.Obj.RoleId).FirstOrDefault() ?? new Role();
 
-									return Json(CommonViewModel);
-								}
-							}
+							//if (viewModel.Obj.Id > 0 && (role != null || viewModel.Obj.RoleId == 0) && (role?.Id != viewModel.Obj.User_Role_Id))
+							//{
+							//	try
+							//	{
+							//		UserRoleMapping UserRole = _context.Using<UserRoleMapping>().GetByCondition(x => x.UserId == viewModel.Obj.Id && x.RoleId == role.Id).FirstOrDefault();
+
+							//		if (UserRole != null)
+							//		{
+							//			_context.Using<UserRoleMapping>().Delete(UserRole);
+							//		}
+
+							//		_context.Using<UserRoleMapping>().Add(new UserRoleMapping() { UserId = viewModel.Obj.Id, RoleId = viewModel.Obj.User_Role_Id });
+
+							//		var listUserMenuAccess = _context.Using<UserMenuAccess>().GetByCondition(x => x.UserId == viewModel.Obj.Id && x.RoleId == role.Id).ToList();
+
+							//		if (listUserMenuAccess != null && listUserMenuAccess.Count() > 0)
+							//		{
+							//			foreach (var access in listUserMenuAccess)
+							//			{
+							//				_context.Using<UserMenuAccess>().Delete(access);
+							//			}
+							//		}
+
+							//		foreach (var item in _context.Using<RoleMenuAccess>().GetByCondition(x => x.RoleId == viewModel.Obj.User_Role_Id).ToList())
+							//		{
+							//			var userMenuAccess = new UserMenuAccess()
+							//			{
+							//				MenuId = item.MenuId,
+							//				UserId = viewModel.Obj.Id,
+							//				RoleId = viewModel.Obj.User_Role_Id,
+							//				IsCreate = item.IsCreate,
+							//				IsUpdate = item.IsUpdate,
+							//				IsRead = item.IsRead,
+							//				IsDelete = item.IsDelete,
+							//				IsActive = item.IsActive,
+							//				IsDeleted = item.IsDelete,
+							//				IsSetDefault = true
+							//			};
+
+							//			_context.Using<UserMenuAccess>().Add(userMenuAccess);
+							//			//_context.SaveChanges();
+							//		}
+
+							//	}
+							//	catch (Exception ex)
+							//	{
+							//		transaction.Rollback();
+
+							//		CommonViewModel.Message = ResponseStatusMessage.Error;
+							//		CommonViewModel.IsSuccess = false;
+							//		CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+							//		return Json(CommonViewModel);
+							//	}
+							//}
 
 							CommonViewModel.IsConfirm = true;
 							CommonViewModel.IsSuccess = true;
@@ -375,6 +444,58 @@ namespace Seed_Admin.Controllers
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
 			return Json(CommonViewModel);
+		}
+
+
+		[HttpPost]
+		public JsonResult GetRoleByPlant(long plant_Id = 0)
+		{
+			var list = new List<SelectListItem_Custom>();
+			try
+			{
+				list = _context.Using<Role>().GetByCondition(x => x.Id > 1 && (Common.IsSuperAdmin() ? true : x.IsAdmin == false))
+					.Select(x => new SelectListItem_Custom(x.Id.ToString(), x.Name, x.IsActive.ToString(), "R")).Distinct().ToList();
+
+			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+			return Json(list);
+		}
+
+
+		[HttpGet]
+		public IActionResult Show_Menu(long RoleId = 0)
+		{
+			if (RoleId > 0)
+				try
+				{
+					var dt = new DataTable();
+
+
+					if (dt != null && dt.Rows.Count > 0)
+					{
+						var SelectedMenu = dt.Rows[0]["MENUS_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["MENUS_NAME"]) : "";
+
+						var strHTML = "<div class=\"row col-12 w-100\"><table id=\"table_Common\" class=\"table table-bordered table-striped w-100 table_Common\"><thead><tr><th width=\"5%\">Sr. No.</th><th>Name</th></tr></thead><tbody>#</tbody></table></div>";
+
+						var rows = "";
+
+						var i = 0;
+						if (!string.IsNullOrEmpty(SelectedMenu) && SelectedMenu.Contains("||"))
+							foreach (string item in SelectedMenu.Split("||"))
+								rows = rows + $"<tr><td>{++i}</td><td>{item}</td></tr>";
+						else if (!string.IsNullOrEmpty(SelectedMenu))
+							rows = rows + $"<tr><td>{++i}</td><td>{SelectedMenu}</td></tr>";
+
+						strHTML = strHTML.Replace("#", rows);
+
+						return Json(strHTML);
+					}
+				}
+				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+
+			return Json(null);
 		}
 
 	}
