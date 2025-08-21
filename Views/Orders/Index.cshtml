@@ -55,6 +55,7 @@
 									<thead>
 										<tr>
 											<th>#</th>
+											<th>Dealer Name</th>
 											<th>Order No</th>
 											<th>Order Date</th>
 											<th>Total Quantity</th>											
@@ -69,6 +70,7 @@
 											{
 												<tr>
 													<td></td>
+													<td>@item.Dealer_Name</td>
 													<td>@item.Order_No</td>
 													<td>@item.Order_Date?.ToString(Common.DateTimeFormat_ddMMMyyyy)</td>
 													<td>@item.Total_Qty</td>
