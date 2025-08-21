@@ -5,6 +5,7 @@ namespace Seed_Admin
     public class Orders : EntitiesBase
     {
         public override long Id { get; set; }
+        public string Dealer_Name { get; set; }
         public string Order_No { get; set; }
         public DateTime ? Order_Date { get; set; }       
         public string Order_Date_Text { get; set; }       
@@ -14,6 +15,7 @@ namespace Seed_Admin
     public class Order_Detail : EntitiesBase {
         
         public override long Id { get; set; }
+        public string Dealer_Name { get; set; }
         public long Order_ID { get; set; }
         public long Product_ID { get; set; }
         public long PackageType_ID { get; set; }

@@ -55,6 +55,10 @@
 									<thead>
 										<tr>
 											<th>#</th>
+											@if(Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin"){
+												<th>Dealer Name</th>
+											}
+											
 											<th>Order No</th>
 											<th>Order Date</th>
 											<th>Total Quantity</th>											
@@ -69,6 +73,9 @@
 											{
 												<tr>
 													<td></td>
+														@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin"){
+															<td>@item.Dealer_Name</td>
+															}
 													<td>@item.Order_No</td>
 													<td>@item.Order_Date?.ToString(Common.DateTimeFormat_ddMMMyyyy)</td>
 													<td>@item.Total_Qty</td>

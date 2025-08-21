@@ -35,6 +35,7 @@ namespace Seed_Admin.Controllers
                         CommonViewModel.ObjList.Add(new Orders()
                         {
                             Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
+                            Dealer_Name = dr["Dealer_Name"] !=DBNull.Value ? Convert.ToString(dr["Dealer_Name"]) : "",
                             Order_No = dr["Order_No"] != DBNull.Value ? Convert.ToString(dr["Order_No"]) : "",
                             Order_Date = dr["Order_Date"] != DBNull.Value ? Convert.ToDateTime(dr["Order_Date"]) : nullDateTime,
                             Total_Qty = dr["Total_Qty"] != DBNull.Value ? Convert.ToDecimal(dr["Total_Qty"]) : 0
