@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Seed_Admin.Infra;
 using Seed_Admin.Models;
 using System.Data;
 using System.Globalization;
@@ -35,7 +36,7 @@ namespace Seed_Admin.Controllers
 		{
 			try
 			{
-				if (!string.IsNullOrEmpty(viewModel.UserName) && viewModel.UserName.Length > 0 && _context.Using<User>().GetAll().ToList().Any(x => x.UserName == viewModel.UserName))
+				if (!string.IsNullOrEmpty(viewModel.UserName) && viewModel.UserName.Length > 0 && _context.Using<User>().Any(x => x.UserName == viewModel.UserName))
 				{
 					viewModel.Password = Common.Encrypt(viewModel.Password);
 
@@ -126,10 +127,18 @@ namespace Seed_Admin.Controllers
 						Common.Set_Session_Int(SessionKey.KEY_IS_ADMIN, (role.IsAdmin || obj.RoleId == 1 ? 1 : 0));
 						Common.Set_Session_Int(SessionKey.KEY_IS_SUPER_USER, (obj.RoleId == 1 ? 1 : 0));
 
+
+						List<Plant> plants = (from u in _context.Using<User>().GetAll().ToList()
+											  join m in _context.Using<UserRoleMapping>().GetAll().ToList() on u.Id equals m.UserId
+											  join p in _context.Using<Plant>().GetAll().ToList() on m.PlantId equals p.Id
+											  where (role != null && role.Id == 1) ? true : u.Id == obj.Id
+											  select p).Distinct().ToList();
+
+						Common.Configure_UserPlantAccess(plants);
+
 						CommonViewModel.IsSuccess = true;
 						CommonViewModel.StatusCode = ResponseStatusCode.Success;
 						CommonViewModel.Message = ResponseStatusMessage.Success;
-
 
 						CommonViewModel.RedirectURL = (string.IsNullOrEmpty(returnUrl)) ? Url.Content("~/") /*+ "Admin/"*/ + this.ControllerContext.RouteData.Values["Controller"].ToString() + "/Index" : returnUrl;
 
@@ -152,6 +161,128 @@ namespace Seed_Admin.Controllers
 
 			return Json(CommonViewModel);
 		}
+
+		[HttpPost]
+		public IActionResult Change_Plant(long id)
+		{
+			try
+			{
+				if (id > 0)
+				{
+					var userId = Common.Get_Session_Int(SessionKey.KEY_USER_ID);
+
+					var userRole = _context.Using<UserRoleMapping>().GetByCondition(x => x.UserId == userId && (x.PlantId == id || x.RoleId == 1)).OrderByDescending(x => x.IsPrimary).FirstOrDefault();
+
+					userRole.PlantId = userRole.RoleId > 1 ? userRole.PlantId : id;
+
+					List<UserMenuAccess> listMenuAccess = new List<UserMenuAccess>();
+					List<UserMenuAccess> listMenuPermission = new List<UserMenuAccess>();
+
+					Role role = _context.Using<Role>().GetByCondition(x => x.Id == userRole.RoleId).FirstOrDefault();
+
+					if (role != null && role.Id == 1)
+					{
+						listMenuAccess = (from y in _context.Using<Menu>().GetAll().ToList()
+										  where y.IsActive == true && y.IsDeleted == false
+										  select new UserMenuAccess() { Id = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, IsCreate = true, IsUpdate = true, IsRead = true, IsDelete = true, DisplayOrder = y.DisplayOrder, IsActive = y.IsActive, IsDeleted = y.IsDeleted }).ToList();
+					}
+					else if (role != null && role.IsAdmin && role.IsActive && !role.IsDeleted)
+					{
+						listMenuAccess = (from x in _context.Using<UserMenuAccess>().GetAll().ToList()
+										  join y in _context.Using<Menu>().GetAll().ToList() on x.MenuId equals y.Id
+										  where x.UserId == userId && x.RoleId == userRole.RoleId
+										  && y.IsActive == true && y.IsDeleted == false && x.IsActive == true && x.IsDeleted == false && y.Name != "Menu" && y.IsAdmin == true
+										  && x.IsRead == true
+										  select new UserMenuAccess() { Id = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, DisplayOrder = y.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
+					}
+					else if (role != null && !role.IsAdmin && role.IsActive && !role.IsDeleted)
+					{
+						listMenuAccess = (from x in _context.Using<UserMenuAccess>().GetAll().ToList()
+										  join y in _context.Using<Menu>().GetAll().ToList() on x.MenuId equals y.Id
+										  where x.UserId == userId && x.RoleId == userRole.RoleId
+										  && y.IsActive == true && y.IsDeleted == false && x.IsActive == true && x.IsDeleted == false && y.Id != 1 && y.ParentId != 1 && y.Name != "Menu" && y.IsSuperAdmin == false && y.IsAdmin == false
+										  && x.IsRead == true
+										  select new UserMenuAccess() { Id = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, DisplayOrder = y.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
+					}
+
+					List<long> listParentMenuId = listMenuAccess.Select(x => x.ParentMenuId).Distinct().ToList();
+
+					var listRoleMenuId = _context.Using<RoleMenuAccess>().GetByCondition(x => x.RoleId == role.Id).ToList().Select(x => x.MenuId).Distinct().ToList();
+					if (listRoleMenuId != null && listRoleMenuId.Count() > 0) listParentMenuId.AddRange(listRoleMenuId);
+
+					var _listMenuAccess = (from x in _context.Using<Menu>().GetAll().ToList()
+										   where x.IsActive == true && x.IsDeleted == false && x.Name != "Menu" && listParentMenuId.Contains(x.Id) && !listMenuAccess.Any(z => z.Id == x.Id)
+										   select new UserMenuAccess() { Id = x.Id, ParentMenuId = x.ParentId, Area = x.Area, Controller = x.Controller, Url = x.Url, MenuName = x.Name, DisplayOrder = x.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).ToList();
+
+					if (_listMenuAccess != null && _listMenuAccess.Count() > 0) listMenuAccess.AddRange(_listMenuAccess);
+					if (listMenuAccess != null && listMenuAccess.Count() > 0) listMenuAccess = listMenuAccess.Distinct().ToList();
+
+					if (role != null && role.Id == 1)
+						listMenuPermission = listMenuAccess;
+					else
+						listMenuPermission = (from x in _context.Using<UserMenuAccess>().GetAll().ToList()
+											  join y in _context.Using<Menu>().GetAll().ToList() on x.MenuId equals y.Id
+											  where x.UserId == userId && y.IsActive == true && y.IsDeleted == false && x.IsActive == true && x.IsDeleted == false
+											  && listMenuAccess.Any(z => z.Id == y.Id)
+											  select new UserMenuAccess() { MenuId = y.Id, ParentMenuId = y.ParentId, Area = y.Area, Controller = y.Controller, Url = y.Url, MenuName = y.Name, IsCreate = x.IsCreate, IsUpdate = x.IsUpdate, IsRead = x.IsRead, IsDelete = x.IsDelete, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).Distinct().ToList();
+
+					if (listMenuPermission != null && listMenuPermission.Count() > 0 && !listMenuPermission.Any(x => listParentMenuId.Contains(x.MenuId)))
+					{
+						listMenuPermission.AddRange((from x in _context.Using<Menu>().GetAll().ToList()
+													 where x.IsActive == true && x.IsDeleted == false && x.Name != "Menu" && listParentMenuId.Contains(x.Id)
+													 select new UserMenuAccess() { Id = x.Id, ParentMenuId = x.ParentId, Area = x.Area, Controller = x.Controller, Url = x.Url, MenuName = x.Name, DisplayOrder = x.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).Distinct().ToList());
+
+					}
+
+					if (listMenuAccess != null && listMenuAccess.Count() > 0 && !listMenuAccess.Any(x => listParentMenuId.Contains(x.Id)))
+					{
+						listMenuAccess.AddRange((from x in _context.Using<Menu>().GetAll().ToList()
+												 where x.IsActive == true && x.IsDeleted == false && x.Name != "Menu" && listParentMenuId.Contains(x.Id)
+												 select new UserMenuAccess() { Id = x.Id, ParentMenuId = x.ParentId, Area = x.Area, Controller = x.Controller, Url = x.Url, MenuName = x.Name, DisplayOrder = x.DisplayOrder, IsActive = x.IsActive, IsDeleted = x.IsDeleted }).Distinct().ToList());
+
+					}
+
+					Common.Configure_UserMenuAccess(listMenuAccess.Where(x => x.IsActive == true && x.IsDeleted == false).ToList(), listMenuPermission.Where(x => x.IsActive == true && x.IsDeleted == false).ToList());
+
+					Common.Set_Session_Int(SessionKey.KEY_USER_ROLE_ID, userRole.RoleId);
+					Common.Set_Session_Int(SessionKey.KEY_USER_PLANT_ID, userRole.PlantId);
+
+					Common.Set_Session_Int(SessionKey.KEY_IS_ADMIN, (role.IsAdmin || userRole.RoleId == 1 ? 1 : 0));
+					Common.Set_Session_Int(SessionKey.KEY_IS_SUPER_USER, (userRole.RoleId == 1 ? 1 : 0));
+
+
+					List<Plant> plants = (from u in _context.Using<User>().GetAll().ToList()
+										  join m in _context.Using<UserRoleMapping>().GetAll().ToList() on u.Id equals m.UserId
+										  join p in _context.Using<Plant>().GetAll().ToList() on m.PlantId equals p.Id
+										  where (role != null && role.Id == 1) ? true : u.Id == userId
+										  select p).Distinct().ToList();
+
+					Common.Configure_UserPlantAccess(plants);
+
+					CommonViewModel.IsSuccess = true;
+					CommonViewModel.StatusCode = ResponseStatusCode.Success;
+					CommonViewModel.Message = ResponseStatusMessage.Success;
+
+					CommonViewModel.RedirectURL = Url.Content("~/") /*+ "Admin/"*/ + this.ControllerContext.RouteData.Values["Controller"].ToString() + "/Index";
+
+					return Json(CommonViewModel);
+				}
+
+			}
+			catch (Exception ex)
+			{
+				LogService.LogInsert(GetCurrentAction(), "", ex);
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.Error;
+			}
+
+			return Json(CommonViewModel);
+		}
+
+
 
 		public IActionResult Privacy()
 		{

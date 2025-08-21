@@ -1,19 +1,58 @@
 ﻿@{
 	ViewBag.Title = "Home Page";
 	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	var listPlant = Common.GetUserPlantAccesses();
 }
 
 <!-- Content Header (Page header) -->
-
-
 <!-- Main content -->
 <div class="content-header">
 	<h1 class="m-0">Dashboard will be shown here</h1>
 </div>
-	
-	
-						
-		
 
 
 
+<div class="row no-gutters pt-5">
+	<div class="Col-12 w-100">
+		<div class="panel-divider mx-5">
+			<span style="background-color: #f4f6f9;">Plant Access</span>
+			<div class="row no-gutters">
+				<div class="col-12 p-0 m-0 shadow-none mt-3">
+					<!-- radio -->
+					<div class="form-group clearfix">
+						@if (listPlant != null)
+						{
+							foreach (var item in listPlant)
+							{
+								if (Common.Get_Session_Int(SessionKey.KEY_USER_PLANT_ID) == item.Id)
+								{
+									<div class="icheck-primary d-inline mr-5">
+										<input type="radio" id="radioPrimary_@item.Id" name="PlantID" data-plantid="@item.Id" checked>
+										<label for="radioPrimary_@item.Id"> @item.PlantName</label>
+									</div>
+								}
+								else
+								{
+									<div class="icheck-primary d-inline mr-5">
+										<input type="radio" id="radioPrimary_@item.Id" name="PlantID" data-plantid="@item.Id">
+										<label for="radioPrimary_@item.Id"> @item.PlantName</label>
+									</div>
+								}
+							}
+						}
+
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+@section scripts {
+	<script type="text/javascript">
+		$(document).on('change', 'input[type="radio"]', function (event) {
+			ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=' + $(this).attr('data-plantid'), window.location.href)
+		});
+	</script>
+}
