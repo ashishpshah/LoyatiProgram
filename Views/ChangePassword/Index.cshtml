@@ -1,0 +1,139 @@
+﻿@model ResponseModel<ChangePassword>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var IndexPageUrl = "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Change Password</h1>
+            </div>          
+        </div>       
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row clearfix pt-2">
+            <section class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header" style="margin: 5px !important;">
+                        <form id="formSave" action="@Url.Action("ChangePassword", "ChangePassword")" method="post">
+                            <div class="row no-gutters">
+                                <div class="col-md-12 my-1">
+                                <div class="card-body">                               
+
+                                        <div class="form-group row">
+                                            <label for="OldPassword" class="col-sm-2 col-form-label text-right required-label">Old Password</label>
+                                            <div class="col-sm-4">
+                                                <input type="password" class="form-control form-control-sm" id="OldPassword" name="OldPassword" value="@Model.Obj.OldPassword" autocomplete="off" required>
+                                                <span class="toggle-password" toggle="#OldPassword">
+                                                    <i class="fa fa-eye"></i>
+                                                </span>
+                                            </div>
+                                            <label for="NewPassword" class="col-sm-2 col-form-label text-right required-label">New Password</label>
+                                            <div class="col-sm-4">
+                                                <input type="Password" class="form-control form-control-sm" id="NewPassword" name="NewPassword" value="@Model.Obj.NewPassword" autocomplete="off" required>
+                                                <span class="toggle-password" toggle="#NewPassword">
+                                                    <i class="fa fa-eye"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="ConfirmPassword" class="col-sm-2 col-form-label text-right required-label">Confirm Password</label>
+                                            <div class="col-sm-4">
+                                                <input type="Password" class="form-control form-control-sm" id="ConfirmPassword" name="ConfirmPassword" value="@Model.Obj.ConfirmPassword" autocomplete="off" required>
+                                                <span class="toggle-password" toggle="#ConfirmPassword">
+                                                    <i class="fa fa-eye"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                   
+                                </div>
+                                <div class="card-footer text-center">                              
+                                     <button type="submit" class="btn btn-success btnSubmit">ChangePassword</button>
+                                </div>
+                                </div>
+
+                            </div>
+                            <div class="clearfix"></div>
+                            <hr />
+                        </form>
+                    </div>
+
+                    
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        });
+
+
+        function fnChange_Select($id) {
+            debugger;
+
+            var selectedValue = $('#select' + $id).val();
+
+            if (typeof selectedValue != 'undefined' && selectedValue != null && selectedValue != '' && selectedValue.length > 0)
+                $('#input' + $id).val(selectedValue.join(','));
+            else
+                $('#input' + $id).val('');
+
+            $('#input' + $id).trigger('change');
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const togglePasswordIcons = document.querySelectorAll(".toggle-password");
+
+            togglePasswordIcons.forEach(function (icon) {
+                icon.addEventListener("click", function () {
+                    const input = document.querySelector(this.getAttribute("toggle"));
+                    const iconElement = this.querySelector("i");
+
+                    if (input.type === "password") {
+                        input.type = "text";
+                        iconElement.classList.remove("fa-eye");
+                        iconElement.classList.add("fa-eye-slash");
+                    } else {
+                        input.type = "password";
+                        iconElement.classList.remove("fa-eye-slash");
+                        iconElement.classList.add("fa-eye");
+                    }
+                });
+            });
+        });
+
+    </script>
+}
+@section Styles {
+        <style>
+          
+
+           
+
+            .toggle-password {
+                position: absolute;
+                top: 44%;
+                right: 22px;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #aaa;
+            }
+
+                .toggle-password:hover {
+                    color: #333;
+                }
+        </style>
+}

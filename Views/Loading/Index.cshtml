@@ -1,0 +1,127 @@
+﻿@model ResponseModel<Loading>
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Loading</h1>
+			</div>		
+		</div>
+	</div>
+</div>
+<section class="content">
+	<div class="container-fluid">		
+		<div class="row clearfix pt-2">
+			<div class="col-12">
+				<div class="card card-primary card-outline">
+
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1">
+								<div class="form-group row">
+									<label class="form-control-label col-sm-2" style="line-height: 2.5;">Dealer<span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<select class="form-control show-tick select2" id="User_ID" name="User_ID" onchange="fnChange_Order(this,'#Order_ID')">
+											<option value="0">-- Select --</option>
+											@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+											{
+												foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "DEALER"))
+												{
+													
+														<option value="@item.Value">@item.Text</option>
+													
+													
+												}
+											}
+										</select>
+
+									</div>
+									<label class="form-control-label col-sm-2" style="line-height: 2.5;">Order <span style="color:red" >*</span></label>
+									<div class="col-sm-4">
+										<select class="form-control show-tick select2" id="Order_ID" name="Order_ID">
+											<option value="0">-- Select --</option>											
+										</select>
+
+									</div>
+										
+								</div>
+							</div>						
+						</div>
+					</div>
+					<div class="card-footer text-center">						
+							<button type="button" class="btn btn-info"
+									onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Loading")?User_ID=' + $('#User_ID').val() + '&Order_ID=' + $('#Order_ID').val());">
+								View
+							</button>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row clearfix pt-2 divformSave_Display d-none">
+			<div class="col-12">
+				<div class="row no-gutters" id="divformSave"></div>	
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+		$(document).ready(function () {
+			//$('[data-toggle="tooltip"]').tooltip();
+			$('[data-toggle="tooltip"]').tooltip();
+
+			$('.btn').on('click', function () {
+				$(this).tooltip('hide'); // Hide the tooltip
+			});
+		});
+		
+
+		function fnChange_Order($this, $selector) {
+
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				ShowLoader(true);
+
+				 
+
+
+
+
+				var orderDropdown = $($selector);
+				orderDropdown.empty();
+				orderDropdown.append('<option value="0">-- Select --</option>');
+
+				var $url = '@Url.Action("GetOrderList", "Loading")?Id=' + $($this).val();
+
+				$.ajax({
+					url: $url,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						debugger;
+						ShowLoader(false);
+						$.each(response, function (index, order) {
+							orderDropdown.append('<option value="' + order.Value + '">' + order.Text + '</option>');
+						});
+
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+
+		}
+
+
+	</script>
+}
