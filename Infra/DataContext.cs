@@ -21,8 +21,9 @@ namespace Seed_Admin.Infra
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserMenuAccess> UserMenuAccesses { get; set; }
-        public virtual DbSet<UserRoleMapping> UserRoleMappings { get; set; }
-        public virtual DbSet<RoleMenuAccess> RoleMenuAccesses { get; set; }
+		public virtual DbSet<UserRoleMapping> UserRoleMappings { get; set; }
+
+		public virtual DbSet<RoleMenuAccess> RoleMenuAccesses { get; set; }
 
         public virtual DbSet<Question> Questions { get; set; }
 
@@ -43,13 +44,27 @@ namespace Seed_Admin.Infra
 
         public virtual DbSet<ProductQrCode> ProductQrCodes { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		public virtual DbSet<Plant> Plants { get; set; }
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.HasDefaultSchema("padhyaso_Leoz");
 
             modelBuilder.HasDefaultSchema("padhyaso_seed");
 
-            modelBuilder.Entity<ProductQrCode>(entity =>
+			modelBuilder.Entity<Plant>(entity =>
+			{
+				entity.HasKey(e => e.Id).HasName("PK__Plant__98FE46BC328F1224");
+
+				entity.ToTable("Plant", "dbo");
+
+				entity.Property(e => e.AddressLine1).HasMaxLength(200);
+				entity.Property(e => e.AddressLine2).HasMaxLength(200);
+				entity.Property(e => e.PlantCode).HasMaxLength(50);
+				entity.Property(e => e.PlantName).HasMaxLength(150);
+			});
+
+			modelBuilder.Entity<ProductQrCode>(entity =>
             {
                 entity.ToTable("Product_QR_Code", "dbo");
 
@@ -161,9 +176,7 @@ namespace Seed_Admin.Infra
 
             modelBuilder.Entity<RoleMenuAccess>(entity =>
             {
-                entity
-                    .HasNoKey()
-                    .ToTable("RoleMenuAccess", "dbo");
+                entity.HasNoKey().ToTable("RoleMenuAccess", "dbo");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -178,14 +191,12 @@ namespace Seed_Admin.Infra
 
             modelBuilder.Entity<UserMenuAccess>(entity =>
             {
-                entity
-                    .HasNoKey()
-                    .ToTable("UserMenuAccess", "dbo");
+                entity.HasNoKey().ToTable("UserMenuAccess", "dbo");
             });
 
             modelBuilder.Entity<UserRoleMapping>(entity =>
             {
-                entity.HasKey(e => e.Id).HasName("PK_UserRoleMapping_1");
+                entity.HasKey(e => e.Id).HasName("PK_UserRoleMapping");
 
                 entity.ToTable("UserRoleMapping", "dbo");
             });
@@ -193,7 +204,7 @@ namespace Seed_Admin.Infra
 
             modelBuilder.Entity<User>().HasKey(e => new { e.Id });
             modelBuilder.Entity<Role>().HasKey(e => new { e.Id });
-            modelBuilder.Entity<UserRoleMapping>().HasKey(e => new { e.Id, e.UserId, e.RoleId });
+            modelBuilder.Entity<UserRoleMapping>().HasKey(e => new { e.Id, e.UserId, e.RoleId, e.PlantId });
             modelBuilder.Entity<Menu>().HasKey(e => new { e.Id });
             modelBuilder.Entity<UserMenuAccess>().HasKey(e => new { e.UserId, e.RoleId, e.MenuId, e.IsCreate, e.IsUpdate, e.IsRead, e.IsDelete });
             modelBuilder.Entity<RoleMenuAccess>().HasKey(e => new { e.RoleId, e.MenuId, e.IsCreate, e.IsUpdate, e.IsRead, e.IsDelete });
@@ -210,7 +221,7 @@ namespace Seed_Admin.Infra
 
             var user = Common.LoggedUser_Id();
 
-            if (user == null || user <= 0)
+            if (user <= 0)
                 throw new InvalidOperationException("Opps...! An unexpected error occurred while saving.");
             else
             {

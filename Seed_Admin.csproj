@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\BatchController.cs" />
+    <Compile Remove="Models\UserRolePlantMapping.cs" />
   </ItemGroup>
 
   <ItemGroup>

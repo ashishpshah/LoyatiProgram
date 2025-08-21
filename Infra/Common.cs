@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Buffers.Text;
+using Seed_Admin.Models;
 
 namespace Seed_Admin
 {
@@ -50,16 +51,18 @@ namespace Seed_Admin
 
 		private static List<UserMenuAccess> UserMenuAccess;
 		private static List<UserMenuAccess> UserMenuPermission;
+		private static List<Plant> UserPlantAccess;
 
 		public static void Configure_UserMenuAccess(List<UserMenuAccess> userMenuAccess, List<UserMenuAccess> userMenuPermission)
 		{
 			UserMenuAccess = userMenuAccess;
 			UserMenuPermission = userMenuPermission;
 		}
-
-
 		public static List<UserMenuAccess> GetUserMenuAccesses() => UserMenuAccess;
 		public static List<UserMenuAccess> GetUserMenuPermission() => UserMenuPermission;
+
+		public static void Configure_UserPlantAccess(List<Plant> userPlantAccess) => UserPlantAccess = userPlantAccess;
+		public static List<Plant> GetUserPlantAccesses() => UserPlantAccess;
 
 
 		public static bool CheckValueIsNull(object val) => !(val != DBNull.Value && val != null && !string.IsNullOrEmpty(Convert.ToString(val)));
