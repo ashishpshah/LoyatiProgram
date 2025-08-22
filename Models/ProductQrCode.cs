@@ -8,6 +8,7 @@ public partial class ProductQrCode : EntitiesBase
 {
     public override long Id { get; set; }
 
+    public long RequestId { get; set; }
     public long BatchId { get; set; }
 
     public long ProductId { get; set; }

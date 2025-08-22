@@ -88,7 +88,7 @@
 					"bServerSide": true,
 					"bProcessing": true,
 					"bSearchable": true,
-					"order": [[3, 'desc']],
+					"order": [[2, 'desc']],
 					"language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
 					"fnServerParams": function (aoData) {
 						//aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
@@ -96,11 +96,12 @@
 					},
 					"columns": [
 						{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+						{ "title": "Request No", "data": "RequestId", "autoWidth": true, "searchable": true },
 						{ "title": "Product", "data": "Product_Text", "autoWidth": true, "searchable": true },
 						{ "title": "PackageType", "data": "PackageType_Text", "autoWidth": true, "searchable": true },
 						{ "title": "SKU Size", "data": "SKUSize_Text", "autoWidth": true, "searchable": true },
 						{ "title": "QR Code", "data": "QrCode", "autoWidth": true, "searchable": true },
-						{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },						
+						{ "title": "QR Code Count", "data": "Points", "autoWidth": true, "searchable": true },
 						{ "title": "Created Date", "data": "CreatedDate_Text", "autoWidth": true, "searchable": true }
 						@* ,{
 							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
