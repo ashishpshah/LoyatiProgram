@@ -17,10 +17,10 @@
 			<div class="row no-gutters">
 				<div class="col-12">
 					<div class="form-group row">
-						<label for="Obj.LoyaltyPointSchemeName" class="col-sm-2 col-form-label text-right">Product <span style="color:red">*</span></label>
+						<label for="Obj.LoyaltyPointSchemeName" class="col-sm-2 col-form-label text-right" >Product <span style="color:red">*</span></label>
 						<div class="col-sm-4">
-							<select class="form-control show-tick select2" id="ProductID" name="ProductID">
-								<option value="0">-- Select Product --</option>
+							<select class="form-control show-tick select2" id="ProductID" name="ProductID" onchange="fnChangeProductDetail(this, 'PACKTYPE', '#PackageType_ID')">
+								<option value="0">-- Select --</option>
 								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
 								{
 									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Product"))
@@ -37,6 +37,50 @@
 								}
 							</select>
 						</div>
+						<label for="Obj.LoyaltyPointSchemeName" class="col-sm-2 col-form-label text-right" >Package Type <span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="PackageType_ID" name="PackageType_ID" onchange="fnChangeProductDetail(this, 'SKUSIZE', '#SKUSize_ID')">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "PackageType"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.PackageType_ID.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+						</div>					
+					</div>
+
+
+					<div class="form-group row">
+						<label for="Obj.LoyaltyPointSchemeName" class="col-sm-2 col-form-label text-right">SKU Size <span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<select class="form-control show-tick select2" id="SKUSize_ID" name="SKUSize_ID">
+								<option value="0">-- Select --</option>
+								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
+								{
+									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "SKUSize"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.SKUSize_ID.ToString())
+										{
+											<option value="@item.Value" selected>@item.Text</option>
+										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								}
+							</select>
+						</div>						
 						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Min Purchase Quantity</label>
 						<div class="col-sm-4">
 							<input type="text" class="form-control form-control-sm isNumberKey" id="MinPurchaseQty" name="MinPurchaseQty" placeholder="Min Purchase Qty" autocomplete="off" value="@Model.Obj.MinPurchaseQty">
