@@ -66,6 +66,8 @@
 											<th>#</th>
 											@* <th>User ID</th> *@
 											<th>Product Name</th>											
+											<th>Package Type</th>											
+											<th>SKU Size</th>											
 											<th>Min Purchase Quantity</th>	
 											<th> Max Purchase Quantity</th>
 											<th> Loyalty Points</th>
@@ -80,6 +82,8 @@
 												<td></td>
 												@* <td>@item.User_ID</td> *@
 												<td>@item.Product_Name</td>
+												<td>@item.PackageType_Name</td>
+												<td>@item.SKUSize_Name</td>
 												<td>@item.MinPurchaseQty</td>
 												<td>@item.MaxPurchaseQty</td>																								
 												<td>@item.LoyaltyPoints</td>
@@ -93,12 +97,7 @@
 														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
 																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPointScheme")?Id=@item.Id');">
 															<i class="far fa-edit"></i>
-														</button>
-
-														<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
-																onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed", "LoyaltyPointScheme")?Id=@item.Id');">
-															<i class="far fa-trash-alt"></i>
-														</button>
+														</button>												
 
 													</div>
 												</td>
@@ -128,7 +127,45 @@
 			});
 		});
 
-		
+		function fnChangeProductDetail($this, $type, $selector) {
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				ShowLoader(true);
+
+				 if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'PACKTYPE') {
+					$('#SKUSize_ID').empty().append('<option value="0">-- Select --</option>');
+				 }
+
+
+
+
+
+				var stateDropdown = $($selector);
+				stateDropdown.empty();
+				stateDropdown.append('<option value="0">-- Select --</option>');
+
+				var $url = '@Url.Action("GetProductDetails", "LoyaltyPointScheme")?Type=' + $type + '&ParentId=' + $($this).val();
+
+				if ($type === "PACKTYPE") {
+					$url += "&Product=" + encodeURIComponent($($this).find("option:selected").text());
+				}
+				$.ajax({
+					url: $url,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						debugger;
+						ShowLoader(false);
+						$.each(response, function (index, state) {
+							stateDropdown.append('<option value="' + state.Value + '">' + state.Text + '</option>');
+						});
+
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+			}
 		
 
 	</script>

@@ -30,13 +30,17 @@ namespace Seed_Admin.Controllers
                         {
                             Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
                             ProductID = dr["ProductID"] != DBNull.Value ? Convert.ToInt64(dr["ProductID"]) : 0,
+                            PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
+                            SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
                             MinPurchaseQty = dr["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MinPurchaseQty"]) : 0,
                             MaxPurchaseQty = dr["MaxPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MaxPurchaseQty"]) : 0,
                             LoyaltyPoints = dr["LoyaltyPoints"] != DBNull.Value ? Convert.ToInt32(dr["LoyaltyPoints"]) : 0,
                             EffectiveStartDate = dr["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveStartDate"]) : nullDateTime,
                             EffectiveEndDate = dr["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveEndDate"]) : nullDateTime,
                             Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",
-                           
+                            PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",
+                            SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",
+
                         });
                     }
                 }
@@ -71,26 +75,63 @@ namespace Seed_Admin.Controllers
                         {
                             Id = dt.Rows[0]["Id"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["Id"]) : 0,
                             ProductID = dt.Rows[0]["ProductID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["ProductID"]) : 0,
+                            PackageType_ID = dt.Rows[0]["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["PackageType_ID"]) : 0,
+                            SKUSize_ID = dt.Rows[0]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["SKUSize_ID"]) : 0,
                             MinPurchaseQty = dt.Rows[0]["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MinPurchaseQty"]) : 0,
                             MaxPurchaseQty = dt.Rows[0]["MaxPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MaxPurchaseQty"]) : 0,
                             LoyaltyPoints = dt.Rows[0]["LoyaltyPoints"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["LoyaltyPoints"]) : 0,
                             EffectiveStartDate = dt.Rows[0]["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveStartDate"]) : nullDateTime,
                             EffectiveEndDate = dt.Rows[0]["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveEndDate"]) : nullDateTime,
                             Product_Name = dt.Rows[0]["Product_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Product_Name"]) : "",
+                            PackageType_Name = dt.Rows[0]["PackageType_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["PackageType_Name"]) : "",
+                            SKUSize_Name = dt.Rows[0]["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["SKUSize_Name"]) : "",
 
                         };
                     }
+                    sqlParameters = new List<SqlParameter>();
+                    sqlParameters.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = obj.Product_Name });
+                    dt = new DataTable();
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", sqlParameters, true);
 
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        foreach (DataRow drpkg in dt.Rows)
+                        {
+                            list.Add(new SelectListItem_Custom(Convert.ToString(drpkg["Id"]), Convert.ToString(drpkg["PackageTypeName"]), "PackageType")
+                            {
+                                Value = drpkg["Id"] != DBNull.Value ? Convert.ToString(drpkg["Id"]) : "",
+                                Text = drpkg["PackageTypeName"] != DBNull.Value ? Convert.ToString(drpkg["PackageTypeName"]) : ""
+                            });
+                        }
+
+                    }
+
+                    sqlParameters = new List<SqlParameter>();
+                    sqlParameters.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = obj.PackageType_ID });
+                    dt = new DataTable();
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", sqlParameters, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        foreach (DataRow drpkg in dt.Rows)
+                        {
+                            list.Add(new SelectListItem_Custom(Convert.ToString(drpkg["Id"]), Convert.ToString(drpkg["SKUSizeName"]), "SKUSize")
+                            {
+                                Value = drpkg["Id"] != DBNull.Value ? Convert.ToString(drpkg["Id"]) : "",
+                                Text = drpkg["SKUSizeName"] != DBNull.Value ? Convert.ToString(drpkg["SKUSizeName"]) : ""
+                            });
+                        }
+
+                    }
 
 
                 }
 
 
 
-                sqlParameters = new List<SqlParameter>();
-                sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = 0 });
+                
                 dt = new DataTable();
-                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_GET", sqlParameters, true);
+                dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -172,6 +213,8 @@ namespace Seed_Admin.Controllers
 
                 oParams.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = viewModel.Id });
                 oParams.Add(new SqlParameter("@ProductID", SqlDbType.BigInt) { Value = viewModel.ProductID });
+                oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = viewModel.PackageType_ID });
+                oParams.Add(new SqlParameter("@SKUSize_ID", SqlDbType.BigInt) { Value = viewModel.SKUSize_ID });
                 oParams.Add(new SqlParameter("@MinPurchaseQty", SqlDbType.Int) { Value = viewModel.MinPurchaseQty });
                 oParams.Add(new SqlParameter("@MaxPurchaseQty", SqlDbType.Int) { Value = viewModel.MaxPurchaseQty });
                 oParams.Add(new SqlParameter("@LoyaltyPoints", SqlDbType.Int) { Value = viewModel.LoyaltyPoints });
@@ -200,6 +243,53 @@ namespace Seed_Admin.Controllers
                 CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
             }
             return Json(CommonViewModel);
+        }
+        [HttpGet]
+        public IActionResult GetProductDetails(string Type = "", string Product = "", long ParentId = 0)
+        {
+            var list = new List<SelectListItem_Custom>();
+
+            List<SqlParameter> oParams = new List<SqlParameter>();
+
+            var dt = new DataTable();
+
+            try
+            {
+                if (string.IsNullOrEmpty(Type))
+                {
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_Product_Combo", null, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["Name"]), "Product"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "PACKTYPE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@Product", SqlDbType.VarChar) { Value = Product });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_PackageType_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["PackageTypeName"]), "PACKTYPE"));
+                }
+                else if (!string.IsNullOrEmpty(Type) && Type == "SKUSIZE")
+                {
+                    oParams = new List<SqlParameter>();
+                    oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = ParentId });
+
+                    dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_SKUSize_Combo", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        foreach (DataRow dr in dt.Rows)
+                            list.Add(new SelectListItem_Custom(Convert.ToString(dr["Id"]), Convert.ToString(dr["SKUSizeName"]), "SKUSIZE"));
+                }
+
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            return Json(list);
         }
     }
 }
