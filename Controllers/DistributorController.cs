@@ -48,6 +48,7 @@ namespace Seed_Admin.Controllers
 							VillageName = dr["VillageName"] != DBNull.Value ? Convert.ToString(dr["VillageName"]) : "",
 							PinCode = dr["PinCode"] != DBNull.Value ? Convert.ToInt32(dr["PinCode"]) : 0,
 							Address = dr["Address"] != DBNull.Value ? Convert.ToString(dr["Address"]) : "",
+							AreaAllocated = dr["AreaAllocated"] != DBNull.Value ? Convert.ToString(dr["AreaAllocated"]) : ""
 
 						});
 					}
@@ -100,6 +101,7 @@ namespace Seed_Admin.Controllers
 						VillageName = dt.Rows[0]["VillageName"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["VillageName"]) : "",
 						PinCode = dt.Rows[0]["PinCode"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["PinCode"]) : 0,
 						Address = dt.Rows[0]["Address"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Address"]) : "",
+						AreaAllocated = dt.Rows[0]["AreaAllocated"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["AreaAllocated"]) : ""
 					};
 				}
 				else if (dt != null && dt.Rows.Count > 0)
@@ -278,6 +280,7 @@ namespace Seed_Admin.Controllers
 				oParams.Add(new SqlParameter("@City_Id", SqlDbType.BigInt) { Value = viewModel.City_Id });
 				oParams.Add(new SqlParameter("@PinCode", SqlDbType.BigInt) { Value = viewModel.PinCode });
 				oParams.Add(new SqlParameter("@Address", SqlDbType.VarChar) { Value = viewModel.Address });
+				oParams.Add(new SqlParameter("@AreaAllocated", SqlDbType.VarChar) { Value = viewModel.AreaAllocated });
 				oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
 				oParams.Add(new SqlParameter("@Action", SqlDbType.VarChar) { Value = viewModel.Id == 0 ? "INSERT" : "UPDATE" });
 

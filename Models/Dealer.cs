@@ -21,6 +21,7 @@
         public string CountryName { get; set; }
         public string StateName { get; set; }
         public int PinCode { get; set; }
+        public string AreaAllocated { get; set; }
         public string Address { get; set; }
     }
 }

@@ -114,22 +114,18 @@
 						</thead>
 						<tbody>
 							<tr>
-								<td>
-									Stock Value
-								</td>
+								<td>Stock Value</td>
 								<td>50000</td>
 								<td>25000</td>
 								<td>75000</td>
-								<td><a href="#" class="text-muted"><i class="fas fa-eye"></i></a></td>
+								<td><a href="#" class="text-muted showProduct"><i class="fas fa-eye"></i></a></td>
 							</tr>
 							<tr>
-								<td>
-									Stock Qty
-								</td>
+								<td>Stock Qty</td>
 								<td>50</td>
 								<td>20</td>
 								<td>80</td>
-								<td><a href="#" class="text-muted"><i class="fas fa-eye"></i></a></td>
+								<td><a href="#" class="text-muted showProduct"><i class="fas fa-eye"></i></a></td>
 							</tr>
 						</tbody>
 					</table>
@@ -143,5 +139,41 @@
 		$(document).on('change', 'input[type="radio"]', function (event) {
 			ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=' + $(this).attr('data-plantid'), window.location.href)
 		});
+
+				$(document).ready(function () {
+							  $(".showProduct").on("click", function () {
+								Swal.fire({
+								  title: 'Product Details',
+												  html: `
+					<table>
+					  <thead>
+						<tr>
+						  <th>Product Name</th>
+						  <th>Pkg Type</th>
+						  <th>SKU</th>
+						</tr>
+					  </thead>
+					  <tbody>
+						<tr>
+						  <td>Red Chilli Seed</td>
+						  <td>Jar</td>
+						  <td>100 g</td>
+						</tr>
+						<tr>
+						  <td>Potato Seed</td>
+						  <td>Pouch</td>
+						  <td>20 g</td>
+						</tr>
+					  </tbody>
+					</table>
+				  `,
+				  width: 600,
+								  icon: 'info',
+								  confirmButtonText: 'OK'
+								});
+							  });
+							});
 	</script>
+
+
 }

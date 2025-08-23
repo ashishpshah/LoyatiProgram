@@ -10,8 +10,8 @@
 		<div class="card-header">
 			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") Dealer</h3>
 			<input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
-			
-			
+
+
 		</div>
 
 		<div class="card-body">
@@ -44,7 +44,7 @@
 							<div class="input-group mb-3">
 								<input type="text" class="form-control form-control-sm" id="AadharNumber" name="AadharNumber" value="@Model.Obj.AadharNumber" placeholder="Aadhar No" autocomplete="off">
 							</div>
-						</div>						
+						</div>
 					</div>
 					<div class="form-group row">
 						<label for="Obj.DealerName" class="col-sm-2 col-form-label text-right">GST NO</label>
@@ -67,22 +67,22 @@
 						<div class="col-sm-4">
 
 							<select class="form-control show-tick select2" id="Country_Id" name="Country_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'STATE', '#State_Id')">
-									<option value="0">-- Select --</option>
+								<option value="0">-- Select --</option>
 								@if (Model.SelectListItems != null && Model.SelectListItems.Count > 0)
 								{
 									foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "Country"))
+									{
+										if (item.Value.ToUpper() == Model.Obj.Country_Id.ToString())
 										{
-											if (item.Value.ToUpper() == Model.Obj.Country_Id.ToString())
-											{
-												<option value="@item.Value" selected>@item.Text</option>
-											}
-											else
-											{
-												<option value="@item.Value">@item.Text</option>
-											}
+											<option value="@item.Value" selected>@item.Text</option>
 										}
+										else
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
 								}
-								</select>		
+							</select>
 
 						</div>
 					</div>
@@ -128,9 +128,9 @@
 								}
 							</select>
 
-						</div>						
+						</div>
 					</div>
-					<div class="form-group row">					
+					<div class="form-group row">
 						<label class="form-control-label col-sm-2" style="line-height: 2.5;">Taluka</label>
 						<div class="col-sm-4">
 							<select class="form-control show-tick select2" id="Taluka_Id" name="Taluka_Id" onchange="fnChange_CountryStateCityDistrictVillageTaluka(this, 'VILLAGE', '#City_Id')">
@@ -182,13 +182,20 @@
 						<label for="Obj.DealerName" class="col-sm-2 col-form-label text-right">Address</label>
 						<div class="col-sm-4">
 							<textarea class="form-control form-control-sm " rows="3" cols="40" id="Address" name="Address" value="@Model.Obj.Address" placeholder="Address" autocomplete="off">@Model.Obj.Address</textarea>
-						</div>					
+						</div>
+					</div>
+
+					<div class="form-group row">
+						<label for="AreaAllocated" class="col-sm-2 col-form-label text-right">Allocated Area</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" id="AreaAllocated" name="AreaAllocated" value="@Model.Obj.AreaAllocated" autocomplete="off">
+						</div>
 					</div>
 
 				</div>
-				
+
 			</div>
-			
+
 		</div>
 
 		<div class="card-footer">
