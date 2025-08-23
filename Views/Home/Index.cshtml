@@ -12,43 +12,132 @@
 </div>
 
 
-
-<div class="row no-gutters pt-5">
-	<div class="Col-12 w-100">
-		<div class="panel-divider mx-5">
-			<span style="background-color: #f4f6f9;">Plant Access</span>
-			<div class="row no-gutters">
-				<div class="col-12 p-0 m-0 shadow-none mt-3">
-					<!-- radio -->
-					<div class="form-group clearfix">
-						@if (listPlant != null)
-						{
-							foreach (var item in listPlant)
-							{
-								if (Common.Get_Session_Int(SessionKey.KEY_USER_PLANT_ID) == item.Id)
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters pt-5">
+			<div class="Col-12 w-100">
+				<div class="panel-divider">
+					<span style="background-color: #f4f6f9;">Plant Access</span>
+					<div class="row no-gutters">
+						<div class="col-12 p-0 m-0 shadow-none mt-3">
+							<!-- radio -->
+							<div class="form-group clearfix">
+								@if (listPlant != null)
 								{
-									<div class="icheck-primary d-inline mr-5">
-										<input type="radio" id="radioPrimary_@item.Id" name="PlantID" data-plantid="@item.Id" checked>
-										<label for="radioPrimary_@item.Id"> @item.PlantName</label>
-									</div>
+									foreach (var item in listPlant)
+									{
+										if (Common.Get_Session_Int(SessionKey.KEY_USER_PLANT_ID) == item.Id)
+										{
+											<div class="icheck-primary d-inline mr-5">
+												<input type="radio" id="radioPrimary_@item.Id" name="PlantID" data-plantid="@item.Id" checked>
+												<label for="radioPrimary_@item.Id"> @item.PlantName</label>
+											</div>
+										}
+										else
+										{
+											<div class="icheck-primary d-inline mr-5">
+												<input type="radio" id="radioPrimary_@item.Id" name="PlantID" data-plantid="@item.Id">
+												<label for="radioPrimary_@item.Id"> @item.PlantName</label>
+											</div>
+										}
+									}
 								}
-								else
-								{
-									<div class="icheck-primary d-inline mr-5">
-										<input type="radio" id="radioPrimary_@item.Id" name="PlantID" data-plantid="@item.Id">
-										<label for="radioPrimary_@item.Id"> @item.PlantName</label>
-									</div>
-								}
-							}
-						}
 
+							</div>
+						</div>
 					</div>
+
 				</div>
 			</div>
+		</div>
 
+		<div class="row">
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-info">
+					<div class="inner">
+						<h3>150</h3>
+
+						<p>New Orders</p>
+					</div>
+					<div class="icon">
+						<i class="ion ion-bag"></i>
+					</div>
+					<a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+				</div>
+			</div>
+			<!-- ./col -->
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-success">
+					<div class="inner">
+						<h3>50000</h3>
+
+						<p>Dispatch Quantity</p>
+					</div>
+					<div class="icon">
+						<i class="ion ion-stats-bars"></i>
+					</div>
+					<a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+				</div>
+			</div>
+			<!-- ./col -->
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-warning">
+					<div class="inner">
+						<h3>10000</h3>
+
+						<p>Production Quantity</p>
+					</div>
+					<div class="icon">
+						<i class="ion ion-person-add"></i>
+					</div>
+					<a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+				</div>
+			</div>
+			<!-- ./col -->
+		</div>
+
+		<div class="row">
+			<div class="col-sm-3 col-6">
+				<div class="description-block border-right bg-white">
+					<span class="description-percentage text-success">QR Code</span>
+					<h5 class="description-header">500</h5>
+					<span class="description-text">Expire Today</span>
+				</div>
+				<!-- /.description-block -->
+			</div>
+			<!-- /.col -->
+			<div class="col-sm-3 col-6">
+				<div class="description-block border-right bg-white">
+					<span class="description-percentage text-warning">QR Code</span>
+					<h5 class="description-header">1500</h5>
+					<span class="description-text">New Generated</span>
+				</div>
+				<!-- /.description-block -->
+			</div>
+			<!-- /.col -->
+			<div class="col-sm-3 col-6">
+				<div class="description-block border-right bg-white">
+					<span class="description-percentage text-success">QR Code</span>
+					<h5 class="description-header">2500</h5>
+					<span class="description-text">Expire in Week</span>
+				</div>
+				<!-- /.description-block -->
+			</div>
+			<!-- /.col -->
+			<div class="col-sm-3 col-6">
+				<div class="description-block bg-white">
+					<span class="description-percentage text-danger">QR Code</span>
+					<h5 class="description-header">3500</h5>
+					<span class="description-text">Expire in Month</span>
+				</div>
+				<!-- /.description-block -->
+			</div>
 		</div>
 	</div>
-</div>
+</section>
 @section scripts {
 	<script type="text/javascript">
 		$(document).on('change', 'input[type="radio"]', function (event) {
