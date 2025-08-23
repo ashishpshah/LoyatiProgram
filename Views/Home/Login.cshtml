@@ -8,131 +8,91 @@
 	<meta name="viewport" wwwroot="width=device-width, initial-scale=1">
 	<title>Login - Seed Admin</title>
 
-
-	<!-- Bootstrap -->
-	<link href="~/assets/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-	<!-- Font Awesome -->
-	<link href="~/assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-	<!-- Animate.css -->
-	<link href="~/assets/animate.css/animate.min.css" rel="stylesheet">
-
-	<!-- Custom Theme Style -->
-	<link href="~/css/custom.min.css" rel="stylesheet">
-
-
-	<link href="~/assets/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
-	<link href="~/assets/sweetalert2/bootstrap-4.min.css" rel="stylesheet" />
-	<!--[if lt IE 9]>
-	<script src="../assets/js/ie8-responsive-file-warning.js"></script>
-	<![endif]-->
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!--[if lt IE 9]>
-	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-	<![endif]-->
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/bootstrap.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/font-awesome.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/icon-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/animate.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/hamburgers.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/select2.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="~/login_page/util.css">
+	<link rel="stylesheet" type="text/css" href="~/login_page/main.css">
+	<!--===============================================================================================-->
+	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 
 </head>
-<body class="login">
+<body>
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100 p-l-50 p-r-50 p-t-50 p-b-30">
 
-	<div>
-		@* <a class="hiddenanchor" id="signup"></a> *@
-		<a class="hiddenanchor" id="signin"></a>
+				@using (Html.BeginForm("Login", "Home", new { Area = "" }, FormMethod.Post, false, new { id = "formLogin", @class = "login100-form validate-form", enctype = "multipart/form-data", @data_form_isvalidate = "" }))
+				{
+					@Html.AntiForgeryToken()
 
-		<div style="text-align: center; margin-top: 5%;">
-			<div class="profile_img">
-				<div id="crop-avatar">
-					<img class="img-responsive img-preview preview-lg" src="~/images/PADHYALOGO.png" alt="Avatar" title="Change the avatar" style="width: 263px; height: 147.938px;">
-				</div>
-			</div>
-			<br />
-			<div>
-				<h3> Seed Admin</h3>
+					<img src="https://img.freepik.com/free-photo/close-up-picture-hand-holding-planting-sapling-plant_1150-28373.jpg"
+						 style="display: block;width: 100%;height: 200px; border-radius: 3px;" class="p-b-20">
+
+					<span class="login100-form-title p-b-25">
+						<b>Seed</b> Admin
+					</span>
+
+					<div class="wrap-input100 validate-input m-b-16 alert-validate" data-validate="Valid email is required: ex@abc.xyz">
+						<input type="text" name="UserName" class="input100" placeholder="Username / MobileNo" data-required data-msg="The Username field is required." autocomplete="off">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<span class="lnr lnr-envelope"></span>
+						</span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-16 alert-validate" data-validate="Password is required">
+						<input type="password" name="Password" class="input100" placeholder="Password" data-required data-msg="The Password field is required." autocomplete="off">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<span class="lnr lnr-lock"></span>
+						</span>
+					</div>
+
+					<div class="container-login100-form-btn p-t-25">
+						<button type="button" class="login100-form-btn" onclick="fnSubmitForm('formLogin')"> Log in</button>
+					</div>
+
+					<input type="text" name="returnUrl" value="@ViewData["ReturnUrl"]" class="d-none" />
+				}
 			</div>
 		</div>
-		<div class="login_wrapper" style="margin-top: 0% !important;">
-
-			<div class="animate form login_form">
-				<section class="login_content">
-					@using (Html.BeginForm("Login", "Home", new { Area = "" }, FormMethod.Post, false, new { id = "formLogin", @class = "", enctype = "multipart/form-data", @data_form_isvalidate = "" }))
-					{
-						@Html.AntiForgeryToken()
-
-						<h1>Login</h1>
-						<div>
-							<input type="text" name="UserName" class="form-control" placeholder="Username / MobileNo" data-required data-msg="The Username field is required." autocomplete="off" />
-						</div>
-						<div>
-							<input type="password" name="Password" class="form-control" placeholder="Password" data-required data-msg="The Password field is required." autocomplete="off" />
-						</div>
-						<div>
-							@*<button type="button" class="btn btn-success btn-xs btnSubmit"> Log in</button>*@
-							<button type="button" class="btn btn-success btn-xs px-5 pull-left w-100" onclick="fnSubmitForm('formLogin')"> Log in</button>
-							@* <a class="reset_pass pull-right" href="#" style="margin: 8px 0px !important;">Forgot password?</a> *@
-						</div>
-
-						<div class="clearfix"></div>
-
-						@* <div class="separator">
-					<p class="change_link"> New User? &nbsp; <a href="#signup" class="to_register"> Register here </a> </p>
-					</div> *@
-
-						<input type="text" name="returnUrl" value="@ViewData["ReturnUrl"]" class="d-none" />
-					}
-				</section>
-			</div>
-			@*
-			<div id="register" class="animate form registration_form">
-			<section class="login_content">
-			@using (Html.BeginForm("Register", "Home", new { Area = "" }, FormMethod.Post, false, new { id = "formRegister", @class = "", enctype = "multipart/form-data", @data_form_isvalidate = "" }))
-			{
-
-			<h1>Create Account</h1>
-			<div>
-			<input type="text" name="UserName" id="UserName" class="form-control isNumberKey" placeholder="Mobile No. as Username" data-required data-msg="The Mobile No field is required." />
-			</div>
-			<div>
-			<input type="email" name="EmailId" id="EmailId" class="form-control" placeholder="Email" data-required data-msg="The Email field is required." />
-			</div>
-			<div>
-			<input type="password" name="Password" id="Password" class="form-control" placeholder="Password" data-required data-msg="The Password field is required." />
-			</div>
-			<div>
-			<input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control" placeholder="Confirm Password" data-required data-msg="The Confirm Password field is required." />
-			</div>
-			<div id="divOTP" style="display: none;margin-bottom: 20px !important;">
-			<input type="text" name="OTP" id="OTP" class="form-control isNumberKey" placeholder="OTP" data-required data-msg="The OTP field is required." style="margin-bottom: 5px !important;" />
-			<label for="message">We will send One Time Passward(OTP) to <br> your mobile number and Email</label>
-			</div>
-			<div id="btnOTP" style="display: block;">
-			<button type="button" class="btn btn-success btnOTP" id="btnSendOTP"> Send OTP </button>
-			<button type="button" class="btn btn-info btnOTP" id="btnHaveOTP"> Already have OTP </button>
-			</div>
-
-			<div id="btnRegister" style="display: none;">
-			<button type="button" class="btn btn-success" onclick="fnSubmitForm('formRegister')"> Submit </button>
-			<button type="button" class="btn btn-info btnOTP" id="btnSendOTP" disabled> Resend OTP </button>
-			</div>
-
-			<div class="clearfix"></div>
-
-			<div class="separator">
-			<p class="change_link"> Already a member ? <a href="#signin" class="to_register"> Log in </a> </p>
-			</div>
-
-
-			}
-			</section>
-			</div>
-			*@
-		</div>
-
 	</div>
 
 
-	<script src="~/assets/jquery/dist/jquery.min.js"></script>
-	<script src="~/assets/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-	<script src="~/assets/sweetalert2/sweetalert2.min.js"></script>
+
+	<!--===============================================================================================-->
+	<script src="~/login_page/jquery-3.2.1.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="~/login_page/popper.js"></script>
+	<script src="~/login_page/bootstrap.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="~/login_page/select2.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="~/login_page/main.js"></script>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async="" src="~/login_page/js"></script>
+
+	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'UA-23581568-13');
+	</script>
 
 	<script src="~/common.js"></script>
 
