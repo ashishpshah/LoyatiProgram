@@ -27,11 +27,15 @@ namespace Seed_Admin.Controllers
 									   join r in _context.Using<Role>().GetAll().ToList() on m.RoleId equals r.Id
 									   join p in _context.Using<Plant>().GetAll().ToList() on m.PlantId equals p.Id
 									   where r.Id > 1 && m.UserId != Common.LoggedUser_Id()
-									   group new { m, r, p } by new { u.Id, u.UserName, u.IsActive, u.IsDeleted } into g
+									   group new { m, r, p } by new { u.Id, u.UserName, u.Email, u.ContactNo, u.Designation, u.Department, u.IsActive, u.IsDeleted } into g
 									   select new User()
 									   {
 										   Id = g.Key.Id,
 										   UserName = g.Key.UserName,
+										   Email = g.Key.Email,
+										   ContactNo = g.Key.ContactNo,
+										   Designation = g.Key.Designation,
+										   Department = g.Key.Department,
 										   User_Role = string.Join(", ", g.OrderByDescending(x => x.m.IsPrimary).Select(x => x.m.PlantId == 0 ? $"{x.r.Name}" : $"{x.p.PlantName} - {x.r.Name}")),
 										   IsActive = g.Key.IsActive,
 										   IsDeleted = g.Key.IsDeleted

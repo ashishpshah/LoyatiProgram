@@ -66,6 +66,9 @@
 											<th width="5%">#</th>
 											<th>Username</th>
 											<th>Plant - Role</th>
+											<th>Email </th>
+											<th>Department </th>
+											<th>Designation </th>
 											<th width="5%">Status</th>
 											<th width="5%">Action</th>
 										</tr>
@@ -77,6 +80,9 @@
 												<td></td>
 												<td>@item.UserName</td>
 												<td>@item.User_Role</td>
+												<td>@item.Email</td>
+												<td>@item.Department</td>
+												<td>@item.Designation</td>
 												<td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
 												<td>
 													<div class="btn-group">
