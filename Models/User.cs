@@ -14,41 +14,19 @@ namespace Seed_Admin
 
 		public string Password { get; set; } = null!;
 
-		public int? NoOfWrongPasswordAttempts { get; set; }
-
-		public DateTime? NextChangePasswordDate { get; set; }
-
-		public string? PersonName { get; set; }
-
-		public string? CompanyName { get; set; }
-
 		public string? Email { get; set; }
 
 		public string? ContactNo { get; set; }
 
-		public string? AadharNo { get; set; }
-
-		public string? Gstno { get; set; }
-
-		public string? Address { get; set; }
-
-		public string? Village { get; set; }
-
-		public long? CityId { get; set; }
-
-		public long? DistrictId { get; set; }
-
-		public long? StateId { get; set; }
-
-		public long? CountryId { get; set; }
-
-		public int? Pincode { get; set; }
-
-		public decimal? LandSize { get; set; }
-
-		public string? GeoLocation { get; set; }
-
 		public string? PreferredLang { get; set; }
+
+		public int? NoOfWrongPasswordAttempts { get; set; }
+
+		public DateTime? NextChangePasswordDate { get; set; }
+
+		public string? Department { get; set; }
+
+		public string? Designation { get; set; }
 
 
 		//public string Fullname { get { return (!string.IsNullOrEmpty(First_Name) ? First_Name : "") + (!string.IsNullOrEmpty(Last_Name) ? " " + Last_Name : ""); } }

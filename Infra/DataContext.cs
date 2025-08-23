@@ -151,8 +151,6 @@ namespace Seed_Admin.Infra
 
                 entity.ToTable("Users", "dbo");
 
-                entity.Property(e => e.Gstno).HasColumnName("GSTNo");
-                entity.Property(e => e.LandSize).HasColumnType("numeric(18, 3)");
                 entity.Property(e => e.NextChangePasswordDate).HasColumnName("Next_Change_Password_Date");
                 entity.Property(e => e.NoOfWrongPasswordAttempts).HasColumnName("No_Of_Wrong_Password_Attempts");
             });

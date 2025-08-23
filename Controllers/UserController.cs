@@ -5,6 +5,9 @@ using System.Data;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Seed_Admin.Infra;
+using static QRCoder.PayloadGenerator.SwissQrCode;
+using static QRCoder.PayloadGenerator;
+using Seed_Admin.Infra.Services;
 
 namespace Seed_Admin.Controllers
 {
@@ -57,11 +60,15 @@ namespace Seed_Admin.Controllers
 				CommonViewModel.Obj = (from u in _context.Using<User>().GetAll().ToList()
 									   join m in _context.Using<UserRoleMapping>().GetAll().ToList() on u.Id equals m.UserId
 									   where u.Id == Id && m.RoleId > 1 && m.UserId != Common.LoggedUser_Id()
-									   group new { m } by new { u.Id, u.UserName, u.IsActive, u.IsDeleted } into g
+									   group new { m } by new { u.Id, u.UserName, u.Email, u.ContactNo, u.Designation, u.Department, u.IsActive, u.IsDeleted } into g
 									   select new User()
 									   {
 										   Id = g.Key.Id,
 										   UserName = g.Key.UserName,
+										   Email = g.Key.Email,
+										   ContactNo = g.Key.ContactNo,
+										   Designation = g.Key.Designation,
+										   Department = g.Key.Department,
 										   UserRoleMappings = g.Select(x => x.m).ToList(),
 										   IsActive = g.Key.IsActive,
 										   IsDeleted = g.Key.IsDeleted,
@@ -145,6 +152,25 @@ namespace Seed_Admin.Controllers
 						return Json(CommonViewModel);
 					}
 
+
+					if (viewModel.Obj.ContactNo != null && !ValidateField.IsValidMobileNo(viewModel.Obj.ContactNo))
+					{
+						CommonViewModel.IsSuccess = false;
+						CommonViewModel.Message = "Please enter valid Contact No.";
+						CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+						return Json(CommonViewModel);
+					}
+
+					if (viewModel.Obj.Email != null && !ValidateField.IsValidEmail(viewModel.Obj.Email))
+					{
+						CommonViewModel.IsSuccess = false;
+						CommonViewModel.Message = "Please enter valid Email Address";
+						CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+						return Json(CommonViewModel);
+					}
+
 					if (string.IsNullOrEmpty(viewModel.Obj.Plant_Role))
 					{
 
@@ -190,6 +216,10 @@ namespace Seed_Admin.Controllers
 							if (obj != null && Common.IsAdmin())
 							{
 								obj.UserName = viewModel.Obj.UserName;
+								obj.Email = viewModel.Obj.Email;
+								obj.ContactNo = viewModel.Obj.ContactNo;
+								obj.Designation = viewModel.Obj.Designation;
+								obj.Department = viewModel.Obj.Department;
 
 								if (viewModel.Obj.IsPassword_Reset == true) obj.Password = viewModel.Obj.Password;
 

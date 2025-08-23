@@ -85,7 +85,7 @@ namespace Seed_Admin.Areas.Admin.Controllers
 							IsClaimed = x.IsScanned,
 
 							UserId = lp?.UserId ?? 0,
-							ClaimedBy = user?.PersonName ?? (user?.CompanyName ?? ""),
+							ClaimedBy = user?.UserName ?? "",
 							ClaimedDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
 							ExpiryDate_Ticks = lp?.ExpiryDateTime?.Ticks ?? 0,
 							GenerateDate_Ticks = x.CreatedDate?.Ticks ?? 0,
