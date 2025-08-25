@@ -31,6 +31,8 @@ namespace Seed_Admin.Controllers
 							Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
 							User_ID = dr["User_ID"] != DBNull.Value ? Convert.ToString(dr["User_ID"]) : "",
 							Password = dr["Password"] != DBNull.Value ? Convert.ToString(dr["Password"]) : "",
+							Email = dr["Email"] != DBNull.Value ? Convert.ToString(dr["Email"]) : "",
+							ContactNo = dr["ContactNo"] != DBNull.Value ? Convert.ToString(dr["ContactNo"]) : "",
 							AadharNumber = dr["AadharNumber"] != DBNull.Value ? Convert.ToString(dr["AadharNumber"]) : "",
 							Land_Size = dr["Land_Size"] != DBNull.Value ? Convert.ToString(dr["Land_Size"]) : "",
 							Country_Id = dr["Country_Id"] != DBNull.Value ? Convert.ToInt64(dr["Country_Id"]) : 0,
@@ -80,6 +82,8 @@ namespace Seed_Admin.Controllers
 						Id = dt.Rows[0]["Id"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["Id"]) : 0,
 						User_ID = dt.Rows[0]["User_ID"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["User_ID"]) : "",
 						Password = dt.Rows[0]["Password"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Password"]) : "",
+						Email = dt.Rows[0]["Email"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Email"]) : "",
+						ContactNo = dt.Rows[0]["ContactNo"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["ContactNo"]) : "",
 						AadharNumber = dt.Rows[0]["AadharNumber"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["AadharNumber"]) : "",
 						Land_Size = dt.Rows[0]["Land_Size"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Land_Size"]) : "",
 						Country_Id = dt.Rows[0]["Country_Id"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["Country_Id"]) : 0,
@@ -267,6 +271,8 @@ namespace Seed_Admin.Controllers
 				oParams.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = viewModel.Id });
 				oParams.Add(new SqlParameter("@User_ID", SqlDbType.VarChar) { Value = viewModel.User_ID ?? "" });
 				oParams.Add(new SqlParameter("@Password", SqlDbType.VarChar) { Value = viewModel.Password ?? "" });
+				oParams.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = viewModel.Email ?? "" });
+				oParams.Add(new SqlParameter("@ContactNo", SqlDbType.VarChar) { Value = viewModel.ContactNo ?? "" });
 				oParams.Add(new SqlParameter("@AadharNumber", SqlDbType.VarChar) { Value = viewModel.AadharNumber ?? "" });
 				oParams.Add(new SqlParameter("@Land_Size", SqlDbType.VarChar) { Value = viewModel.Land_Size ?? "" });
 				oParams.Add(new SqlParameter("@Country_Id", SqlDbType.BigInt) { Value = viewModel.Country_Id });
