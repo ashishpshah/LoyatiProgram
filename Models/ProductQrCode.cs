@@ -25,6 +25,9 @@ public partial class ProductQrCode : EntitiesBase
 
     public bool IsScanned { get; set; }
 
+    [NotMapped]public long SrNo { get; set; }
+    [NotMapped]public string Status { get; set; }
+    [NotMapped]public string Reason { get; set; }
     [NotMapped]public long CreatedDate_Ticks { get; set; }
     [NotMapped] public long LastModifiedDate_Ticks { get; set; }
     [NotMapped] public string Product_Text { get; set; }

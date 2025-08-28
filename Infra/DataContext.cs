@@ -486,6 +486,80 @@ namespace Seed_Admin.Infra
             else
                 return (false, ResponseStatusMessage.Error, 0);
         }
+        
+        public static (bool, string, long, DataSet) ExecuteStoredProcedure_Dataset(string query, List<SqlParameter> parameters, bool returnParameter = false)
+		{
+			DataSet ds = new DataSet();
+
+			var response = string.Empty;
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = con.CreateCommand())
+                {
+                    try
+                    {
+                        con.Open();
+
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.CommandText = query;
+                        //cmd.DeriveParameters();
+
+                        if (parameters != null && parameters.Count > 0)
+                            cmd.Parameters.AddRange(parameters.ToArray());
+
+                        if (returnParameter)
+                            cmd.Parameters.Add(new SqlParameter("@response", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+
+                        cmd.CommandTimeout = 86400;
+                        cmd.ExecuteNonQuery();
+
+                        //RETURN VALUE
+                        //response = cmd.Parameters["P_Response"].Value.ToString();
+
+                        response = "S|Success";
+
+                        if (cmd.Parameters.Contains("@response"))
+                        {
+                            response = cmd.Parameters["@response"].Value.ToString();
+                        }
+
+						using (SqlDataAdapter adp = new SqlDataAdapter(cmd))
+						{
+							adp.Fill(ds);
+						}
+
+						con.Close();
+                        cmd.Parameters.Clear();
+                        cmd.Dispose();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        con.Close();
+                        cmd.Parameters.Clear();
+                        cmd.Dispose();
+
+                        response = "E|Opps!... Something went wrong. " + JsonConvert.SerializeObject(ex) + "|0";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(response) && response.Contains("|"))
+            {
+                var msgtype = response.Split('|').Length > 0 ? Convert.ToString(response.Split('|')[0]) : "";
+                var message = response.Split('|').Length > 1 ? Convert.ToString(response.Split('|')[1]).Replace("\"", "") : "";
+
+                Int64 strid = 0;
+                if (Int64.TryParse(response.Split('|').Length > 2 ? Convert.ToString(response.Split('|')[2]).Replace("\"", "") : "0", out strid)) { }
+                //string paths = response.Split('|').Length > 3 ? response.Split('|')[3].Replace("\"", "") : "0";
+
+
+                return (msgtype.Contains("S"), message, strid, ds);
+            }
+            else
+                return (false, ResponseStatusMessage.Error, 0, ds);
+        }
 
 
         public static (bool, string, long, string) ExecuteStoredProcedure_SQLwithpath(string query, List<SqlParameter> parameters, bool returnParameter = false)

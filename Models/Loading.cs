@@ -20,6 +20,6 @@ namespace Seed_Admin
 		[NotMapped] public string Order_No { get; set; }
 
 
-		[NotMapped] public List<(int SrNo, long QR_Code_Id, string QR_Code, string Status)> listQRCode { get; set; }
+		[NotMapped] public List<ProductQrCode> listQRCode { get; set; }
 	}
 }

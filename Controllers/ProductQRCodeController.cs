@@ -36,7 +36,23 @@ namespace Seed_Admin.Areas.Admin.Controllers
 					var dictPackageType = _context.Using<PackageType>().GetAll().ToDictionary(x => x.Id);
 					var dictSKUSize = _context.Using<SKUSize>().GetAll().ToDictionary(x => x.Id);
 
-					var listQrcode_Filtered = listQrcode.GroupBy(x => new { x.BatchId, x.RequestId, x.ProductId, x.PackageType_ID, x.SKUSize_ID, x.CreatedDate })
+					var listQrcode_Filtered = new List<ProductQrCode>();
+
+					if (batchId > 0)
+						listQrcode_Filtered = listQrcode.Select(g => new ProductQrCode()
+										{
+											BatchId = g.BatchId,
+											RequestId = g.RequestId,
+											Points = g.Points,
+											QrCode = g.QrCode ?? "",
+											ProductId = g.ProductId,
+											PackageType_ID = g.PackageType_ID,
+											SKUSize_ID = g.SKUSize_ID,
+											CreatedDate = g.CreatedDate
+										}).ToList();
+
+					else
+						listQrcode_Filtered = listQrcode.GroupBy(x => new { x.BatchId, x.RequestId, x.ProductId, x.PackageType_ID, x.SKUSize_ID, x.CreatedDate })
 									.Select(g => new ProductQrCode()
 									{
 										BatchId = g.Key.BatchId,

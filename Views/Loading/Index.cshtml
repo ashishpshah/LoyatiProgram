@@ -7,6 +7,15 @@
 
 
 
+@section Styles {
+	<style>
+		.panel-divider > .form-group.row > .text-right {
+			text-align: right !important;
+		}
+	</style>
+}
+
+
 <div class="content-header">
 	<div class="container-fluid">
 		<div class="row mb-2">
@@ -90,7 +99,9 @@
 
 		function fnStartLoading($OrderId, $ProductId) {
 
-			$('#divLoadingScreen input:not(#input_Scan_QR_Code)').val('').trigger('change');
+			//$('#divLoadingScreen input:not(#input_Scan_QR_Code)').val('').trigger('change');
+			$('#divLoadingScreen input').val('').trigger('change');
+			$('#divLoadingScreen').addClass('d-none');
 
 			if (typeof $OrderId != 'undefined' && $OrderId != null && !isNaN(parseFloat($OrderId))
 				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
@@ -112,6 +123,9 @@
 						$('#divLoadingScreen input#Ordered_Prod_Qty').val(response.Qty).trigger('change');
 						$('#divLoadingScreen input#Loaded_Prod_Qty').val(response.Loaded_Qty).trigger('change');
 
+						$('#divLoadingScreen').removeClass('d-none');
+						window.scrollTo(0, $('#divLoadingScreen').offset().top);
+
 						fnGetProductQRCodeList();
 					},
 					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
@@ -122,6 +136,7 @@
 
 
 		function fnGetProductQRCodeList() {
+			
 
 			var $OrderId = $('#divLoadingScreen input#Order_Id').val();
 			var $ProductId = $('#divLoadingScreen input#Product_Id').val();
@@ -152,8 +167,23 @@
 		}
 
 		function fnFillTableProductQRCode(list, total_qty) {
-			debugger;
 			$('#divLoadingScreen span#spanTotalQty').html(total_qty);
+			debugger;
+
+			let qr_ids = $('#divAcceptQRCode .direct-chat-infos, #divRejectQRCode .direct-chat-infos')
+				.map(function () { return $(this).attr('data-id') }).get();
+
+		}
+
+		function fnhideLoadingScreen() {
+			document.getElementById('divLoadingScreen').classList.add('d-none');
+			document.querySelectorAll('#divLoadingScreen input')
+				.forEach(el => {
+					el.value = '';
+					el.dispatchEvent(new Event('change'));
+				});
+
+			document.querySelector('.table_Common_SrNo').scrollIntoView();
 		}
 
 		$(document).on('input', '#input_Scan_QR_Code', function (e) {
@@ -161,29 +191,30 @@
 
 			var qr_code = $(this).val();
 
-			qr_code = qr_code.replace(/^https?:\/\/[^\/]+\/?/, "");
-
-			var batchId = $('input[id="Id"]').val();
-
 			if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length >= 15) {
 
 				ShowLoader(true);
+
+				qr_code = qr_code.replace(/^https?:\/\/[^\/]+\/?/, "");
+
+				var $OrderId = $('#divLoadingScreen input#Order_Id').val();
+				var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+
 				$.ajax({
 					type: "GET",
-					url: '@Url.Action("Check_QR_Code", "ProductBatch")?qr_code=' + qr_code + '&batchId=' + batchId,
+					url: '@Url.Action("Check_QR_Code", "Loading")?qr_code=' + qr_code + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId,
 					data: null,
 					contentType: "application/json; charset=utf-8",
 					dataType: "json",
 					success: function (response) {
 
-						try { dataTableMain.ajax.reload(); } catch { }
-
 						setTimeout(function () {
 
 							try {
-								if (response.StatusCode === 1) { }
-								else { CommonAlert_Error(response.Message); }
-							} catch { window.location.reload(); }
+								debugger;
+								fnFillTableProductQRCode(response.Data, -1);
+
+							} catch { }
 
 							ShowLoader(false);
 

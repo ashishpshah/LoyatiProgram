@@ -147,38 +147,46 @@ namespace Seed_Admin.Controllers
 
 				if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
 				{
-					int rowIndex = ds.Tables[0].Rows.IndexOf(ds.Tables[0].AsEnumerable().FirstOrDefault(r => r.Field<string>("Status") == "OK"));
+					int rowIndex = ds.Tables[0].Rows.IndexOf(ds.Tables[0].AsEnumerable().FirstOrDefault(r => r.Field<long>("Product_ID") == ProductId));
 
 					obj = new Loading()
 					{
-						Id = ds.Tables[0].Rows[0]["Id"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["Id"]) : 0,
-						Order_ID = ds.Tables[0].Rows[0]["Order_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["Order_ID"]) : 0,
-						Order_No = ds.Tables[0].Rows[0]["Order_No"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["Order_No"]) : "",
-						Product_ID = ds.Tables[0].Rows[0]["Product_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["Product_ID"]) : 0,
-						PackageType_ID = ds.Tables[0].Rows[0]["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["PackageType_ID"]) : 0,
-						SKUSize_ID = ds.Tables[0].Rows[0]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["SKUSize_ID"]) : 0,
-						Qty = ds.Tables[0].Rows[0]["Qty"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[0].Rows[0]["Qty"]) : 0,
-						Loaded_Qty = ds.Tables[0].Rows[0]["Loaded_Qty"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[0].Rows[0]["Loaded_Qty"]) : 0,
-						Ordered_Qty = ds.Tables[0].Rows[0]["Ordered_Qty"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[0].Rows[0]["Ordered_Qty"]) : 0,
-						Product_Name = ds.Tables[0].Rows[0]["Product_Name"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["Product_Name"]) : "",
-						PackageType_Name = ds.Tables[0].Rows[0]["PackageType_Name"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["PackageType_Name"]) : "",
-						SKUSize_Name = ds.Tables[0].Rows[0]["SKUSize_Name"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["SKUSize_Name"]) : "",
+						Id = ds.Tables[0].Rows[rowIndex]["Id"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[rowIndex]["Id"]) : 0,
+						Order_ID = ds.Tables[0].Rows[rowIndex]["Order_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[rowIndex]["Order_ID"]) : 0,
+						Order_No = ds.Tables[0].Rows[rowIndex]["Order_No"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[rowIndex]["Order_No"]) : "",
+						Product_ID = ds.Tables[0].Rows[rowIndex]["Product_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[rowIndex]["Product_ID"]) : 0,
+						PackageType_ID = ds.Tables[0].Rows[rowIndex]["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[rowIndex]["PackageType_ID"]) : 0,
+						SKUSize_ID = ds.Tables[0].Rows[rowIndex]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[rowIndex]["SKUSize_ID"]) : 0,
+						Qty = ds.Tables[0].Rows[rowIndex]["Qty"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[0].Rows[rowIndex]["Qty"]) : 0,
+						Loaded_Qty = ds.Tables[0].Rows[rowIndex]["Loaded_Qty"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[0].Rows[rowIndex]["Loaded_Qty"]) : 0,
+						Ordered_Qty = ds.Tables[0].Rows[rowIndex]["Ordered_Qty"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[0].Rows[rowIndex]["Ordered_Qty"]) : 0,
+						Product_Name = ds.Tables[0].Rows[rowIndex]["Product_Name"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[rowIndex]["Product_Name"]) : "",
+						PackageType_Name = ds.Tables[0].Rows[rowIndex]["PackageType_Name"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[rowIndex]["PackageType_Name"]) : "",
+						SKUSize_Name = ds.Tables[0].Rows[rowIndex]["SKUSize_Name"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[rowIndex]["SKUSize_Name"]) : "",
 
 					};
 				}
 
-				if (ds != null && ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0 && obj != null)
+				if (ds != null && ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0 && obj != null && ProductId > 0)
 				{
-					obj.listQRCode = new List<(int SrNo, long QR_Code_Id, string QR_Code, string Status)>();
+					obj.listQRCode = new List<ProductQrCode>();
 
-					foreach (DataRow row in ds.Tables[1].Rows)
+					foreach (DataRow row in ds.Tables[1].AsEnumerable().Where(r => r.Field<long>("Product_ID") == ProductId))
 					{
-						int srNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0;
-						long qrCodeId = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0;
-						string qrCode = row["QRCode"] != DBNull.Value ? row["QRCode"].ToString() : string.Empty;
-						string status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty;
+						//int srNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0;
+						//long qrCodeId = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0;
+						//string qrCode = row["QRCode"] != DBNull.Value ? row["QRCode"].ToString() : string.Empty;
+						//string status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty;
 
-						obj.listQRCode.Add((srNo, qrCodeId, qrCode, status));
+						//obj.listQRCode.Add((srNo, qrCodeId, qrCode, status));
+						obj.listQRCode.Add(new ProductQrCode()
+						{
+							SrNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0,
+							Id = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0,
+							QrCode = row["QRCode"] != DBNull.Value ? row["QRCode"].ToString() : string.Empty,
+							Status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty,
+							Reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty
+						});
 					}
 				}
 			}
@@ -186,5 +194,108 @@ namespace Seed_Admin.Controllers
 
 			return Json(obj);
 		}
+
+
+		[HttpGet]
+		//[CustomAuthorizeAttribute(AccessType_Enum.Write)]
+		public ActionResult Check_QR_Code(string qr_code, long OrderId, long ProductId)
+		{
+			try
+			{
+				#region Validation
+
+				if (!Common.IsAdmin())
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
+
+					return Json(CommonViewModel);
+				}
+
+				if (OrderId <= 0)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please select valid Order detail.";
+
+					return Json(CommonViewModel);
+				}
+
+				if (ProductId <= 0)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please select valid Product.";
+
+					return Json(CommonViewModel);
+				}
+
+				if (string.IsNullOrEmpty(qr_code) || qr_code.Length < 15)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please enter valid QR Code.";
+
+					return Json(CommonViewModel);
+				}
+
+				#endregion
+
+				var (IsSuccess, response, Id, ds) = (false, ResponseStatusMessage.Error, 0M, (DataSet)null);
+
+				List<SqlParameter> oParams = new List<SqlParameter>();
+
+				oParams.Add(new SqlParameter("@BatchId", SqlDbType.BigInt) { Value = 0 });
+				oParams.Add(new SqlParameter("@OrderId", SqlDbType.BigInt) { Value = OrderId });
+				oParams.Add(new SqlParameter("@ProductId", SqlDbType.BigInt) { Value = ProductId });
+				oParams.Add(new SqlParameter("@QRCode", SqlDbType.NVarChar) { Value = qr_code });
+
+				oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
+
+				(IsSuccess, response, Id, ds) = DataContext_Command.ExecuteStoredProcedure_Dataset("SP_Check_QR_Code", oParams, true);
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = IsSuccess;
+				CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+				CommonViewModel.Message = response;
+
+				if (ds != null && ds.Tables != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+				{
+					var listQRCode = new List<ProductQrCode>();
+
+					foreach (DataRow row in ds.Tables[0].Rows)
+					{
+						//int srNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0;
+						//long qrCodeId = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0;
+						//string qrCode = row["QR_Code"] != DBNull.Value ? row["QR_Code"].ToString() : string.Empty;
+						//string status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty;
+						//string reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty;
+
+						listQRCode.Add(new ProductQrCode()
+						{
+							SrNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0,
+							Id = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0,
+							QrCode = row["QR_Code"] != DBNull.Value ? row["QR_Code"].ToString() : string.Empty,
+							Status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty,
+							Reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty
+						});
+					}
+
+					CommonViewModel.Data = listQRCode;
+				}
+
+				return Json(CommonViewModel);
+
+			}
+			catch (Exception ex) { }
+
+			CommonViewModel.Message = ResponseStatusMessage.Error;
+			CommonViewModel.IsSuccess = false;
+			CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+			return Json(CommonViewModel);
+		}
+
 	}
 }
