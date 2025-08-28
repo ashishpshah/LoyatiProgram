@@ -136,7 +136,7 @@
 
 
 		function fnGetProductQRCodeList() {
-			
+
 
 			var $OrderId = $('#divLoadingScreen input#Order_Id').val();
 			var $ProductId = $('#divLoadingScreen input#Product_Id').val();
@@ -157,8 +157,7 @@
 					dataType: "json",
 					success: function (response) {
 						ShowLoader(false);
-
-						fnFillTableProductQRCode(response.listQRCode, response.Qty);
+						fnFillTableProductQRCode(response.listQRCode);
 					},
 					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
 					error: function () { ShowLoader(false); CommonAlert_Error(null); }
@@ -166,12 +165,33 @@
 			}
 		}
 
-		function fnFillTableProductQRCode(list, total_qty) {
-			$('#divLoadingScreen span#spanTotalQty').html(total_qty);
-			debugger;
+		function fnFillTableProductQRCode(listQRCode) {
 
-			let qr_ids = $('#divAcceptQRCode .direct-chat-infos, #divRejectQRCode .direct-chat-infos')
-				.map(function () { return $(this).attr('data-id') }).get();
+			$('#divLoadingScreen span#spanTotalQty').html($('#divLoadingScreen input#Ordered_Prod_Qty').val());
+
+			debugger;
+			if (typeof listQRCode != 'undefined' && listQRCode != null && listQRCode.length > 0) {
+				let existingIds = $('#divAcceptQRCode .direct-chat-infos, #divRejectQRCode .direct-chat-infos')
+					.map(function () { return $(this).attr('data-id'); }).get();
+
+				if (Array.isArray(listQRCode) && listQRCode.length > 0) {
+					listQRCode.forEach(function (item) {
+
+						if (existingIds.includes(item.Id.toString())) return;
+
+						let html =
+							'<div class="direct-chat-infos clearfix ' + (item.Status === 'S' ? 'text-success' : 'text-danger') + '" data-id="' + item.Id + '">' +
+							'<span class="direct-chat-name float-left" data-id="' + item.Id + '">' + item.QrCode + '</span>' +
+							'<button type="button" class="direct-chat-timestamp float-right border-0 bg-transparent"> <i class="fas fa-times"></i> </button></div>';
+
+						if (item.Status === 'S') { $('#divAcceptQRCode').prepend(html); }
+						else { $('#divRejectQRCode').prepend(html); }
+					});
+
+					$('#divLoadingScreen span#spanLoadedQty').html(listQRCode.filter(x => x.Status === "S").length);
+					$('#divLoadingScreen span#spanRejectQty').html(listQRCode.filter(x => x.Status === "R").length);
+				}
+			}
 
 		}
 
@@ -207,19 +227,10 @@
 					contentType: "application/json; charset=utf-8",
 					dataType: "json",
 					success: function (response) {
-
 						setTimeout(function () {
-
-							try {
-								debugger;
-								fnFillTableProductQRCode(response.Data, -1);
-
-							} catch { }
-
+							try { fnFillTableProductQRCode(response.Data, -1); } catch { }
 							ShowLoader(false);
-
 						}, 1000);
-
 					},
 					failure: function (response) { CommonAlert_Error(null) },
 					error: function (response) { CommonAlert_Error(null) }
@@ -227,6 +238,52 @@
 			}
 
 			return false;
+		});
+
+		$(document).on("click", "#divAcceptQRCode .direct-chat-infos .fa-times, #divRejectQRCode .direct-chat-infos .fa-times", function () {
+			let parent = $(this).closest(".direct-chat-infos");
+			let QRCodeId = parent.attr('data-id');
+			let qrCode = parent.find(".direct-chat-name").text().trim();
+
+			Swal.fire({
+				title: "Are you sure?",
+				text: "Do you really want to delete QR Code: " + qrCode + " ?",
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonText: "Yes, delete it!",
+				cancelButtonText: "No, cancel",
+			}).then((result) => {
+				if (result.isConfirmed) {
+
+					ShowLoader(true);
+
+					var $OrderId = $('#divLoadingScreen input#Order_Id').val();
+					var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+
+					$.ajax({
+						type: 'GET',
+						url: '@Url.Action("Delete_QR_Code", "Loading")?qr_code=' + qrCode + '&QRCodeId=' + QRCodeId + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+						data: {},
+						dataType: "json",
+						success: function (response) {
+							setTimeout(function () {
+								if (response.StatusCode === 1) {
+									parent.remove();
+
+									try { fnFillTableProductQRCode(response.Data, -1); } catch { }
+								}
+								else CommonAlert_Error(response.Message);
+
+								ShowLoader(false);
+							}, 1000);
+						},
+						failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+						error: function () { ShowLoader(false); CommonAlert_Error(null); }
+					});
+
+				}
+			});
+
 		});
 
 		function fnChange_Order($this, $selector) {

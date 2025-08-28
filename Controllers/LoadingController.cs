@@ -182,8 +182,8 @@ namespace Seed_Admin.Controllers
 						obj.listQRCode.Add(new ProductQrCode()
 						{
 							SrNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0,
-							Id = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0,
-							QrCode = row["QRCode"] != DBNull.Value ? row["QRCode"].ToString() : string.Empty,
+							Id = row["Id"] != DBNull.Value ? Convert.ToInt64(row["Id"]) : 0,
+							QrCode = row["QR_Code"] != DBNull.Value ? row["QR_Code"].ToString() : string.Empty,
 							Status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty,
 							Reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty
 						});
@@ -272,6 +272,102 @@ namespace Seed_Admin.Controllers
 						//string status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty;
 						//string reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty;
 
+						listQRCode.Add(new ProductQrCode()
+						{
+							SrNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0,
+							Id = row["Id"] != DBNull.Value ? Convert.ToInt64(row["Id"]) : 0,
+							QrCode = row["QR_Code"] != DBNull.Value ? row["QR_Code"].ToString() : string.Empty,
+							Status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty,
+							Reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty
+						});
+					}
+
+					CommonViewModel.Data = listQRCode;
+				}
+
+				return Json(CommonViewModel);
+
+			}
+			catch (Exception ex) { }
+
+			CommonViewModel.Message = ResponseStatusMessage.Error;
+			CommonViewModel.IsSuccess = false;
+			CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+			return Json(CommonViewModel);
+		}
+
+		[HttpGet]
+		//[CustomAuthorizeAttribute(AccessType_Enum.Write)]
+		public ActionResult Delete_QR_Code(string qr_code, long QRCodeId, long OrderId, long ProductId)
+		{
+			try
+			{
+				#region Validation
+
+				if (!Common.IsAdmin())
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
+
+					return Json(CommonViewModel);
+				}
+
+				if (QRCodeId <= 0)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please select valid QR Code.";
+
+					return Json(CommonViewModel);
+				}
+				
+				if (OrderId <= 0)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please select valid Order detail.";
+
+					return Json(CommonViewModel);
+				}
+
+				if (ProductId <= 0)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please select valid Product.";
+
+					return Json(CommonViewModel);
+				}
+
+				#endregion
+
+				var (IsSuccess, response, Id, ds) = (false, ResponseStatusMessage.Error, 0M, (DataSet)null);
+
+				List<SqlParameter> oParams = new List<SqlParameter>();
+
+				oParams.Add(new SqlParameter("@BatchId", SqlDbType.BigInt) { Value = 0 });
+				oParams.Add(new SqlParameter("@OrderId", SqlDbType.BigInt) { Value = OrderId });
+				oParams.Add(new SqlParameter("@ProductId", SqlDbType.BigInt) { Value = ProductId });
+				oParams.Add(new SqlParameter("@QRCode", SqlDbType.NVarChar) { Value = qr_code });
+				oParams.Add(new SqlParameter("@OrderLoadingId", SqlDbType.BigInt) { Value = QRCodeId });
+
+				oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
+
+				(IsSuccess, response, Id, ds) = DataContext_Command.ExecuteStoredProcedure_Dataset("SP_Delete_QR_Code", oParams, true);
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = IsSuccess;
+				CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+				CommonViewModel.Message = response;
+
+				if (ds != null && ds.Tables != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+				{
+					var listQRCode = new List<ProductQrCode>();
+
+					foreach (DataRow row in ds.Tables[0].Rows)
+					{
 						listQRCode.Add(new ProductQrCode()
 						{
 							SrNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0,
