@@ -169,7 +169,6 @@
 
 			$('#divLoadingScreen span#spanTotalQty').html($('#divLoadingScreen input#Ordered_Prod_Qty').val());
 
-			debugger;
 			if (typeof listQRCode != 'undefined' && listQRCode != null && listQRCode.length > 0) {
 				let existingIds = $('#divAcceptQRCode .direct-chat-infos, #divRejectQRCode .direct-chat-infos')
 					.map(function () { return $(this).attr('data-id'); }).get();
@@ -189,6 +188,7 @@
 					});
 
 					$('#divLoadingScreen span#spanLoadedQty').html(listQRCode.filter(x => x.Status === "S").length);
+					$('#divLoadingScreen input#Loaded_Prod_Qty').val(listQRCode.filter(x => x.Status === "S").length).trigger('change');
 					$('#divLoadingScreen span#spanRejectQty').html(listQRCode.filter(x => x.Status === "R").length);
 				}
 			}
@@ -228,6 +228,7 @@
 					dataType: "json",
 					success: function (response) {
 						setTimeout(function () {
+							$('#input_Scan_QR_Code').val('').trigger('change');
 							try { fnFillTableProductQRCode(response.Data, -1); } catch { }
 							ShowLoader(false);
 						}, 1000);
@@ -268,6 +269,7 @@
 						success: function (response) {
 							setTimeout(function () {
 								if (response.StatusCode === 1) {
+									debugger;
 									parent.remove();
 
 									try { fnFillTableProductQRCode(response.Data, -1); } catch { }

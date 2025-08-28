@@ -371,7 +371,7 @@ namespace Seed_Admin.Controllers
 						listQRCode.Add(new ProductQrCode()
 						{
 							SrNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0,
-							Id = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0,
+							Id = row["Id"] != DBNull.Value ? Convert.ToInt64(row["Id"]) : 0,
 							QrCode = row["QR_Code"] != DBNull.Value ? row["QR_Code"].ToString() : string.Empty,
 							Status = row["Status"] != DBNull.Value ? row["Status"].ToString() : string.Empty,
 							Reason = row["Reason"] != DBNull.Value ? row["Reason"].ToString() : string.Empty

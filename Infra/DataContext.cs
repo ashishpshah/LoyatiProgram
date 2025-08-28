@@ -503,7 +503,6 @@ namespace Seed_Admin.Infra
 
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.CommandText = query;
-                        //cmd.DeriveParameters();
 
                         if (parameters != null && parameters.Count > 0)
                             cmd.Parameters.AddRange(parameters.ToArray());
@@ -512,22 +511,19 @@ namespace Seed_Admin.Infra
                             cmd.Parameters.Add(new SqlParameter("@response", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
 
                         cmd.CommandTimeout = 86400;
-                        cmd.ExecuteNonQuery();
-
-                        //RETURN VALUE
-                        //response = cmd.Parameters["P_Response"].Value.ToString();
-
-                        response = "S|Success";
-
-                        if (cmd.Parameters.Contains("@response"))
-                        {
-                            response = cmd.Parameters["@response"].Value.ToString();
-                        }
+						//cmd.ExecuteNonQuery();
 
 						using (SqlDataAdapter adp = new SqlDataAdapter(cmd))
 						{
 							adp.Fill(ds);
 						}
+
+						response = "S|Success";
+
+                        if (cmd.Parameters.Contains("@response"))
+                        {
+                            response = cmd.Parameters["@response"].Value.ToString();
+                        }
 
 						con.Close();
                         cmd.Parameters.Clear();
