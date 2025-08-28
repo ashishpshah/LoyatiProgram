@@ -12,12 +12,12 @@
 		<div class="row mb-2">
 			<div class="col-sm-6">
 				<h1 class="m-0">Loading</h1>
-			</div>		
+			</div>
 		</div>
 	</div>
 </div>
 <section class="content">
-	<div class="container-fluid">		
+	<div class="container-fluid">
 		<div class="row clearfix pt-2">
 			<div class="col-12">
 				<div class="card card-primary card-outline">
@@ -34,33 +34,33 @@
 											{
 												foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "DEALER"))
 												{
-													
-														<option value="@item.Value">@item.Text</option>
-													
-													
+
+													<option value="@item.Value">@item.Text</option>
+
+
 												}
 											}
 										</select>
 
 									</div>
-									<label class="form-control-label col-sm-2" style="line-height: 2.5;">Order <span style="color:red" >*</span></label>
+									<label class="form-control-label col-sm-2" style="line-height: 2.5;">Order <span style="color:red">*</span></label>
 									<div class="col-sm-4">
 										<select class="form-control show-tick select2" id="Order_ID" name="Order_ID">
-											<option value="0">-- Select --</option>											
+											<option value="0">-- Select --</option>
 										</select>
 
 									</div>
-										
+
 								</div>
-							</div>						
+							</div>
 						</div>
 					</div>
-					<div class="card-footer text-center">						
-							<button type="button" class="btn btn-info"
-									onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Loading")?User_ID=' + $('#User_ID').val() + '&Order_ID=' + $('#Order_ID').val());">
-								View
-							</button>
-						
+					<div class="card-footer text-center">
+						<button type="button" class="btn btn-info"
+								onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Loading")?User_ID=' + $('#User_ID').val() + '&Order_ID=' + $('#Order_ID').val());">
+							View
+						</button>
+
 					</div>
 				</div>
 			</div>
@@ -68,7 +68,7 @@
 
 		<div class="row clearfix pt-2 divformSave_Display d-none">
 			<div class="col-12">
-				<div class="row no-gutters" id="divformSave"></div>	
+				<div class="row no-gutters" id="divformSave"></div>
 			</div>
 		</div>
 	</div>
@@ -76,6 +76,8 @@
 
 @section Scripts {
 	<script type="text/javascript">
+		var dataTableMain = {};
+
 		$(document).ready(function () {
 			//$('[data-toggle="tooltip"]').tooltip();
 			$('[data-toggle="tooltip"]').tooltip();
@@ -84,14 +86,124 @@
 				$(this).tooltip('hide'); // Hide the tooltip
 			});
 		});
-		
+
+
+		function fnStartLoading($OrderId, $ProductId) {
+
+			$('#divLoadingScreen input:not(#input_Scan_QR_Code)').val('').trigger('change');
+
+			if (typeof $OrderId != 'undefined' && $OrderId != null && !isNaN(parseFloat($OrderId))
+				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
+				ShowLoader(true);
+				$.ajax({
+					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+
+						ShowLoader(false);
+
+						$('#divLoadingScreen input#Order_Id').val(response.Order_ID).trigger('change');
+						$('#divLoadingScreen input#Order_No').val(response.Order_No).trigger('change');
+						$('#divLoadingScreen input#Ordered_Qty').val(response.Ordered_Qty).trigger('change');
+						$('#divLoadingScreen input#Product_Name').val(response.Product_Name).trigger('change');
+						$('#divLoadingScreen input#Product_Id').val(response.Product_ID).trigger('change');
+						$('#divLoadingScreen input#Ordered_Prod_Qty').val(response.Qty).trigger('change');
+						$('#divLoadingScreen input#Loaded_Prod_Qty').val(response.Loaded_Qty).trigger('change');
+
+						fnGetProductQRCodeList();
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+		}
+
+
+		function fnGetProductQRCodeList() {
+
+			var $OrderId = $('#divLoadingScreen input#Order_Id').val();
+			var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+
+			$('#divLoadingScreen div#divAcceptQRCode').html('');
+			$('#divLoadingScreen div#divRejectQRCode').html('');
+			$('#divLoadingScreen span#spanLoadedQty').html('0');
+			$('#divLoadingScreen span#spanTotalQty').html('0');
+			$('#divLoadingScreen span#spanRejectQty').html('0');
+
+			if (typeof $OrderId != 'undefined' && $OrderId != null && !isNaN(parseFloat($OrderId))
+				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
+				ShowLoader(true);
+				$.ajax({
+					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						ShowLoader(false);
+
+						fnFillTableProductQRCode(response.listQRCode, response.Qty);
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+		}
+
+		function fnFillTableProductQRCode(list, total_qty) {
+			debugger;
+			$('#divLoadingScreen span#spanTotalQty').html(total_qty);
+		}
+
+		$(document).on('input', '#input_Scan_QR_Code', function (e) {
+			e.preventDefault();
+
+			var qr_code = $(this).val();
+
+			qr_code = qr_code.replace(/^https?:\/\/[^\/]+\/?/, "");
+
+			var batchId = $('input[id="Id"]').val();
+
+			if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length >= 15) {
+
+				ShowLoader(true);
+				$.ajax({
+					type: "GET",
+					url: '@Url.Action("Check_QR_Code", "ProductBatch")?qr_code=' + qr_code + '&batchId=' + batchId,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						try { dataTableMain.ajax.reload(); } catch { }
+
+						setTimeout(function () {
+
+							try {
+								if (response.StatusCode === 1) { }
+								else { CommonAlert_Error(response.Message); }
+							} catch { window.location.reload(); }
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					},
+					failure: function (response) { CommonAlert_Error(null) },
+					error: function (response) { CommonAlert_Error(null) }
+				});
+			}
+
+			return false;
+		});
 
 		function fnChange_Order($this, $selector) {
 
 			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
 				ShowLoader(true);
 
-				 
+
 
 
 
@@ -108,7 +220,7 @@
 					data: {},
 					dataType: "json",
 					success: function (response) {
-						debugger;
+
 						ShowLoader(false);
 						$.each(response, function (index, order) {
 							orderDropdown.append('<option value="' + order.Value + '">' + order.Text + '</option>');

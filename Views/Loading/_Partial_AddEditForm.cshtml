@@ -6,68 +6,168 @@
 
 
 <div class="container-fluid">
-<div class="row">
-    <div class="col-12">
-<div class="card card-primary card-outline">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h5 class="mb-0"></i> Product Details</h5>
-            </div>          
-        </div>
-    </div>
+	<div class="row">
+		<div class="col-12">
+			<div class="card card-primary card-outline">
+				<div class="card-header">
+					<div class="row align-items-center">
+						<div class="col-md-6">
+							<h5 class="mb-0"></i> Product Details</h5>
+						</div>
+					</div>
+				</div>
 
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover table_Common_SrNo">
-                <thead>
-                    <tr>
-                        <th style="width:5%">#</th>
-                        <th style="width:30%">Product Name</th>
-                        <th style="width:20%">Package Type</th>
-                        <th style="width:20%">SKU Size Name</th>
-                        <th style="width:15%">Quantity</th>
-                        @* <th style="width:10%">Action</th> *@
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.ObjList != null && Model.ObjList.Count() > 0)
-                    {
-                        
-                        foreach (var item in Model.ObjList.OrderByDescending(x => x.CreatedDate?.Ticks))
-                        {
-                            <tr>
-                                <td></td>
-                                <td>@item.Product_Name</td>
-                                <td>@item.PackageType_Name</td>
-                                <td>@item.SKUSize_Name</td>
-                                <td>@item.Qty</td>
-                                @* Example for action column
-                                <td>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-info btn-sm" 
-                                                onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                </td> *@
-                            </tr>
-                           
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="5" class="text-muted">No records found.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-</div>
-</div>
+				<div class="card-body">
+
+					<div class="row no-gutters">
+						<div class="col-sm-12 table-responsive">
+							<table class="table table-bordered table-hover table_Common_SrNo">
+								<thead>
+									<tr>
+										<th style="width:5%">#</th>
+										<th style="width:30%">Product Name</th>
+										<th style="width:20%">Package Type</th>
+										<th style="width:20%">SKU Size Name</th>
+										<th style="width:15%">Quantity</th>
+										<th style="width:15%">Loaded Qty</th>
+										<th style="width:15%">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model.ObjList != null && Model.ObjList.Count() > 0)
+									{
+
+										foreach (var item in Model.ObjList.OrderByDescending(x => x.CreatedDate?.Ticks))
+										{
+											<tr>
+												<td></td>
+												<td>@item.Product_Name</td>
+												<td>@item.PackageType_Name</td>
+												<td>@item.SKUSize_Name</td>
+												<td>@item.Qty</td>
+												<td>@item.Loaded_Qty</td>
+												<td><div class="btn-group"><button type="button" class="btn btn-success btn-sm" onclick="fnStartLoading(@item.Order_ID, @item.Product_ID)"> Start Loading </button></div></td>
+											</tr>
+
+										}
+									}
+									else
+									{
+										<tr>
+											<td colspan="5" class="text-muted">No records found.</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+
+					</div>
+					<div class="row no-gutters" id="divLoadingScreen">
+						<div class="col-sm-12">
+							<hr />
+							<div class="panel-divider">
+								<span>Loading Screen</span>
+								<div class="row no-gutters">
+									<div class="col-sm-12">
+										<div class="form-group row">
+											<label for="Order_No" class="col-sm-2 col-form-label text-right">Order No. </label>
+											<div class="col-sm-2">
+												<input type="text" class="form-control form-control-sm" id="Order_No" autocomplete="off" value="" readonly>
+												<input type="text" class="form-control form-control-sm d-none" id="Order_Id" autocomplete="off" value="" readonly>
+											</div>
+											<label for="Ordered_Qty" class="col-sm-2 col-form-label text-right">Ordered Total Qty</label>
+											<div class="col-sm-2">
+												<input type="text" class="form-control form-control-sm" id="Ordered_Qty" autocomplete="off" value="" readonly>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label for="Product" class="col-sm-2 col-form-label text-right">Ordered Product </label>
+											<div class="col-sm-2">
+												<input type="text" class="form-control form-control-sm" id="Product_Name" autocomplete="off" value="" readonly>
+												<input type="text" class="form-control form-control-sm d-none" id="Product_Id" autocomplete="off" value="" readonly>
+											</div>
+											<label for="Ordered_Prod_Qty" class="col-sm-2 col-form-label text-right">Ordered Product Qty</label>
+											<div class="col-sm-2">
+												<input type="text" class="form-control form-control-sm" id="Ordered_Prod_Qty" autocomplete="off" value="" readonly>
+											</div>
+											<label for="Loaded_Prod_Qty" class="col-sm-2 col-form-label text-right">Loaded Product Qty</label>
+											<div class="col-sm-2">
+												<input type="text" class="form-control form-control-sm" id="Loaded_Prod_Qty" autocomplete="off" value="" readonly>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label for="input_Scan_QR_Code" class="col-sm-2 col-form-label">Enter OR Code <span class="text-danger">*</span> <span class="float-right">:</span> </label>
+											<div class="col-sm-6">
+												<div class="input-group input-group-sm">
+													<input type="text" id="input_Scan_QR_Code" class="form-control form-control-sm">
+													<span class="input-group-append ml-2">
+														<button type="button" class="btn btn-info btn-flat mr-2" onclick="$('#input_Scan_QR_Code').trigger('input');">Add</button>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row no-gooters">
+									<div class="col-md-6">
+										<div class="card card-success card-outline direct-chat direct-chat-success">
+											<div class="card-header" style="padding: 10px !important;">
+												<h3 class="card-title text-success font-weight-bolder">Accept</h3>
+												<div class="card-tools">
+													<button type="button" class="btn btn-tool"> View All </button>
+												</div>
+											</div>
+											<div class="card-body">
+												<div class="direct-chat-messages">
+													<div class="direct-chat-msg" id="divAcceptQRCode">
+														<div class="direct-chat-infos clearfix text-success">
+															<span class="direct-chat-name float-left" data-no="" data-id="">Alexander Pierce</span>
+															<button type="button" class="direct-chat-timestamp float-right border-0 bg-transparent">
+																<i class="fas fa-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="card-footer">
+												<h3 class="card-title font-weight-bold">Accept Qty : <span id="spanLoadedQty"> 0 </span> / <span id="spanTotalQty"> 0 </span></h3>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="card card-danger card-outline direct-chat direct-chat-danger">
+											<div class="card-header" style="padding: 10px !important;">
+												<h3 class="card-title text-danger font-weight-bolder">Reject</h3>
+												<div class="card-tools">
+													<button type="button" class="btn btn-tool"> View All </button>
+												</div>
+											</div>
+											<div class="card-body">
+												<div class="direct-chat-messages">
+													<div class="direct-chat-msg" id="divRejectQRCode">
+														<div class="direct-chat-infos clearfix text-danger">
+															<span class="direct-chat-name float-left" data-no="" data-id="">Alexander Pierce</span>
+															<button type="button" class="direct-chat-timestamp float-right border-0 bg-transparent">
+																<i class="fas fa-times"></i>
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="card-footer">
+												<h3 class="card-title font-weight-bold">Reject Qty : <span id="spanRejectQty"> 0 </span> </h3>
+											</div>
+										</div>
+									</div>
+									<div class="clearfix"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 
