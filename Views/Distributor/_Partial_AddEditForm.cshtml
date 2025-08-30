@@ -46,6 +46,16 @@
 						</div>
 					</div>
 					<div class="form-group row">
+						<label for="Email" class="col-sm-2 col-form-label">Email <span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" name="Email" data-required data-msg="The Email field is required." autocomplete="off" value="@Model.Obj.Email">
+						</div>
+						<label for="ContactNo" class="col-sm-2 col-form-label">Contact No. <span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm isNumberKey" name="ContactNo" maxlength="11" data-required data-msg="The Contact No. field is required." autocomplete="off" value="@Model.Obj.ContactNo">
+						</div>
+					</div>
+					<div class="form-group row">
 						<label for="Obj.DealerName" class="col-sm-2 col-form-label text-right">GST NO</label>
 						<div class="col-sm-4">
 							<input type="text" class="form-control form-control-sm " id="GSTNumber" name="GSTNumber" value="@Model.Obj.GSTNumber" placeholder="GST NO" autocomplete="off">

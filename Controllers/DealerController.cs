@@ -32,6 +32,8 @@ namespace Seed_Admin.Controllers
 							User_ID = dr["User_ID"] != DBNull.Value ? Convert.ToString(dr["User_ID"]) : "",
 							Password = dr["Password"] != DBNull.Value ? Convert.ToString(dr["Password"]) : "",
 							BusinessName = dr["BusinessName"] != DBNull.Value ? Convert.ToString(dr["BusinessName"]) : "",
+							Email = dr["Email"] != DBNull.Value ? Convert.ToString(dr["Email"]) : "",
+							ContactNo = dr["ContactNo"] != DBNull.Value ? Convert.ToString(dr["ContactNo"]) : "",
 							AadharNumber = dr["AadharNumber"] != DBNull.Value ? Convert.ToString(dr["AadharNumber"]) : "",
 							GSTNumber = dr["GSTNumber"] != DBNull.Value ? Convert.ToString(dr["GSTNumber"]) : "",
 							GeoLatitude = dr["GeoLatitude"] != DBNull.Value ? Convert.ToDecimal(dr["GeoLatitude"]) : 0,
@@ -86,6 +88,8 @@ namespace Seed_Admin.Controllers
 						User_ID = dt.Rows[0]["User_ID"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["User_ID"]) : "",
 						Password = dt.Rows[0]["Password"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Password"]) : "",
 						BusinessName = dt.Rows[0]["BusinessName"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["BusinessName"]) : "",
+						Email = dt.Rows[0]["Email"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Email"]) : "",
+						ContactNo = dt.Rows[0]["ContactNo"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["ContactNo"]) : "",
 						AadharNumber = dt.Rows[0]["AadharNumber"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["AadharNumber"]) : "",
 						GSTNumber = dt.Rows[0]["GSTNumber"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["GSTNumber"]) : "",
 						GeoLatitude = dt.Rows[0]["GeoLatitude"] != DBNull.Value ? Convert.ToDecimal(dt.Rows[0]["GeoLatitude"]) : 0,
@@ -269,6 +273,8 @@ namespace Seed_Admin.Controllers
 				oParams.Add(new SqlParameter("@User_ID", SqlDbType.VarChar) { Value = viewModel.User_ID ?? "" });
 				oParams.Add(new SqlParameter("@Password", SqlDbType.VarChar) { Value = viewModel.Password ?? "" });
 				oParams.Add(new SqlParameter("@BusinessName", SqlDbType.VarChar) { Value = viewModel.BusinessName ?? "" });
+				oParams.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = viewModel.Email ?? "" });
+				oParams.Add(new SqlParameter("@ContactNo", SqlDbType.VarChar) { Value = viewModel.ContactNo ?? "" });
 				oParams.Add(new SqlParameter("@AadharNumber", SqlDbType.VarChar) { Value = viewModel.AadharNumber ?? "" });
 				oParams.Add(new SqlParameter("@GSTNumber", SqlDbType.VarChar) { Value = viewModel.GSTNumber ?? "" });
 				oParams.Add(new SqlParameter("@GeoLatitude", SqlDbType.Decimal) { Value = viewModel.GeoLatitude });

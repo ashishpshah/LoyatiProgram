@@ -7,17 +7,26 @@
 
 
 
+@section Styles {
+	<style>
+		.panel-divider > .form-group.row > .text-right {
+			text-align: right !important;
+		}
+	</style>
+}
+
+
 <div class="content-header">
 	<div class="container-fluid">
 		<div class="row mb-2">
 			<div class="col-sm-6">
 				<h1 class="m-0">Loading</h1>
-			</div>		
+			</div>
 		</div>
 	</div>
 </div>
 <section class="content">
-	<div class="container-fluid">		
+	<div class="container-fluid">
 		<div class="row clearfix pt-2">
 			<div class="col-12">
 				<div class="card card-primary card-outline">
@@ -34,33 +43,33 @@
 											{
 												foreach (SelectListItem_Custom item in Model.SelectListItems.Where(x => x.Group == "DEALER"))
 												{
-													
-														<option value="@item.Value">@item.Text</option>
-													
-													
+
+													<option value="@item.Value">@item.Text</option>
+
+
 												}
 											}
 										</select>
 
 									</div>
-									<label class="form-control-label col-sm-2" style="line-height: 2.5;">Order <span style="color:red" >*</span></label>
+									<label class="form-control-label col-sm-2" style="line-height: 2.5;">Order <span style="color:red">*</span></label>
 									<div class="col-sm-4">
 										<select class="form-control show-tick select2" id="Order_ID" name="Order_ID">
-											<option value="0">-- Select --</option>											
+											<option value="0">-- Select --</option>
 										</select>
 
 									</div>
-										
+
 								</div>
-							</div>						
+							</div>
 						</div>
 					</div>
-					<div class="card-footer text-center">						
-							<button type="button" class="btn btn-info"
-									onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Loading")?User_ID=' + $('#User_ID').val() + '&Order_ID=' + $('#Order_ID').val());">
-								View
-							</button>
-						
+					<div class="card-footer text-center">
+						<button type="button" class="btn btn-info"
+								onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Loading")?User_ID=' + $('#User_ID').val() + '&Order_ID=' + $('#Order_ID').val());">
+							View
+						</button>
+
 					</div>
 				</div>
 			</div>
@@ -68,7 +77,7 @@
 
 		<div class="row clearfix pt-2 divformSave_Display d-none">
 			<div class="col-12">
-				<div class="row no-gutters" id="divformSave"></div>	
+				<div class="row no-gutters" id="divformSave"></div>
 			</div>
 		</div>
 	</div>
@@ -76,6 +85,8 @@
 
 @section Scripts {
 	<script type="text/javascript">
+		var dataTableMain = {};
+
 		$(document).ready(function () {
 			//$('[data-toggle="tooltip"]').tooltip();
 			$('[data-toggle="tooltip"]').tooltip();
@@ -84,14 +95,205 @@
 				$(this).tooltip('hide'); // Hide the tooltip
 			});
 		});
-		
+
+
+		function fnStartLoading($OrderId, $ProductId) {
+
+			//$('#divLoadingScreen input:not(#input_Scan_QR_Code)').val('').trigger('change');
+			$('#divLoadingScreen input').val('').trigger('change');
+			$('#divLoadingScreen').addClass('d-none');
+
+			if (typeof $OrderId != 'undefined' && $OrderId != null && !isNaN(parseFloat($OrderId))
+				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
+				ShowLoader(true);
+				$.ajax({
+					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+
+						ShowLoader(false);
+
+						$('#divLoadingScreen input#Order_Id').val(response.Order_ID).trigger('change');
+						$('#divLoadingScreen input#Order_No').val(response.Order_No).trigger('change');
+						$('#divLoadingScreen input#Ordered_Qty').val(response.Ordered_Qty).trigger('change');
+						$('#divLoadingScreen input#Product_Name').val(response.Product_Name).trigger('change');
+						$('#divLoadingScreen input#Product_Id').val(response.Product_ID).trigger('change');
+						$('#divLoadingScreen input#Ordered_Prod_Qty').val(response.Qty).trigger('change');
+						$('#divLoadingScreen input#Loaded_Prod_Qty').val(response.Loaded_Qty).trigger('change');
+
+						$('#divLoadingScreen').removeClass('d-none');
+						window.scrollTo(0, $('#divLoadingScreen').offset().top);
+
+						fnGetProductQRCodeList();
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+		}
+
+
+		function fnGetProductQRCodeList() {
+
+
+			var $OrderId = $('#divLoadingScreen input#Order_Id').val();
+			var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+
+			$('#divLoadingScreen div#divAcceptQRCode').html('');
+			$('#divLoadingScreen div#divRejectQRCode').html('');
+			$('#divLoadingScreen span#spanLoadedQty').html('0');
+			$('#divLoadingScreen span#spanTotalQty').html('0');
+			$('#divLoadingScreen span#spanRejectQty').html('0');
+
+			if (typeof $OrderId != 'undefined' && $OrderId != null && !isNaN(parseFloat($OrderId))
+				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
+				ShowLoader(true);
+				$.ajax({
+					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					type: 'GET',
+					data: {},
+					dataType: "json",
+					success: function (response) {
+						ShowLoader(false);
+						fnFillTableProductQRCode(response.listQRCode);
+					},
+					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+					error: function () { ShowLoader(false); CommonAlert_Error(null); }
+				});
+			}
+		}
+
+		function fnFillTableProductQRCode(listQRCode) {
+
+			$('#divLoadingScreen span#spanTotalQty').html($('#divLoadingScreen input#Ordered_Prod_Qty').val());
+
+			if (typeof listQRCode != 'undefined' && listQRCode != null && listQRCode.length > 0) {
+				let existingIds = $('#divAcceptQRCode .direct-chat-infos, #divRejectQRCode .direct-chat-infos')
+					.map(function () { return $(this).attr('data-id'); }).get();
+
+				if (Array.isArray(listQRCode) && listQRCode.length > 0) {
+					listQRCode.forEach(function (item) {
+
+						if (existingIds.includes(item.Id.toString())) return;
+
+						let html =
+							'<div class="direct-chat-infos clearfix ' + (item.Status === 'S' ? 'text-success' : 'text-danger') + '" data-id="' + item.Id + '">' +
+							'<span class="direct-chat-name float-left" data-id="' + item.Id + '">' + item.QrCode + '</span>' +
+							'<button type="button" class="direct-chat-timestamp float-right border-0 bg-transparent"> <i class="fas fa-times"></i> </button></div>';
+
+						if (item.Status === 'S') { $('#divAcceptQRCode').prepend(html); }
+						else { $('#divRejectQRCode').prepend(html); }
+					});
+
+					$('#divLoadingScreen span#spanLoadedQty').html(listQRCode.filter(x => x.Status === "S").length);
+					$('#divLoadingScreen input#Loaded_Prod_Qty').val(listQRCode.filter(x => x.Status === "S").length).trigger('change');
+					$('#divLoadingScreen span#spanRejectQty').html(listQRCode.filter(x => x.Status === "R").length);
+				}
+			}
+
+		}
+
+		function fnhideLoadingScreen() {
+			document.getElementById('divLoadingScreen').classList.add('d-none');
+			document.querySelectorAll('#divLoadingScreen input')
+				.forEach(el => {
+					el.value = '';
+					el.dispatchEvent(new Event('change'));
+				});
+
+			document.querySelector('.table_Common_SrNo').scrollIntoView();
+		}
+
+		$(document).on('input', '#input_Scan_QR_Code', function (e) {
+			e.preventDefault();
+
+			var qr_code = $(this).val();
+
+			if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length >= 15) {
+
+				ShowLoader(true);
+
+				qr_code = qr_code.replace(/^https?:\/\/[^\/]+\/?/, "");
+
+				var $OrderId = $('#divLoadingScreen input#Order_Id').val();
+				var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+
+				$.ajax({
+					type: "GET",
+					url: '@Url.Action("Check_QR_Code", "Loading")?qr_code=' + qr_code + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+						setTimeout(function () {
+							$('#input_Scan_QR_Code').val('').trigger('change');
+							try { fnFillTableProductQRCode(response.Data, -1); } catch { }
+							ShowLoader(false);
+						}, 1000);
+					},
+					failure: function (response) { CommonAlert_Error(null) },
+					error: function (response) { CommonAlert_Error(null) }
+				});
+			}
+
+			return false;
+		});
+
+		$(document).on("click", "#divAcceptQRCode .direct-chat-infos .fa-times, #divRejectQRCode .direct-chat-infos .fa-times", function () {
+			let parent = $(this).closest(".direct-chat-infos");
+			let QRCodeId = parent.attr('data-id');
+			let qrCode = parent.find(".direct-chat-name").text().trim();
+
+			Swal.fire({
+				title: "Are you sure?",
+				text: "Do you really want to delete QR Code: " + qrCode + " ?",
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonText: "Yes, delete it!",
+				cancelButtonText: "No, cancel",
+			}).then((result) => {
+				if (result.isConfirmed) {
+
+					ShowLoader(true);
+
+					var $OrderId = $('#divLoadingScreen input#Order_Id').val();
+					var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+
+					$.ajax({
+						type: 'GET',
+						url: '@Url.Action("Delete_QR_Code", "Loading")?qr_code=' + qrCode + '&QRCodeId=' + QRCodeId + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+						data: {},
+						dataType: "json",
+						success: function (response) {
+							setTimeout(function () {
+								if (response.StatusCode === 1) {
+									debugger;
+									parent.remove();
+
+									try { fnFillTableProductQRCode(response.Data, -1); } catch { }
+								}
+								else CommonAlert_Error(response.Message);
+
+								ShowLoader(false);
+							}, 1000);
+						},
+						failure: function () { ShowLoader(false); CommonAlert_Error(null); },
+						error: function () { ShowLoader(false); CommonAlert_Error(null); }
+					});
+
+				}
+			});
+
+		});
 
 		function fnChange_Order($this, $selector) {
 
 			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
 				ShowLoader(true);
 
-				 
+
 
 
 
@@ -108,7 +310,7 @@
 					data: {},
 					dataType: "json",
 					success: function (response) {
-						debugger;
+
 						ShowLoader(false);
 						$.each(response, function (index, order) {
 							orderDropdown.append('<option value="' + order.Value + '">' + order.Text + '</option>');

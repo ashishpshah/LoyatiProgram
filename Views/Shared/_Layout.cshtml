@@ -27,6 +27,10 @@
 
 
 	<style type="text/css">
+		html {
+			scroll-behavior: smooth;
+		}
+
 		.select2-container {
 			width: 100% !important;
 		}
@@ -35,23 +39,23 @@
 			background-color: #007D39 !important;
 		}
 		/*
-																																								[class*=sidebar-dark-] .sidebar a {
-																																									color: #007D39 !important;
-																																								}
+																																												[class*=sidebar-dark-] .sidebar a {
+																																													color: #007D39 !important;
+																																												}
 
-																																								.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-																																									background-color: lightgray !important;
-																																								}
+																																												.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+																																													background-color: lightgray !important;
+																																												}
 
-																																								.navbar-light .navbar-nav .nav-link {
-																																									color: #fff !important;
-																																								}
+																																												.navbar-light .navbar-nav .nav-link {
+																																													color: #fff !important;
+																																												}
 
-																																								[class*=sidebar-dark] .brand-link {
-																																									border-bottom: 0 !important;
-																																									color: rgba(255,255,255,.8);
-																																								}
-																																						 */
+																																												[class*=sidebar-dark] .brand-link {
+																																													border-bottom: 0 !important;
+																																													color: rgba(255,255,255,.8);
+																																												}
+																																										 */
 		.elevation-4 {
 			box-shadow: none !important;
 		}
@@ -65,12 +69,17 @@
 		}
 
 			.panel-divider > span {
-				background: #fff;
+				background: #fff !important;
 				padding: 0 1rem;
 				margin-left: 1rem !important;
 				font-size: 1.25rem;
 				font-weight: bold;
 			}
+
+				.panel-divider > span.right {
+					float: right !important;
+					margin-right: 1rem !important;
+				}
 
 			.panel-divider > div.row {
 				margin: 1rem 2rem 0rem 2rem !important;
@@ -80,11 +89,11 @@
 				line-height: normal !important;
 			}
 
-		@@media (min-width: 576px) {
-			.form-group.row > .text-right {
-				text-align: left !important;
-			}
-		}
+		/* @@media (min-width: 576px) {
+					.form-group.row > .text-right {
+						text-align: left !important;
+					}
+				} */
 
 		table th, table td {
 			align-content: center !important;
@@ -144,6 +153,10 @@
 
 		.swal2-html-container th {
 			background-color: #f2f2f2;
+		}
+
+		.direct-chat-msg, .card-tools {
+			line-height: 1.2 !important;
 		}
 	</style>
 

@@ -150,17 +150,18 @@
 					"bServerSide": true,
 					"bProcessing": true,
 					"bSearchable": true,
-					"order": [[4, 'desc']],
+					"order": [[2, 'desc']],
 					"language": { "sInfoFiltered":'', "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
 					"fnServerParams": function (aoData) {
 						aoData.push({ "name": "BatchId", "value": batchId });
 					},
 					"columns": [
 						{ "title": "#", "data": null, "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+						{ "title": "SrNo", "data": "CreatedDate_Ticks", "autoWidth": false, "searchable": false, "visible": false },
 						{ "title": "QR Code", "data": "QrCode", "autoWidth": true, "searchable": true },
 						{ "title": "Points", "data": "Points", "autoWidth": true, "searchable": true },
 						{ "title": "Product", "data": "Product_Text", "autoWidth": true, "searchable": true },
-						{ "title": "Updated Date & Time", "data": "LastModifiedDate_Text", "autoWidth": true, "searchable": true }
+						{ "title": "Updated Date & Time", "data": "CreatedDate_Text", "autoWidth": true, "searchable": true }
 						,{
 							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
 							"render": function (data, type, row, meta) {
@@ -405,7 +406,11 @@
 					dataType: "json",
 					success: function (response) {
 
-						try { dataTableMain.ajax.reload(); } catch { }
+						try {
+							dataTableMain.ajax.reload(function () {
+								dataTableMain.order([2, 'desc']).draw();
+							}, false);
+						} catch { }
 
 						setTimeout(function () {
 							debugger;

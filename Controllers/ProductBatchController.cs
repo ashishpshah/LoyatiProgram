@@ -298,7 +298,9 @@ namespace Seed_Admin.Areas.Admin.Controllers
                 List<SqlParameter> oParams = new List<SqlParameter>();
 
                 oParams.Add(new SqlParameter("@BatchId", SqlDbType.BigInt) { Value = batchId });
-                oParams.Add(new SqlParameter("@QRCode", SqlDbType.NVarChar) { Value = qr_code });
+				oParams.Add(new SqlParameter("@OrderId", SqlDbType.BigInt) { Value = 0 });
+				oParams.Add(new SqlParameter("@ProductId", SqlDbType.BigInt) { Value = 0 });
+				oParams.Add(new SqlParameter("@QRCode", SqlDbType.NVarChar) { Value = qr_code });
 
                 oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
 

@@ -4,8 +4,10 @@
     {
         public override long Id { get; set; }
         public string User_ID { get; set; }
-        public string Password { get; set; }       
-        public string AadharNumber { get; set; }
+        public string Password { get; set; }
+		public string? Email { get; set; }
+		public string? ContactNo { get; set; }
+		public string AadharNumber { get; set; }
         public string Land_Size { get; set; }     
         public long Country_Id { get; set; }
         public long State_Id { get; set; }

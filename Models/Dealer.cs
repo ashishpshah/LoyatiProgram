@@ -6,7 +6,9 @@
         public string   User_ID { get; set; }
         public string   Password { get; set; }
         public string   BusinessName { get; set; }
-        public string AadharNumber { get; set; }
+		public string? Email { get; set; }
+		public string? ContactNo { get; set; }
+		public string AadharNumber { get; set; }
         public string GSTNumber { get; set; }       
         public decimal GeoLatitude { get; set; }
         public decimal GeoLongitude { get; set; }
