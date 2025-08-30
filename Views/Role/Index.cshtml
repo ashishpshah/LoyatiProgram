@@ -18,7 +18,7 @@
                     @if (Common.IsAdmin() && Model.IsCreate == true)
                     {
                         <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Role")');">
-                            <i class="fas fa-plus"></i> &nbsp; Add new item
+                            <i class="fas fa-plus"></i> &nbsp; Add Role
                         </button>
                     }
                     <button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnCloseParialView('divformSave');">
