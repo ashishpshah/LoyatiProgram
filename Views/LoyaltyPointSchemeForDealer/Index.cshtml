@@ -27,14 +27,14 @@
 	<div class="container-fluid">
 		<div class="row mb-2">
 			<div class="col-sm-6">
-				<h1 class="m-0">LoyaltyPointScheme</h1>
+				<h1 class="m-0">Loyalty Point Scheme for Dealer</h1>
 			</div>
 			<div class="col-sm-6">
 				<div class="float-sm-right">
 					@*@if (Model.IsCreate == true)
 					{*@
-					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPointScheme")');">
-						<i class="fas fa-plus"></i> &nbsp; Add LoyaltyPointScheme
+					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPointSchemeForDealer")');">
+						<i class="fas fa-plus"></i> &nbsp; Add Loyalty Point Scheme for Dealer
 					</button>
 					@*}*@
 				</div>
@@ -46,7 +46,7 @@
 	<div class="container-fluid">
 		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
 			<div class="col-12">
-				<form id="formSave" asp-controller="LoyaltyPointScheme" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+				<form id="formSave" asp-controller="LoyaltyPointSchemeForDealer" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
 					<div class="row no-gutters" id="divformSave"></div>
 					<div class="clearfix"></div>
 					<hr />
@@ -64,14 +64,13 @@
 									<thead>
 										<tr>
 											<th>#</th>
-											@* <th>User ID</th> *@
+											<th>Scheme Name</th>
 											<th>Product Name</th>
 											<th>Package Type</th>
 											<th>SKU Size</th>
-											<th>Min Purchase Quantity</th>
-											<th> Max Purchase Quantity</th>
-											<th> Loyalty Points</th>
-											@* <th> Effective Date</th>											 *@
+											<th>Quantity</th>
+											<th>Loyalty Points</th>
+											<th>Effective Date</th>
 											<th>Action</th>
 										</tr>
 									</thead>
@@ -80,22 +79,20 @@
 										{
 											<tr>
 												<td></td>
-												@* <td>@item.User_ID</td> *@
+												<td>@item.SchemeName</td>
 												<td>@item.Product_Name</td>
 												<td>@item.PackageType_Name</td>
 												<td>@item.SKUSize_Name</td>
-												<td>@item.MinPurchaseQty</td>
 												<td>@item.MaxPurchaseQty</td>
 												<td>@item.LoyaltyPoints</td>
-												@* <td>
-													@(item.EffectiveEndDate != null
-																							? item.EffectiveStartDate?.ToString(Common.DateTimeFormat_ddMMMyyyy) + " - " + item.EffectiveEndDate?.ToString(Common.DateTimeFormat_ddMMMyyyy)
+												<td>
+													@(item.EffectiveEndDate != null ? item.EffectiveStartDate?.ToString(Common.DateTimeFormat_ddMMMyyyy) + " - " + item.EffectiveEndDate?.ToString(Common.DateTimeFormat_ddMMMyyyy)
 																							: item.EffectiveStartDate?.ToString(Common.DateTimeFormat_ddMMMyyyy))
-												</td> *@
+												</td>
 												<td>
 													<div class="btn-group">
 														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
-																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPointScheme")?Id=@item.Id');">
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "LoyaltyPointSchemeForDealer")?Id=@item.Id');">
 															<i class="far fa-edit"></i>
 														</button>
 
@@ -135,15 +132,11 @@
 					$('#SKUSize_ID').empty().append('<option value="0">-- Select --</option>');
 				}
 
-
-
-
-
 				var stateDropdown = $($selector);
 				stateDropdown.empty();
 				stateDropdown.append('<option value="0">-- Select --</option>');
 
-				var $url = '@Url.Action("GetProductDetails", "LoyaltyPointScheme")?Type=' + $type + '&ParentId=' + $($this).val();
+				var $url = '@Url.Action("GetProductDetails", "LoyaltyPointSchemeForDealer")?Type=' + $type + '&ParentId=' + $($this).val();
 
 				if ($type === "PACKTYPE") {
 					$url += "&Product=" + encodeURIComponent($($this).find("option:selected").text());

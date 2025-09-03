@@ -21,8 +21,8 @@ namespace Seed_Admin
 		public static string DateTimeFormat_ddMMyyyy_hhmm => "dd/MM/yyyy hh:mm tt";
 		public static string DateTimeFormat_ddMMyyyy_HHmmss => "dd/MM/yyyy HH:mm:ss";
 		public static string DateTimeFormat_ddMMyyyy_hhmmss => "dd/MM/yyyy hh:mm:ss tt";
-        public static string DateTimeFormat_ddMMMyyyy => "dd-MMM-yyyy";
-        public static string DateTimeFormat_HHmm => "HH:mm";
+		public static string DateTimeFormat_ddMMMyyyy => "dd-MMM-yyyy";
+		public static string DateTimeFormat_HHmm => "HH:mm";
 		public static string DateTimeFormat_HHmmss => "HH:mm:ss";
 		public static string DateTimeFormat_hhmm => "hh:mm tt";
 		public static string DateTimeFormat_hhmmss => "hh:mm:ss tt";
@@ -45,6 +45,9 @@ namespace Seed_Admin
 		public static bool IsUserLogged() => Get_Session_Int(SessionKey.KEY_USER_ID) > 0;
 		public static bool IsSuperAdmin() => Get_Session_Int(SessionKey.KEY_USER_ROLE_ID) == 1;
 		public static bool IsAdmin() => Get_Session_Int(SessionKey.KEY_IS_ADMIN) == 1;
+		public static bool IsDealer() => Get_Session_Int(SessionKey.KEY_IS_Dealer) == 1;
+		public static bool IsDistributor() => Get_Session_Int(SessionKey.KEY_IS_Distributor) == 1;
+		public static bool IsFarmer() => Get_Session_Int(SessionKey.KEY_IS_Farmer) == 1;
 		public static Int64 LoggedUser_Id() => Get_Session_Int(SessionKey.KEY_USER_ID);
 		public static Int64 LoggedUser_RoleId() => Get_Session_Int(SessionKey.KEY_USER_ROLE_ID);
 
@@ -105,15 +108,15 @@ namespace Seed_Admin
 
 		public static string Decrypt(string strText)
 		{
-            if (string.IsNullOrEmpty(strText) ||
-       strText.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) ||
-       strText.EndsWith(".css", StringComparison.OrdinalIgnoreCase) ||
-       strText.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
-            {
-                return string.Empty;
-            }
-            strText = strText.Replace("-_", "=").Replace('-', '+').Replace('_', '/');
-            byte[] byKey = { };
+			if (string.IsNullOrEmpty(strText) ||
+	   strText.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) ||
+	   strText.EndsWith(".css", StringComparison.OrdinalIgnoreCase) ||
+	   strText.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+			{
+				return string.Empty;
+			}
+			strText = strText.Replace("-_", "=").Replace('-', '+').Replace('_', '/');
+			byte[] byKey = { };
 			byte[] IV = {
 							0x12,
 							0x34,

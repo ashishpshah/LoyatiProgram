@@ -11,6 +11,7 @@ public partial class LoyaltyPoint : EntitiesBase
 	public long UserId { get; set; }
 
 	public long QrcodeId { get; set; }
+	public long LoyaltyPointSchemeId { get; set; }
 
 	public decimal Points { get; set; }
 
@@ -22,6 +23,9 @@ public partial class LoyaltyPointViewModel
 {
 	public long UserId { get; set; }
 	public string ClaimedBy { get; set; }
+	public string ProductName { get; set; }
+	public int Qty { get; set; }
+	public int OrderQty { get; set; }
 
 	public long QrCodeId { get; set; }
 	public string QrCode_Base64 { get; set; }

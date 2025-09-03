@@ -8,9 +8,11 @@ namespace Seed_Admin
         public string Dealer_Name { get; set; }
         public string Order_No { get; set; }
         public DateTime ? Order_Date { get; set; }       
-        public string Order_Date_Text { get; set; }       
+        public string Order_Date_Text { get; set; }  
         public decimal ? Total_Qty { get; set; }
-        public List<Order_Detail> list_Order_Details{ get; set; }
+		public string Status { get; set; }
+		public string Status_Text { get; set; }
+		public List<Order_Detail> list_Order_Details{ get; set; }
     }
     public class Order_Detail : EntitiesBase {
         
