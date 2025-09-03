@@ -249,7 +249,7 @@
 										<ul class="nav nav-treeview">
 											@foreach (var menuChild in listMenu.Where(x => x.ParentMenuId == menu.Key.Id).OrderBy(x => x.DisplayOrder))
 											{
-												<li class="nav-item ml-3">
+												<li class="nav-item">
 													@if (string.IsNullOrEmpty(menuChild.Url))
 													{
 														<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.MenuName" class="nav-link">

@@ -5,6 +5,9 @@
 		public static string KEY_USER_ID => "AuthenticatedUser";
 		public static string KEY_IS_SUPER_USER => "AuthenticatedSuperUser";
 		public static string KEY_IS_ADMIN => "AuthenticatedAdminUser";
+		public static string KEY_IS_Dealer => "AuthenticatedUserDealer";
+		public static string KEY_IS_Distributor => "AuthenticatedUserDistributor";
+		public static string KEY_IS_Farmer => "AuthenticatedUserFarmer";
 		public static string KEY_USER_COMPANY_ID => "AuthenticatedUser_Company";
 		public static string KEY_USER_BRANCH_ID => "AuthenticatedUser_Branch";
 		public static string KEY_USER_NAME => "AuthenticatedUser_Name";

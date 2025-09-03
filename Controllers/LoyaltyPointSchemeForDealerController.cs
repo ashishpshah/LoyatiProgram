@@ -5,9 +5,9 @@ using System.Data;
 
 namespace Seed_Admin.Controllers
 {
-	public class LoyaltyPointSchemeController : BaseController<ResponseModel<LoyaltyPointScheme>>
+	public class LoyaltyPointSchemeForDealerController : BaseController<ResponseModel<LoyaltyPointScheme>>
 	{
-		public LoyaltyPointSchemeController(IRepositoryWrapper repository) : base(repository) { }
+		public LoyaltyPointSchemeForDealerController(IRepositoryWrapper repository) : base(repository) { }
 
 		public IActionResult Index()
 		{
@@ -24,7 +24,7 @@ namespace Seed_Admin.Controllers
 
 				if (dt != null && dt.Rows.Count > 0)
 				{
-					foreach (DataRow dr in dt.AsEnumerable().Where(r => r.Field<string>("SchemeFor") == "OTHERS"))
+					foreach (DataRow dr in dt.AsEnumerable().Where(r => r.Field<string>("SchemeFor") == "DEALER"))
 					{
 						CommonViewModel.ObjList.Add(new LoyaltyPointScheme()
 						{
@@ -33,11 +33,11 @@ namespace Seed_Admin.Controllers
 							ProductID = dr["ProductID"] != DBNull.Value ? Convert.ToInt64(dr["ProductID"]) : 0,
 							PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
 							SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
-							MinPurchaseQty = dr["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MinPurchaseQty"]) : 0,
+							//MinPurchaseQty = dr["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MinPurchaseQty"]) : 0,
 							MaxPurchaseQty = dr["MaxPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dr["MaxPurchaseQty"]) : 0,
 							LoyaltyPoints = dr["LoyaltyPoints"] != DBNull.Value ? Convert.ToInt32(dr["LoyaltyPoints"]) : 0,
-							//EffectiveStartDate = dr["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveStartDate"]) : nullDateTime,
-							//EffectiveEndDate = dr["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveEndDate"]) : nullDateTime,
+							EffectiveStartDate = dr["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveStartDate"]) : nullDateTime,
+							EffectiveEndDate = dr["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dr["EffectiveEndDate"]) : nullDateTime,
 							SchemeFor = dr["SchemeFor"] != DBNull.Value ? Convert.ToString(dr["SchemeFor"]) : "",
 							SchemeFor_Text = dr["SchemeFor_Text"] != DBNull.Value ? Convert.ToString(dr["SchemeFor_Text"]) : "",
 							Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",
@@ -72,7 +72,7 @@ namespace Seed_Admin.Controllers
 
 					dt = DataContext_Command.ExecuteStoredProcedure_DataTable("SP_LoyaltyPointScheme_GET", sqlParameters, true);
 
-					if (dt != null && dt.Rows.Count > 0) dt = dt.AsEnumerable().Where(r => r.Field<string>("SchemeFor") == "OTHERS").CopyToDataTable();
+					if (dt != null && dt.Rows.Count > 0) dt = dt.AsEnumerable().Where(r => r.Field<string>("SchemeFor") == "DEALER").CopyToDataTable();
 
 					if (dt != null && dt.Rows.Count > 0)
 					{
@@ -83,11 +83,11 @@ namespace Seed_Admin.Controllers
 							ProductID = dt.Rows[0]["ProductID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["ProductID"]) : 0,
 							PackageType_ID = dt.Rows[0]["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["PackageType_ID"]) : 0,
 							SKUSize_ID = dt.Rows[0]["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["SKUSize_ID"]) : 0,
-							MinPurchaseQty = dt.Rows[0]["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MinPurchaseQty"]) : 0,
+							//MinPurchaseQty = dt.Rows[0]["MinPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MinPurchaseQty"]) : 0,
 							MaxPurchaseQty = dt.Rows[0]["MaxPurchaseQty"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["MaxPurchaseQty"]) : 0,
 							LoyaltyPoints = dt.Rows[0]["LoyaltyPoints"] != DBNull.Value ? Convert.ToInt32(dt.Rows[0]["LoyaltyPoints"]) : 0,
-							//EffectiveStartDate = dt.Rows[0]["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveStartDate"]) : nullDateTime,
-							//EffectiveEndDate = dt.Rows[0]["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveEndDate"]) : nullDateTime,
+							EffectiveStartDate = dt.Rows[0]["EffectiveStartDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveStartDate"]) : nullDateTime,
+							EffectiveEndDate = dt.Rows[0]["EffectiveEndDate"] != DBNull.Value ? Convert.ToDateTime(dt.Rows[0]["EffectiveEndDate"]) : nullDateTime,
 							SchemeFor = dt.Rows[0]["SchemeFor"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["SchemeFor"]) : "",
 							SchemeFor_Text = dt.Rows[0]["SchemeFor_Text"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["SchemeFor_Text"]) : "",
 							Product_Name = dt.Rows[0]["Product_Name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Product_Name"]) : "",
@@ -170,6 +170,15 @@ namespace Seed_Admin.Controllers
 			try
 			{
 
+				if (string.IsNullOrEmpty(viewModel.SchemeName))
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please enter Scheme Name.";
+
+					return Json(CommonViewModel);
+				}
+
 				if (viewModel.ProductID == 0)
 				{
 					CommonViewModel.IsSuccess = false;
@@ -179,19 +188,11 @@ namespace Seed_Admin.Controllers
 					return Json(CommonViewModel);
 				}
 
-				if (viewModel.MinPurchaseQty == 0)
-				{
-					CommonViewModel.IsSuccess = false;
-					CommonViewModel.StatusCode = ResponseStatusCode.Error;
-					CommonViewModel.Message = "Please enter min purchase quanity .";
-
-					return Json(CommonViewModel);
-				}
 				if (viewModel.MaxPurchaseQty == 0)
 				{
 					CommonViewModel.IsSuccess = false;
 					CommonViewModel.StatusCode = ResponseStatusCode.Error;
-					CommonViewModel.Message = "Please enter max purchase quanity .";
+					CommonViewModel.Message = "Please enter quanity .";
 
 					return Json(CommonViewModel);
 				}
@@ -203,14 +204,14 @@ namespace Seed_Admin.Controllers
 
 					return Json(CommonViewModel);
 				}
-				//if (viewModel.EffectiveStartDate == null)
-				//{
-				//	CommonViewModel.IsSuccess = false;
-				//	CommonViewModel.StatusCode = ResponseStatusCode.Error;
-				//	CommonViewModel.Message = "Please select atleast one date.";
+				if (viewModel.EffectiveStartDate == null && viewModel.EffectiveEndDate == null)
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Please select atleast one date.";
 
-				//	return Json(CommonViewModel);
-				//}
+					return Json(CommonViewModel);
+				}
 
 
 				var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
@@ -224,12 +225,12 @@ namespace Seed_Admin.Controllers
 				oParams.Add(new SqlParameter("@ProductID", SqlDbType.BigInt) { Value = viewModel.ProductID });
 				oParams.Add(new SqlParameter("@PackageType_ID", SqlDbType.BigInt) { Value = viewModel.PackageType_ID });
 				oParams.Add(new SqlParameter("@SKUSize_ID", SqlDbType.BigInt) { Value = viewModel.SKUSize_ID });
-				oParams.Add(new SqlParameter("@MinPurchaseQty", SqlDbType.Int) { Value = viewModel.MinPurchaseQty });
+				oParams.Add(new SqlParameter("@MinPurchaseQty", SqlDbType.Int) { Value = null });
 				oParams.Add(new SqlParameter("@MaxPurchaseQty", SqlDbType.Int) { Value = viewModel.MaxPurchaseQty });
 				oParams.Add(new SqlParameter("@LoyaltyPoints", SqlDbType.Int) { Value = viewModel.LoyaltyPoints });
-				oParams.Add(new SqlParameter("@EffectiveStartDate", SqlDbType.DateTime) { Value = /*viewModel.EffectiveStartDate ??*/ null });
-				oParams.Add(new SqlParameter("@EffectiveEndDate", SqlDbType.DateTime) { Value = /*viewModel.EffectiveEndDate ??*/ null });
-				oParams.Add(new SqlParameter("@SchemeFor", SqlDbType.VarChar) { Value = "OTHERS" });
+				oParams.Add(new SqlParameter("@EffectiveStartDate", SqlDbType.DateTime) { Value = viewModel.EffectiveStartDate ?? null });
+				oParams.Add(new SqlParameter("@EffectiveEndDate", SqlDbType.DateTime) { Value = viewModel.EffectiveEndDate ?? null });
+				oParams.Add(new SqlParameter("@SchemeFor", SqlDbType.VarChar) { Value = "DEALER" });
 				oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
 				oParams.Add(new SqlParameter("@Action", SqlDbType.VarChar) { Value = viewModel.Id == 0 ? "INSERT" : "UPDATE" });
 

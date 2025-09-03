@@ -38,7 +38,9 @@ namespace Seed_Admin.Controllers
                             Dealer_Name = dr["Dealer_Name"] !=DBNull.Value ? Convert.ToString(dr["Dealer_Name"]) : "",
                             Order_No = dr["Order_No"] != DBNull.Value ? Convert.ToString(dr["Order_No"]) : "",
                             Order_Date = dr["Order_Date"] != DBNull.Value ? Convert.ToDateTime(dr["Order_Date"]) : nullDateTime,
-                            Total_Qty = dr["Total_Qty"] != DBNull.Value ? Convert.ToDecimal(dr["Total_Qty"]) : 0
+                            Total_Qty = dr["Total_Qty"] != DBNull.Value ? Convert.ToDecimal(dr["Total_Qty"]) : 0,
+                            Status = dr["Status"] != DBNull.Value ? Convert.ToString(dr["Status"]) : "",
+                            Status_Text = dr["Status_Text"] != DBNull.Value ? Convert.ToString(dr["Status_Text"]) : ""
                         });
                     }
                 }
@@ -272,6 +274,7 @@ namespace Seed_Admin.Controllers
                 }
 
                 DataTable orderdetailtable = new DataTable();
+
                 orderdetailtable.Columns.Add("Product_ID", typeof(long));
                 orderdetailtable.Columns.Add("PackageType_ID", typeof(long));
                 orderdetailtable.Columns.Add("SKUSize_ID", typeof(long));

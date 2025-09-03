@@ -13,12 +13,75 @@ namespace Seed_Admin.Controllers
 	{
 		public HomeController(IRepositoryWrapper repository) : base(repository) { }
 
-		public IActionResult Index(string password = "")
+		public IActionResult Index()
 		{
-			//if (!string.IsNullOrEmpty(password)) return Json(Common.Encrypt(password));
-
 			if (!Common.IsUserLogged())
 				return RedirectToAction("Login", "Home", new { Area = "" });
+
+
+			if (Common.IsDealer())
+			{
+				var listOrderDetail = new List<Order_Detail>();
+
+				List<SqlParameter> sqlParameters = new List<SqlParameter>();
+				sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = -1 });
+				sqlParameters.Add(new SqlParameter("@User_Id", SqlDbType.BigInt) { Value = Common.LoggedUser_Id() });
+
+				var ds = DataContext_Command.ExecuteStoredProcedure_DataSet("SP_ORDERS_GET", sqlParameters);
+
+				if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+				{
+					foreach (DataRow dr in ds.Tables[1].Rows)
+					{
+						listOrderDetail.Add(new Order_Detail()
+						{
+							Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
+							Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToInt64(dr["Product_ID"]) : 0,
+							PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
+							SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
+							Qty = dr["Qty"] != DBNull.Value ? Convert.ToDecimal(dr["Qty"]) : 0,
+							Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",
+							PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",
+							SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",
+						});
+					}
+				}
+
+				var dictLoyaltyPoint = _context.Using<LoyaltyPoint>().GetByCondition(x => x.UserId == Common.LoggedUser_Id()).ToList().ToDictionary(x => x.LoyaltyPointSchemeId);
+
+				var listLoyaltyPointScheme = _context.Using<LoyaltyPointScheme>().GetByCondition(x => dictLoyaltyPoint.Keys.Contains(x.Id)).ToList();
+
+				var ids = listLoyaltyPointScheme.Select(x => x.ProductID).Distinct().ToList();
+				var dictProduct = _context.Using<Product>().GetByCondition(x => ids.Contains(x.Id)).ToDictionary(x => x.Id);
+				var dictOrder = listOrderDetail.Where(x => ids.Contains(x.Product_ID)).GroupBy(x => x.Product_ID).ToDictionary(g => g.Key, g => (int)g.Sum(x => x.Qty));
+
+				var list = listLoyaltyPointScheme.Select(x =>
+				{
+					dictLoyaltyPoint.TryGetValue(x.Id, out var lp);
+					dictProduct.TryGetValue(x.ProductID, out var product);
+					dictOrder.TryGetValue(x.ProductID, out var totalQty);
+
+					return new LoyaltyPointViewModel
+					{
+						Points = lp?.Points ?? 0,
+						QrCode = x.SchemeName ?? "",
+						ProductName = product?.Name ?? "",
+						Qty = x?.MaxPurchaseQty ?? 0,
+						OrderQty = totalQty,
+
+						UserId = lp?.UserId ?? 0,
+						ClaimedDate_Ticks = x?.EffectiveStartDate?.Ticks ?? 0,
+						ExpiryDate_Ticks = x?.EffectiveEndDate?.Ticks ?? 0,
+						GenerateDate_Ticks = lp?.CreatedDate?.Ticks ?? 0,
+						ClaimedDate_Text = x?.EffectiveStartDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+						ExpiryDate_Text = x?.EffectiveEndDate?.ToString("dd/MM/yyyy").Replace("-", "/") ?? "",
+						GenerateDate_Text = lp?.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+					};
+				}).ToList();
+
+				CommonViewModel.Data = list.Distinct().ToList();
+			}
+
 
 			return View(CommonViewModel);
 		}
@@ -126,7 +189,9 @@ namespace Seed_Admin.Controllers
 						Common.Set_Session(SessionKey.KEY_USER_ROLE, role.Name);
 						Common.Set_Session_Int(SessionKey.KEY_IS_ADMIN, (role.IsAdmin || obj.RoleId == 1 ? 1 : 0));
 						Common.Set_Session_Int(SessionKey.KEY_IS_SUPER_USER, (obj.RoleId == 1 ? 1 : 0));
-
+						Common.Set_Session_Int(SessionKey.KEY_IS_Dealer, (role.Name.ToLower().Contains("dealer") ? 1 : 0));
+						Common.Set_Session_Int(SessionKey.KEY_IS_Distributor, (role.Name.ToLower().Contains("distributor") ? 1 : 0));
+						Common.Set_Session_Int(SessionKey.KEY_IS_Farmer, (role.Name.ToLower().Contains("farmer") ? 1 : 0));
 
 						List<Plant> plants = (from u in _context.Using<User>().GetAll().ToList()
 											  join m in _context.Using<UserRoleMapping>().GetAll().ToList() on u.Id equals m.UserId

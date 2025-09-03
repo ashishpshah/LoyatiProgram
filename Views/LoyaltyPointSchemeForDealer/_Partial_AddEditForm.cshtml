@@ -8,7 +8,7 @@
 	<div class="card card-primary card-outline">
 
 		<div class="card-header">
-			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") LoyaltyPointScheme</h3>
+			<h3 class="card-title">@(Model.Obj != null && Model.Obj.Id > 0 ? "Edit" : "Create") Loyalty Point Scheme for Dealer</h3>
 			<input type="text" class="form-control d-none" id="Id" name="Id" value="@(Model.Obj != null && Model.Obj.Id > 0 ? Model.Obj.Id.ToString() : "")">
 
 		</div>
@@ -16,6 +16,13 @@
 		<div class="card-body">
 			<div class="row no-gutters">
 				<div class="col-12">
+					<div class="form-group row">
+						<label for="SchemeName" class="col-sm-2 col-form-label text-right">Scheme Name</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm" id="SchemeName" name="SchemeName" autocomplete="off" value="@Model.Obj.SchemeName"
+								   data-required data-msg="The Scheme name field is required.">
+						</div>
+					</div>
 					<div class="form-group row">
 						<label for="Obj.LoyaltyPointSchemeName" class="col-sm-2 col-form-label text-right">Product <span style="color:red">*</span></label>
 						<div class="col-sm-4">
@@ -81,50 +88,45 @@
 								}
 							</select>
 						</div>
+
 					</div>
 					<div class="form-group row">
-						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Min Purchase Quantity</label>
-						<div class="col-sm-4">
-							<input type="text" class="form-control form-control-sm isNumberKey" id="MinPurchaseQty" name="MinPurchaseQty" placeholder="Min Purchase Qty" autocomplete="off" value="@Model.Obj.MinPurchaseQty">
-						</div>
-						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Max Purchase Quantity</label>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Quantity</label>
 						<div class="col-sm-4">
 							<input type="text" class="form-control form-control-sm isNumberKey" id="MaxPurchaseQty" name="MaxPurchaseQty" placeholder="Max Purchase Qty" autocomplete="off" value="@Model.Obj.MaxPurchaseQty">
 						</div>
-					</div>
-					<div class="form-group row">
 						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Loyalty Points</label>
 						<div class="col-sm-4">
 							<input type="text" class="form-control form-control-sm isNumberKey" id="LoyaltyPoints" name="LoyaltyPoints" placeholder="Loyalty Points" autocomplete="off" value="@Model.Obj.LoyaltyPoints">
 						</div>
 					</div>
-					@* <div class="form-group row">
-					<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Effective Start Date<span style="color:red">*</span></label>
-					<div class="col-sm-4">
-					<input type="date"
-					class="form-control form-control-sm"
-					id="EffectiveStartDate"
-					name="EffectiveStartDate"
-					placeholder="Effective Start Date"
-					autocomplete="off"
-					value="@(Model.Obj.EffectiveStartDate.HasValue
-					? Model.Obj.EffectiveStartDate.Value.ToString("yyyy-MM-dd")
-					: string.Empty)">
-					</div>
-					<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Effective End Date</label>
-					<div class="col-sm-4">
-					<input type="date"
-					class="form-control form-control-sm"
-					id="EffectiveEndDate"
-					name="EffectiveEndDate"
-					placeholder="Effective End Date"
-					autocomplete="off"
-					value="@(Model.Obj.EffectiveEndDate.HasValue
-					? Model.Obj.EffectiveEndDate.Value.ToString("yyyy-MM-dd")
-					: string.Empty)">
-					</div>
+					<div class="form-group row">
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Effective Start Date<span style="color:red">*</span></label>
+						<div class="col-sm-4">
+							<input type="date"
+								   class="form-control form-control-sm"
+								   id="EffectiveStartDate"
+								   name="EffectiveStartDate"
+								   placeholder="Effective Start Date"
+								   autocomplete="off"
+								   value="@(Model.Obj.EffectiveStartDate.HasValue
+							 		   ? Model.Obj.EffectiveStartDate.Value.ToString("yyyy-MM-dd")
+                  		   : string.Empty)">
+						</div>
+						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Effective End Date</label>
+						<div class="col-sm-4">
+							<input type="date"
+								   class="form-control form-control-sm"
+								   id="EffectiveEndDate"
+								   name="EffectiveEndDate"
+								   placeholder="Effective End Date"
+								   autocomplete="off"
+								   value="@(Model.Obj.EffectiveEndDate.HasValue
+				  		   ? Model.Obj.EffectiveEndDate.Value.ToString("yyyy-MM-dd")
+                  		   : string.Empty)">
+						</div>
 
-					</div> *@
+					</div>
 				</div>
 
 			</div>

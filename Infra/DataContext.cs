@@ -46,11 +46,20 @@ namespace Seed_Admin.Infra
 
 		public virtual DbSet<Plant> Plants { get; set; }
 
+		public virtual DbSet<LoyaltyPointScheme> LoyaltyPointSchemes { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.HasDefaultSchema("padhyaso_Leoz");
 
             modelBuilder.HasDefaultSchema("padhyaso_seed");
+
+			modelBuilder.Entity<LoyaltyPointScheme>(entity =>
+			{
+				entity.HasKey(e => e.Id).HasName("PK__LoyaltyP__3214EC074DB4FB59");
+
+				entity.ToTable("LoyaltyPointScheme", "dbo");
+			});
 
 			modelBuilder.Entity<Plant>(entity =>
 			{
