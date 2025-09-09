@@ -15,7 +15,7 @@
 			</div>
 			<div class="col-sm-6">
 				<div class="float-sm-right">
-					@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) != "Admin")
+					@if (!Common.IsAdmin())
 					{
 						<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")');">
 							<i class="fas fa-plus"></i> &nbsp; Add Order
@@ -55,7 +55,7 @@
 									<thead>
 										<tr>
 											<th>#</th>
-											@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin")
+											@if (Common.IsAdmin())
 											{
 												<th>Dealer Name</th>
 											}
@@ -75,7 +75,7 @@
 											{
 												<tr>
 													<td></td>
-													@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin")
+													@if (Common.IsAdmin())
 													{
 														<td>@item.Dealer_Name</td>
 													}
@@ -88,14 +88,14 @@
 													<td>
 														<div class="btn-group">
 
-															@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) != "Admin")
+															@if (!Common.IsAdmin())
 															{
 																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
 																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">
 																	<i class="far fa-edit"></i>
 																</button>
 															}
-															@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin")
+															@if (Common.IsAdmin())
 															{
 																<button type="button" class="btn btn-info btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Edit"
 																		onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm", "Orders")?Id=@item.Id');">

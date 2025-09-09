@@ -19,14 +19,14 @@
 					<div class="form-group row">
 						<label for="Obj.OrdersName" class="col-sm-2 col-form-label text-right">Order No<span style="color:red">*</span></label>
 						<div class="col-sm-4">
-							<input type="text" class="form-control form-control-sm" id="Order_No" name="Order_No" value="@Model.Obj.Order_No" placeholder="Order No" autocomplete="off" disabled="@(Model.Obj.Id > 0? true : false)">
+							<input type="text" class="form-control form-control-sm" id="Order_No" name="Order_No" value="@Model.Obj.Order_No" placeholder="Order No" autocomplete="off" @(Model.Obj.Id > 0 ? "readonly" : "")>
 						</div>
 						<label for="Obj.Password" class="col-sm-2 col-form-label text-right">Order Date<span style="color:red">*</span></label>
 						<div class="col-sm-4">
-							<input type="date" class="form-control form-control-sm" id="Order_Date" name="Order_Date" placeholder="Order Date" autocomplete="off" value="@(Model.Obj.Order_Date.HasValue? Model.Obj.Order_Date.Value.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))" disabled="@(Model.Obj.Id > 0 && Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin" ? true : false)">
+							<input type="date" class="form-control form-control-sm" id="Order_Date" name="Order_Date" placeholder="Order Date" autocomplete="off" value="@(Model.Obj.Order_Date.HasValue? Model.Obj.Order_Date.Value.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))" @(Model.Obj.Id > 0 && Common.IsAdmin() ? "readonly" : "")>
 						</div>
 					</div>
-					@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) != "Admin")
+					@if (!Common.IsAdmin())
 					{
 						<div class="form-group row">
 							<div class="float-sm-right">
@@ -36,8 +36,8 @@
 							</div>
 
 						</div>
-					}					
-					@if (Common.Get_Session(SessionKey.KEY_USER_ROLE.ToString()) == "Admin")
+					}
+					@if (Common.IsAdmin())
 					{
 						<div class="table-responsive">
 							<table id="Order_Detail_Table_admin" class="table table-bordered table-striped m-0">
@@ -47,11 +47,11 @@
 										<th width="10%" class="text-center">Product</th>
 										<th width="10%" class="text-center">Package Type</th>
 										<th width="10%" class="text-center">SKU Size</th>
-										<th class="text-center">Quantity</th>										
+										<th class="text-center">Quantity</th>
 									</tr>
 								</thead>
 								<tbody>
-									
+
 									@if (Model.Obj.list_Order_Details != null && Model.Obj.list_Order_Details.Count > 0)
 									{
 
@@ -76,7 +76,7 @@
 											</tr>
 										}
 									}
-									
+
 								</tbody>
 							</table>
 						</div>
