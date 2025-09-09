@@ -40,14 +40,23 @@
 
 										foreach (var item in Model.ObjList.OrderByDescending(x => x.CreatedDate?.Ticks))
 										{
-											<tr>
+											<tr style="@(item.Qty > item.Loaded_Qty ?"":"background-color: rgba(255, 0, 0, 0.3);")" id="tr_@(item.Product_ID + "_"+item.PackageType_ID + "_"+item.SKUSize_ID)">
 												<td></td>
 												<td>@item.Product_Name</td>
 												<td>@item.PackageType_Name</td>
 												<td>@item.SKUSize_Name</td>
 												<td>@item.Qty</td>
 												<td>@item.Loaded_Qty</td>
-												<td><div class="btn-group"><button type="button" class="btn btn-success btn-sm" onclick="fnStartLoading(@item.Order_ID, @item.Product_ID)"> Start Loading </button></div></td>
+												<td>
+													@if (item.Qty > item.Loaded_Qty)
+													{
+														<div class="btn-group"><button type="button" class="btn btn-success btn-sm" onclick="fnStartLoading(@item.Order_ID, @item.Product_ID, @item.PackageType_ID, @item.SKUSize_ID)"> Start Loading </button></div>
+													}
+													else if (item.Qty <= item.Loaded_Qty)
+													{
+														<div class="btn-group"><button type="button" class="btn btn-teal btn-sm" onclick="fnStartLoading(@item.Order_ID, @item.Product_ID, @item.PackageType_ID, @item.SKUSize_ID)"> View Loaded </button></div>
+													}
+												</td>
 												<td hidden></td>
 											</tr>
 
@@ -87,8 +96,8 @@
 												<input type="text" class="form-control form-control-sm" id="Order_No" autocomplete="off" value="" readonly>
 												<input type="text" class="form-control form-control-sm d-none" id="Order_Id" autocomplete="off" value="" readonly>
 											</div>
-											<label for="Ordered_Qty" class="col-sm-2 col-form-label text-right">Ordered Total Qty</label>
-											<div class="col-sm-1">
+											<label for="Ordered_Qty" class="col-sm-2 col-form-label text-right d-none">Ordered Total Qty</label>
+											<div class="col-sm-1 d-none">
 												<input type="text" class="form-control form-control-sm" id="Ordered_Qty" autocomplete="off" value="" readonly>
 											</div>
 										</div>
@@ -97,6 +106,8 @@
 											<div class="col-sm-2">
 												<input type="text" class="form-control form-control-sm" id="Product_Name" autocomplete="off" value="" readonly>
 												<input type="text" class="form-control form-control-sm d-none" id="Product_Id" autocomplete="off" value="" readonly>
+												<input type="text" class="form-control form-control-sm d-none" id="PackageType_Id" autocomplete="off" value="" readonly>
+												<input type="text" class="form-control form-control-sm d-none" id="SKUSize_Id" autocomplete="off" value="" readonly>
 											</div>
 											<label for="Ordered_Prod_Qty" class="col-sm-2 col-form-label text-right">Ordered Product Qty</label>
 											<div class="col-sm-1">

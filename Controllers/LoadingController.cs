@@ -118,26 +118,20 @@ namespace Seed_Admin.Controllers
 						});
 					}
 				}
-
-
-
 			}
 			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
-
-
 
 			return PartialView("_Partial_AddEditForm", CommonViewModel);
 		}
 
 
 		[HttpGet]
-		public IActionResult GetOrderProductDetails(long OrderId = 0, long ProductId = 0)
+		public IActionResult GetOrderProductDetails(long OrderId = 0, long ProductId = 0, long PackageTypeId = 0, long SKUSizeId = 0)
 		{
 			var obj = new Loading();
 
 			try
 			{
-
 				List<SqlParameter> sqlParameters = new List<SqlParameter>();
 
 				sqlParameters.Add(new SqlParameter("@Order_ID", SqlDbType.BigInt) { Value = OrderId });
@@ -147,7 +141,7 @@ namespace Seed_Admin.Controllers
 
 				if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
 				{
-					int rowIndex = ds.Tables[0].Rows.IndexOf(ds.Tables[0].AsEnumerable().FirstOrDefault(r => r.Field<long>("Product_ID") == ProductId));
+					int rowIndex = ds.Tables[0].Rows.IndexOf(ds.Tables[0].AsEnumerable().FirstOrDefault(r => r.Field<long>("Product_ID") == ProductId && r.Field<long>("PackageType_ID") == PackageTypeId && r.Field<long>("SKUSize_ID") == SKUSizeId));
 
 					obj = new Loading()
 					{
@@ -171,7 +165,7 @@ namespace Seed_Admin.Controllers
 				{
 					obj.listQRCode = new List<ProductQrCode>();
 
-					foreach (DataRow row in ds.Tables[1].AsEnumerable().Where(r => r.Field<long>("Product_ID") == ProductId))
+					foreach (DataRow row in ds.Tables[1].AsEnumerable().Where(r => r.Field<long>("Product_ID") == ProductId && r.Field<long>("PackageType_ID") == PackageTypeId && r.Field<long>("SKUSize_ID") == SKUSizeId))
 					{
 						//int srNo = row["SrNo"] != DBNull.Value ? Convert.ToInt32(row["SrNo"]) : 0;
 						//long qrCodeId = row["Product_QR_Code_Id"] != DBNull.Value ? Convert.ToInt64(row["Product_QR_Code_Id"]) : 0;
@@ -198,7 +192,7 @@ namespace Seed_Admin.Controllers
 
 		[HttpGet]
 		//[CustomAuthorizeAttribute(AccessType_Enum.Write)]
-		public ActionResult Check_QR_Code(string qr_code, long OrderId, long ProductId)
+		public ActionResult Check_QR_Code(string qr_code, long OrderId, long ProductId, long PackageTypeId, long SKUSizeId)
 		{
 			try
 			{
@@ -249,6 +243,8 @@ namespace Seed_Admin.Controllers
 				oParams.Add(new SqlParameter("@BatchId", SqlDbType.BigInt) { Value = 0 });
 				oParams.Add(new SqlParameter("@OrderId", SqlDbType.BigInt) { Value = OrderId });
 				oParams.Add(new SqlParameter("@ProductId", SqlDbType.BigInt) { Value = ProductId });
+				oParams.Add(new SqlParameter("@PackageTypeId", SqlDbType.BigInt) { Value = PackageTypeId });
+				oParams.Add(new SqlParameter("@SKUSizeId", SqlDbType.BigInt) { Value = SKUSizeId });
 				oParams.Add(new SqlParameter("@QRCode", SqlDbType.NVarChar) { Value = qr_code });
 
 				oParams.Add(new SqlParameter("@Operated_By", SqlDbType.BigInt) { Value = AppHttpContextAccessor.GetSession(SessionKey.KEY_USER_ID) });
@@ -259,6 +255,7 @@ namespace Seed_Admin.Controllers
 				CommonViewModel.IsSuccess = IsSuccess;
 				CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
 				CommonViewModel.Message = response;
+				CommonViewModel.Data1 = Id;
 
 				if (ds != null && ds.Tables != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
 				{
@@ -299,7 +296,7 @@ namespace Seed_Admin.Controllers
 
 		[HttpGet]
 		//[CustomAuthorizeAttribute(AccessType_Enum.Write)]
-		public ActionResult Delete_QR_Code(string qr_code, long QRCodeId, long OrderId, long ProductId)
+		public ActionResult Delete_QR_Code(string qr_code, long QRCodeId, long OrderId, long ProductId, long PackageTypeId, long SKUSizeId)
 		{
 			try
 			{
@@ -322,7 +319,7 @@ namespace Seed_Admin.Controllers
 
 					return Json(CommonViewModel);
 				}
-				
+
 				if (OrderId <= 0)
 				{
 					CommonViewModel.IsSuccess = false;
@@ -350,6 +347,8 @@ namespace Seed_Admin.Controllers
 				oParams.Add(new SqlParameter("@BatchId", SqlDbType.BigInt) { Value = 0 });
 				oParams.Add(new SqlParameter("@OrderId", SqlDbType.BigInt) { Value = OrderId });
 				oParams.Add(new SqlParameter("@ProductId", SqlDbType.BigInt) { Value = ProductId });
+				oParams.Add(new SqlParameter("@PackageTypeId", SqlDbType.BigInt) { Value = PackageTypeId });
+				oParams.Add(new SqlParameter("@SKUSizeId", SqlDbType.BigInt) { Value = SKUSizeId });
 				oParams.Add(new SqlParameter("@QRCode", SqlDbType.NVarChar) { Value = qr_code });
 				oParams.Add(new SqlParameter("@OrderLoadingId", SqlDbType.BigInt) { Value = QRCodeId });
 

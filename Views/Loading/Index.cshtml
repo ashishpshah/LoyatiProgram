@@ -97,7 +97,7 @@
 		});
 
 
-		function fnStartLoading($OrderId, $ProductId) {
+		function fnStartLoading($OrderId, $ProductId, $PackageTypeId, $SKUSizeId) {
 
 			//$('#divLoadingScreen input:not(#input_Scan_QR_Code)').val('').trigger('change');
 			$('#divLoadingScreen input').val('').trigger('change');
@@ -107,7 +107,7 @@
 				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
 				ShowLoader(true);
 				$.ajax({
-					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId + '&PackageTypeId=' + $PackageTypeId + '&SKUSizeId=' + $SKUSizeId,
 					type: 'GET',
 					data: {},
 					dataType: "json",
@@ -120,6 +120,8 @@
 						$('#divLoadingScreen input#Ordered_Qty').val(response.Ordered_Qty).trigger('change');
 						$('#divLoadingScreen input#Product_Name').val(response.Product_Name).trigger('change');
 						$('#divLoadingScreen input#Product_Id').val(response.Product_ID).trigger('change');
+						$('#divLoadingScreen input#PackageType_Id').val(response.PackageType_ID).trigger('change');
+						$('#divLoadingScreen input#SKUSize_Id').val(response.SKUSize_ID).trigger('change');
 						$('#divLoadingScreen input#Ordered_Prod_Qty').val(response.Qty).trigger('change');
 						$('#divLoadingScreen input#Loaded_Prod_Qty').val(response.Loaded_Qty).trigger('change');
 
@@ -140,6 +142,8 @@
 
 			var $OrderId = $('#divLoadingScreen input#Order_Id').val();
 			var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+			var $PackageTypeId = $('#divLoadingScreen input#PackageType_Id').val();
+			var $SKUSizeId = $('#divLoadingScreen input#SKUSize_Id').val();
 
 			$('#divLoadingScreen div#divAcceptQRCode').html('');
 			$('#divLoadingScreen div#divRejectQRCode').html('');
@@ -151,13 +155,21 @@
 				&& typeof $ProductId != 'undefined' && $ProductId != null && !isNaN(parseFloat($ProductId))) {
 				ShowLoader(true);
 				$.ajax({
-					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					url: '@Url.Action("GetOrderProductDetails", "Loading")?OrderId=' + $OrderId + '&ProductId=' + $ProductId + '&PackageTypeId=' + $PackageTypeId + '&SKUSizeId=' + $SKUSizeId,
 					type: 'GET',
 					data: {},
 					dataType: "json",
 					success: function (response) {
 						ShowLoader(false);
-						fnFillTableProductQRCode(response.listQRCode);
+						try {
+							debugger
+							if (typeof response.Qty != 'undefined' && response.Qty != null && !isNaN(parseInt(response.Qty)) && response.Qty > 0 &&
+								typeof response.Loaded_Qty != 'undefined' && response.Loaded_Qty != null && !isNaN(parseInt(response.Loaded_Qty)) && response.Loaded_Qty > 0
+								&& parseInt(response.Qty) <= parseInt(response.Loaded_Qty)) {
+								CommonAlert_Success('Loading Completed');
+							}
+						} catch { }
+						try { fnFillTableProductQRCode(response.listQRCode); } catch { }
 					},
 					failure: function () { ShowLoader(false); CommonAlert_Error(null); },
 					error: function () { ShowLoader(false); CommonAlert_Error(null); }
@@ -219,18 +231,28 @@
 
 				var $OrderId = $('#divLoadingScreen input#Order_Id').val();
 				var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+				var $PackageTypeId = $('#divLoadingScreen input#PackageType_Id').val();
+				var $SKUSizeId = $('#divLoadingScreen input#SKUSize_Id').val();
 
 				$.ajax({
 					type: "GET",
-					url: '@Url.Action("Check_QR_Code", "Loading")?qr_code=' + qr_code + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+					url: '@Url.Action("Check_QR_Code", "Loading")?qr_code=' + qr_code + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId + '&PackageTypeId=' + $PackageTypeId + '&SKUSizeId=' + $SKUSizeId,
 					data: null,
 					contentType: "application/json; charset=utf-8",
 					dataType: "json",
 					success: function (response) {
 						setTimeout(function () {
-							$('#input_Scan_QR_Code').val('').trigger('change');
-							try { fnFillTableProductQRCode(response.Data, -1); } catch { }
 							ShowLoader(false);
+							if (response.IsSuccess == false) CommonAlert_Error(response.Message);
+
+							$('#input_Scan_QR_Code').val('').trigger('change');
+							try {
+								debugger
+								if (typeof response.Data1 != 'undefined' && response.Data1 != null && !isNaN(parseFloat(response.Data1)) && response.Data1 < 0) {
+									CommonConfirmed_Success(response.Message, fnStartLoading, [$OrderId, $ProductId, $PackageTypeId, $SKUSizeId]);
+								}
+							} catch { }
+							try { fnFillTableProductQRCode(response.Data); } catch { }
 						}, 1000);
 					},
 					failure: function (response) { CommonAlert_Error(null) },
@@ -260,10 +282,12 @@
 
 					var $OrderId = $('#divLoadingScreen input#Order_Id').val();
 					var $ProductId = $('#divLoadingScreen input#Product_Id').val();
+					var $PackageTypeId = $('#divLoadingScreen input#PackageType_Id').val();
+					var $SKUSizeId = $('#divLoadingScreen input#SKUSize_Id').val();
 
 					$.ajax({
 						type: 'GET',
-						url: '@Url.Action("Delete_QR_Code", "Loading")?qr_code=' + qrCode + '&QRCodeId=' + QRCodeId + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId,
+						url: '@Url.Action("Delete_QR_Code", "Loading")?qr_code=' + qrCode + '&QRCodeId=' + QRCodeId + '&OrderId=' + $OrderId + '&ProductId=' + $ProductId + '&PackageTypeId=' + $PackageTypeId + '&SKUSizeId=' + $SKUSizeId,
 						data: {},
 						dataType: "json",
 						success: function (response) {
@@ -272,7 +296,7 @@
 									debugger;
 									parent.remove();
 
-									try { fnFillTableProductQRCode(response.Data, -1); } catch { }
+									try { fnFillTableProductQRCode(response.Data); } catch { }
 								}
 								else CommonAlert_Error(response.Message);
 
