@@ -103,6 +103,35 @@
 					</div>
 				}
 			</div>
+
+
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card card-danger">
+						<div class="card-header">
+							<h3 class="card-title">Scheme(s) Information</h3>
+							<div class="card-tools"> </div>
+						</div>
+						<div class="card-body">
+							<div class="row chartSchemes">
+								@if (Model.Data2 != null)
+								{
+									@for (int i = 0; i < (Model.Data2.Count > 5 ? 5 : Model.Data2.Count); i++)
+									{
+										<div class="col-md-4">
+											<canvas id="chartScheme_@i" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"
+													data-title="@(Model.Data2[i].SchemeName + " - " + Model.Data2[i].Product + " " + Model.Data2[i].SKUSize + " " + Model.Data2[i].PackageType + " - for " + Model.Data2[i].TotalEarnedPoints + " points")"
+													data-per="@(Math.Round(Model.Data2[i].TotalOrderQty / Model.Data2[i].MaxPurchaseQty, 2) * 100)"
+													data-min="@Model.Data2[i].TotalOrderQty" data-max="@Model.Data2[i].MaxPurchaseQty"></canvas>
+										</div>
+									}
+								}
+							</div>
+						</div>
+						<!-- /.card-body -->
+					</div>
+				</div>
+			</div>
 		}
 		else
 		{
@@ -225,6 +254,7 @@
 			</div>
 		}
 	</div>
+
 </section>
 
 @if (Common.IsDealer()) { }
@@ -242,28 +272,28 @@ else
 				Swal.fire({
 					title: 'Product Details',
 					html: `
-																									<table>
-																									  <thead>
-																										<tr>
-																										  <th>Product Name</th>
-																										  <th>Pkg Type</th>
-																										  <th>SKU</th>
-																										</tr>
-																									  </thead>
-																									  <tbody>
-																										<tr>
-																										  <td>Red Chilli Seed</td>
-																										  <td>Jar</td>
-																										  <td>100 g</td>
-																										</tr>
-																										<tr>
-																										  <td>Potato Seed</td>
-																										  <td>Pouch</td>
-																										  <td>20 g</td>
-																										</tr>
-																									  </tbody>
-																									</table>
-																								  `,
+																																													<table>
+																																													  <thead>
+																																														<tr>
+																																														  <th>Product Name</th>
+																																														  <th>Pkg Type</th>
+																																														  <th>SKU</th>
+																																														</tr>
+																																													  </thead>
+																																													  <tbody>
+																																														<tr>
+																																														  <td>Red Chilli Seed</td>
+																																														  <td>Jar</td>
+																																														  <td>100 g</td>
+																																														</tr>
+																																														<tr>
+																																														  <td>Potato Seed</td>
+																																														  <td>Pouch</td>
+																																														  <td>20 g</td>
+																																														</tr>
+																																													  </tbody>
+																																													</table>
+																																												  `,
 					width: 600,
 					icon: 'info',
 					confirmButtonText: 'OK'
@@ -274,4 +304,64 @@ else
 
 
 	}
+}
+
+@section Scripts {
+	<script src="~/plugins/chart.js/chart.min.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+			debugger;
+			$('.chartSchemes canvas').each(function (index, ele) {
+				var $canvas = $(this);
+
+				// Read attributes
+				var percent = parseFloat($canvas.attr('data-per'));
+				var title = $canvas.attr('data-title');
+
+			debugger;
+				// Determine color dynamically (descending order example)
+				var filledColor =
+					index % 5 == 0 ? "rgba(40,167,69,1)" :
+					index % 4 == 0 ? "rgba(0,128,128,1)" :
+					index % 3 == 0 ? "rgba(173,216,230,1)" :
+					index % 2 == 0 ? "rgba(128,0,128,1)" : "rgba(128,0,128,1)" ;
+
+				var ctx = $canvas[0].getContext('2d');
+
+				new Chart(ctx, {
+					type: 'doughnut',
+					data: {
+						  labels: [title],
+						datasets: [{
+							data: [percent, 100 - percent],
+							backgroundColor: [
+								filledColor,
+								'rgba(200,200,200,0.2)'
+							],
+							borderWidth: 0
+						}]
+					},
+					options: {
+						cutout: '70%',
+						plugins: {
+							legend: { display: false },
+							tooltip: { enabled: false },
+							// optional: show title in center
+							beforeDraw: function(chart) {
+								var width = chart.width,
+									height = chart.height,
+									ctx = chart.ctx;
+								ctx.restore();
+								ctx.font = "bold 16px sans-serif";
+								ctx.textAlign = "center";
+								ctx.fillText(title + " " + percent + "%", width/2, height/2);
+								ctx.save();
+							}
+						}
+					}
+				});
+			});
+		})
+	</script>
 }
