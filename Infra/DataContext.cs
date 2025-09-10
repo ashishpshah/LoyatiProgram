@@ -48,11 +48,25 @@ namespace Seed_Admin.Infra
 
 		public virtual DbSet<LoyaltyPointScheme> LoyaltyPointSchemes { get; set; }
 
+		public virtual DbSet<LoyaltyPointSchemeUser> LoyaltyPointSchemeUsers { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.HasDefaultSchema("padhyaso_Leoz");
 
             modelBuilder.HasDefaultSchema("padhyaso_seed");
+
+			modelBuilder.Entity<LoyaltyPointSchemeUser>(entity =>
+			{
+				entity.HasNoKey().ToTable("LoyaltyPointScheme_User", "dbo");
+
+				entity.Property(e => e.OrderDetailId).HasColumnName("Order_Detail_Id");
+				entity.Property(e => e.OrderId).HasColumnName("Order_Id");
+				entity.Property(e => e.PackageTypeId).HasColumnName("PackageType_Id");
+				entity.Property(e => e.Points).HasColumnType("decimal(18, 0)");
+				entity.Property(e => e.ProductId).HasColumnName("Product_Id");
+				entity.Property(e => e.SkusizeId).HasColumnName("SKUSize_Id");
+			});
 
 			modelBuilder.Entity<LoyaltyPointScheme>(entity =>
 			{

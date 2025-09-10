@@ -18,7 +18,6 @@ namespace Seed_Admin.Controllers
 			if (!Common.IsUserLogged())
 				return RedirectToAction("Login", "Home", new { Area = "" });
 
-
 			if (Common.IsDealer())
 			{
 				var listOrderDetail = new List<Order_Detail>();
@@ -36,6 +35,7 @@ namespace Seed_Admin.Controllers
 						listOrderDetail.Add(new Order_Detail()
 						{
 							Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
+							Order_ID = dr["Order_ID"] != DBNull.Value ? Convert.ToInt64(dr["Order_ID"]) : 0,
 							Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToInt64(dr["Product_ID"]) : 0,
 							PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
 							SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
@@ -43,44 +43,192 @@ namespace Seed_Admin.Controllers
 							Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",
 							PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",
 							SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",
+							Order_No = dr["Order_No"] != DBNull.Value ? Convert.ToString(dr["Order_No"]) : "",
+							Order_Status = dr["Order_Status"] != DBNull.Value ? Convert.ToString(dr["Order_Status"]) : "",
+							Order_Date = dr["Order_Date"] != DBNull.Value ? Convert.ToDateTime(dr["Order_Date"]) : nullDateTime,
 						});
 					}
 				}
 
-				var dictLoyaltyPoint = _context.Using<LoyaltyPoint>().GetByCondition(x => x.UserId == Common.LoggedUser_Id()).ToList().ToDictionary(x => x.LoyaltyPointSchemeId);
+				(decimal totalPoints, decimal currentMonthPoints, decimal lastMonthPoints, int totalOrders, int currentMonthOrders, int lastMonthOrders) data1 = (0, 0, 0, 0, 0, 0);
 
-				var listLoyaltyPointScheme = _context.Using<LoyaltyPointScheme>().GetByCondition(x => dictLoyaltyPoint.Keys.Contains(x.Id)).ToList();
+				var dictLoyaltyPoint = _context.Using<LoyaltyPointSchemeUser>().GetByCondition(x => x.UserId == Common.LoggedUser_Id()).ToList().ToDictionary(x => x.LoyaltyPointSchemeId);
 
-				var ids = listLoyaltyPointScheme.Select(x => x.ProductID).Distinct().ToList();
-				var dictProduct = _context.Using<Product>().GetByCondition(x => ids.Contains(x.Id)).ToDictionary(x => x.Id);
-				var dictOrder = listOrderDetail.Where(x => ids.Contains(x.Product_ID)).GroupBy(x => x.Product_ID).ToDictionary(g => g.Key, g => (int)g.Sum(x => x.Qty));
+				data1.totalPoints = dictLoyaltyPoint.Values.Sum(x => x.Points);
 
-				var list = listLoyaltyPointScheme.Select(x =>
-				{
-					dictLoyaltyPoint.TryGetValue(x.Id, out var lp);
-					dictProduct.TryGetValue(x.ProductID, out var product);
-					dictOrder.TryGetValue(x.ProductID, out var totalQty);
+				data1.totalOrders = listOrderDetail.Count();
 
-					return new LoyaltyPointViewModel
-					{
-						Points = lp?.Points ?? 0,
-						QrCode = x.SchemeName ?? "",
-						ProductName = product?.Name ?? "",
-						Qty = x?.MaxPurchaseQty ?? 0,
-						OrderQty = totalQty,
+				var now = DateTime.Now;
 
-						UserId = lp?.UserId ?? 0,
-						ClaimedDate_Ticks = x?.EffectiveStartDate?.Ticks ?? 0,
-						ExpiryDate_Ticks = x?.EffectiveEndDate?.Ticks ?? 0,
-						GenerateDate_Ticks = lp?.CreatedDate?.Ticks ?? 0,
-						ClaimedDate_Text = x?.EffectiveStartDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
-						ExpiryDate_Text = x?.EffectiveEndDate?.ToString("dd/MM/yyyy").Replace("-", "/") ?? "",
-						GenerateDate_Text = lp?.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
-					};
-				}).ToList();
+				data1.currentMonthPoints = dictLoyaltyPoint.Values.Where(x => x.EarnedDateTime.Year == now.Year && x.EarnedDateTime.Month == now.Month).Sum(x => x.Points);
 
-				CommonViewModel.Data = list.Distinct().ToList();
+				data1.lastMonthPoints = dictLoyaltyPoint.Values.Where(x => x.EarnedDateTime.Year == now.AddMonths(-1).Year && x.EarnedDateTime.Month == now.AddMonths(-1).Month).Sum(x => x.Points);
+
+				data1.currentMonthOrders = listOrderDetail.Where(x => x.Order_Date?.Year == now.Year && x.Order_Date?.Month == now.Month).Count();
+
+				data1.lastMonthOrders = listOrderDetail.Where(x => x.Order_Date?.Year == now.AddMonths(-1).Year && x.Order_Date?.Month == now.AddMonths(-1).Month).Count();
+
+				CommonViewModel.Data1 = data1;
+
+				var listLoyaltyPointScheme = _context.Using<LoyaltyPointScheme>().GetByCondition(x => !string.IsNullOrEmpty(x.SchemeFor) && x.IsActive).ToList();
+
+				//var schemeList =
+				//		(from od in listOrderDetail
+				//		 join lps in listLoyaltyPointScheme on (od.Product_ID, od.PackageType_ID, od.SKUSize_ID) equals (lps.ProductID, lps.PackageType_ID, lps.SKUSize_ID)
+				//		 where od.Order_Status == "PEND"
+				//			   && lps.IsActive
+				//			   && lps.SchemeFor == "DEALER"
+				//			   && od.Order_Date >= lps.EffectiveStartDate
+				//			   && od.Order_Date <= lps.EffectiveEndDate
+				//			   //&& ((od.Qty ?? 0) - (lps.MaxPurchaseQty ?? 0)) < 0
+				//		 select new
+				//		 {
+				//			 OrderId = od.Order_ID,
+				//			 od.Order_No,
+				//			 od.Order_Date,
+				//			 Product = od.Product_Name,
+				//			 PackageType = od.PackageType_Name,
+				//			 SKUSize = od.SKUSize_Name,
+				//			 OrderQty = (od.Qty ?? 0) < (lps.MaxPurchaseQty ?? 0) ? (od.Qty ?? 0) : (lps.MaxPurchaseQty ?? 0),
+				//			 lps.Id,
+				//			 lps.SchemeName,
+				//			 lps.MaxPurchaseQty,
+				//			 lps.LoyaltyPoints,
+				//			 EarnedPoints = lps.LoyaltyPoints,
+				//			 //Difference = Math.Abs(((od.Qty ?? 0) - (lps.MaxPurchaseQty ?? 0)))// closeness metric
+				//		 })
+				//		.ToList();
+
+				var schemeList =
+					(from lps in listLoyaltyPointScheme
+					 join od in listOrderDetail
+						 on (lps.ProductID, lps.PackageType_ID, lps.SKUSize_ID) equals (od.Product_ID, od.PackageType_ID, od.SKUSize_ID)
+					 where od.Order_Status == "PEND"
+						   && lps.IsActive
+						   && lps.SchemeFor == "DEALER"
+						   && od.Order_Date >= lps.EffectiveStartDate
+						   && od.Order_Date <= lps.EffectiveEndDate
+					 group new { lps, od } by new
+					 {
+						 lps.SchemeName,
+						 Product = od.Product_Name,
+						 PackageType = od.PackageType_Name,
+						 SKUSize = od.SKUSize_Name
+					 }
+					 into g
+					 select new
+					 {
+						 g.Key.SchemeName,
+						 g.Key.Product,
+						 g.Key.PackageType,
+						 g.Key.SKUSize,
+
+						 // sum the allowed order quantity across details
+						 TotalOrderQty = g.Sum(x =>
+							 (x.od.Qty ?? 0) < (x.lps.MaxPurchaseQty ?? 0)
+								 ? (x.od.Qty ?? 0)
+								 : (x.lps.MaxPurchaseQty ?? 0)),
+						 MaxPurchaseQty = g.Sum(x => x.lps.MaxPurchaseQty),
+						 // you can either multiply points by order qty or just sum scheme points
+						 TotalEarnedPoints = g.Sum(x => x.lps.LoyaltyPoints)
+					 })
+					.ToList();
+
+
+				CommonViewModel.Data2 = schemeList;
+
+				//var ids = dictLoyaltyPoint.Select(x => x.Value.ProductId).Distinct().ToList();
+				//var dictProduct = _context.Using<Product>().GetByCondition(x => ids.Contains(x.Id)).ToDictionary(x => x.Id);
+				//var dictOrder = listOrderDetail.Where(x => ids.Contains(x.Product_ID)).GroupBy(x => x.Product_ID).ToDictionary(g => g.Key, g => (int)g.Sum(x => x.Qty));
+
+				//var list = listLoyaltyPointScheme.Select(x =>
+				//{
+				//	dictLoyaltyPoint.TryGetValue(x.Id, out var lp);
+				//	dictProduct.TryGetValue(x.ProductID, out var product);
+				//	dictOrder.TryGetValue(x.ProductID, out var totalQty);
+
+				//	return new LoyaltyPointViewModel
+				//	{
+				//		Points = lp?.Points ?? 0,
+				//		QrCode = x.SchemeName ?? "",
+				//		ProductName = product?.Name ?? "",
+				//		Qty = x?.MaxPurchaseQty ?? 0,
+				//		OrderQty = totalQty,
+
+				//		UserId = lp?.UserId ?? 0,
+				//		ClaimedDate_Ticks = x?.EffectiveStartDate?.Ticks ?? 0,
+				//		ExpiryDate_Ticks = x?.EffectiveEndDate?.Ticks ?? 0,
+				//		GenerateDate_Ticks = lp?.EarnedDateTime.Ticks ?? 0,
+				//		ClaimedDate_Text = x?.EffectiveStartDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+				//		ExpiryDate_Text = x?.EffectiveEndDate?.ToString("dd/MM/yyyy").Replace("-", "/") ?? "",
+				//		GenerateDate_Text = lp?.EarnedDateTime.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+				//	};
+				//}).ToList();
+
+				//CommonViewModel.Data = list.Distinct().ToList();
 			}
+			//if (Common.IsDealer())
+			//{
+			//	var listOrderDetail = new List<Order_Detail>();
+
+			//	List<SqlParameter> sqlParameters = new List<SqlParameter>();
+			//	sqlParameters.Add(new SqlParameter("@Id", SqlDbType.BigInt) { Value = -1 });
+			//	sqlParameters.Add(new SqlParameter("@User_Id", SqlDbType.BigInt) { Value = Common.LoggedUser_Id() });
+
+			//	var ds = DataContext_Command.ExecuteStoredProcedure_DataSet("SP_ORDERS_GET", sqlParameters);
+
+			//	if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+			//	{
+			//		foreach (DataRow dr in ds.Tables[1].Rows)
+			//		{
+			//			listOrderDetail.Add(new Order_Detail()
+			//			{
+			//				Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
+			//				Product_ID = dr["Product_ID"] != DBNull.Value ? Convert.ToInt64(dr["Product_ID"]) : 0,
+			//				PackageType_ID = dr["PackageType_ID"] != DBNull.Value ? Convert.ToInt64(dr["PackageType_ID"]) : 0,
+			//				SKUSize_ID = dr["SKUSize_ID"] != DBNull.Value ? Convert.ToInt64(dr["SKUSize_ID"]) : 0,
+			//				Qty = dr["Qty"] != DBNull.Value ? Convert.ToDecimal(dr["Qty"]) : 0,
+			//				Product_Name = dr["Product_Name"] != DBNull.Value ? Convert.ToString(dr["Product_Name"]) : "",
+			//				PackageType_Name = dr["PackageType_Name"] != DBNull.Value ? Convert.ToString(dr["PackageType_Name"]) : "",
+			//				SKUSize_Name = dr["SKUSize_Name"] != DBNull.Value ? Convert.ToString(dr["SKUSize_Name"]) : "",
+			//			});
+			//		}
+			//	}
+
+			//	var dictLoyaltyPoint = _context.Using<LoyaltyPoint>().GetByCondition(x => x.UserId == Common.LoggedUser_Id()).ToList().ToDictionary(x => x.LoyaltyPointSchemeId);
+
+			//	var listLoyaltyPointScheme = _context.Using<LoyaltyPointScheme>().GetByCondition(x => dictLoyaltyPoint.Keys.Contains(x.Id)).ToList();
+
+			//	var ids = listLoyaltyPointScheme.Select(x => x.ProductID).Distinct().ToList();
+			//	var dictProduct = _context.Using<Product>().GetByCondition(x => ids.Contains(x.Id)).ToDictionary(x => x.Id);
+			//	var dictOrder = listOrderDetail.Where(x => ids.Contains(x.Product_ID)).GroupBy(x => x.Product_ID).ToDictionary(g => g.Key, g => (int)g.Sum(x => x.Qty));
+
+			//	var list = listLoyaltyPointScheme.Select(x =>
+			//	{
+			//		dictLoyaltyPoint.TryGetValue(x.Id, out var lp);
+			//		dictProduct.TryGetValue(x.ProductID, out var product);
+			//		dictOrder.TryGetValue(x.ProductID, out var totalQty);
+
+			//		return new LoyaltyPointViewModel
+			//		{
+			//			Points = lp?.Points ?? 0,
+			//			QrCode = x.SchemeName ?? "",
+			//			ProductName = product?.Name ?? "",
+			//			Qty = x?.MaxPurchaseQty ?? 0,
+			//			OrderQty = totalQty,
+
+			//			UserId = lp?.UserId ?? 0,
+			//			ClaimedDate_Ticks = x?.EffectiveStartDate?.Ticks ?? 0,
+			//			ExpiryDate_Ticks = x?.EffectiveEndDate?.Ticks ?? 0,
+			//			GenerateDate_Ticks = lp?.CreatedDate?.Ticks ?? 0,
+			//			ClaimedDate_Text = x?.EffectiveStartDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? "",
+			//			ExpiryDate_Text = x?.EffectiveEndDate?.ToString("dd/MM/yyyy").Replace("-", "/") ?? "",
+			//			GenerateDate_Text = lp?.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/") ?? ""
+			//		};
+			//	}).ToList();
+
+			//	CommonViewModel.Data = list.Distinct().ToList();
+			//}
 
 
 			return View(CommonViewModel);

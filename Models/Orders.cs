@@ -26,7 +26,11 @@ namespace Seed_Admin
         [NotMapped] public string PackageType_Name { get; set; }
         [NotMapped] public string SKUSize_Name { get; set; }
         public decimal?  Qty { get; set; }
+		[NotMapped]public DateTime? Order_Date { get; set; }
+		[NotMapped]public string Order_Date_Text { get; set; }
+		[NotMapped]public string Order_No { get; set; }
+		[NotMapped] public string Order_Status { get; set; }
 
 
-    }
+	}
 }
