@@ -377,7 +377,6 @@ else
 								innerRadius = chart.innerRadius,
 								outerRadius = chart.outerRadius; // non reset case handled later
 
-							debugger;
 							ctx.restore();
 
 							// // Title (small text above)
@@ -394,15 +393,15 @@ else
 							ctx.textBaseline = "middle";
 							ctx.fillText(percent + "%", (width / 2), (height / 2) + 20);
 
-							//ctx.font = helpers.fontString(opts.defaultFontSize, opts.defaultFontStyle, opts.defaultFontFamily);
-							ctx.fillStyle = "#000";
-							ctx.textBaseline = "top";
-							ctx.textAlign = "center";
+							// //ctx.font = helpers.fontString(opts.defaultFontSize, opts.defaultFontStyle, opts.defaultFontFamily);
+							// ctx.fillStyle = "#000";
+							// ctx.textBaseline = "top";
+							// ctx.textAlign = "center";
 
-							// Round percentage in a way that it always adds up to 100%
-							debugger;
-							var segmentLabelText = chart.data.datasets[0].data[0];
-							ctx.fillText(segmentLabelText + "%", centerX, centerY);
+							// // Round percentage in a way that it always adds up to 100%
+							// debugger;
+							// var segmentLabelText = chart.data.datasets[0].data[0];
+							// ctx.fillText(segmentLabelText + "%", centerX, centerY);
 
 							ctx.save();
 						}
