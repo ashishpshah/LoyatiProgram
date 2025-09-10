@@ -113,7 +113,8 @@ namespace Seed_Admin.Controllers
 						 lps.SchemeName,
 						 Product = od.Product_Name,
 						 PackageType = od.PackageType_Name,
-						 SKUSize = od.SKUSize_Name
+						 SKUSize = od.SKUSize_Name,
+						 lps.LoyaltyPoints
 					 }
 					 into g
 					 select new
@@ -130,7 +131,7 @@ namespace Seed_Admin.Controllers
 								 : (x.lps.MaxPurchaseQty ?? 0)),
 						 MaxPurchaseQty = g.Sum(x => x.lps.MaxPurchaseQty),
 						 // you can either multiply points by order qty or just sum scheme points
-						 TotalEarnedPoints = g.Sum(x => x.lps.LoyaltyPoints)
+						 TotalEarnedPoints = g.Key.LoyaltyPoints
 					 })
 					.ToList();
 
